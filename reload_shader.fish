@@ -17,6 +17,11 @@ if test -e $SHADERPACKS_DIR/shader.zip
 end
 
 zip -r shader.zip shaders
-ln shader.zip $SHADERPACKS_DIR/
+ln -t $SHADERPACKS_DIR/ shader.zip
 
-echo "Reset shader."
+# Print on success.
+if test $status -eq 0
+    echo "Reset shader."
+else
+    echo "Unsuccessful."
+end
