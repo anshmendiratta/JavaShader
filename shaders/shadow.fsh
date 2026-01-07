@@ -1,5 +1,7 @@
 #version 330 compatibility
 
+#include "/lib/shadow_distort.glsl"
+
 uniform sampler2D gtexture;
 
 in vec2 texcoord;
