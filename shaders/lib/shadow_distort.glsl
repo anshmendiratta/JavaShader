@@ -1,4 +1,11 @@
+#define SHADOW_RADIUS 1
+#define SHADOW_RANGE 4
+ 
+// Shadow map parameters for Iris.
 const int shadowMapResolution = 2048; // Increases VRAM usage as well as compute cost.
+const bool shadowtex0Nearest = true;
+const bool shadowtex1Nearest = true;
+const bool shadowcolor0Nearest = true;
 
 vec3 distort_shadow_clip_space_position(vec3 position) {
 	float distortion_factor = length(position.xy); // Shadow clip space (xy) is the light source looking at the player (so they are the origin (0, 0)). Since there is no perspective in clip space, the distance from the player of the point (x', y') is the smae in all directions, making this method work.
