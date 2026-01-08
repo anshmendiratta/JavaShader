@@ -1,7 +1,9 @@
 #version 330 compatibility
 
 #include "/lib/shadow_distort.glsl"
+#include "/lib/utility.glsl"
 
+// Textures.
 uniform sampler2D depthtex0; // For sky pixel check.
 uniform sampler2D shadowtex0; // For shadows cast by all objects.
 uniform sampler2D shadowtex1; // For shadows cast *only* by opaque objects.
@@ -9,13 +11,18 @@ uniform sampler2D shadowcolor0; // Information about the color, including transp
 uniform sampler2D colortex0;
 uniform sampler2D colortex1; // Lightmap.
 uniform sampler2D colortex2; // Encoded normals.
+uniform sampler2D noisetex; // Randomizing box kernel sampling in soft shadowing.
 
+// Other uniforms.
 uniform vec3 shadowLightPosition; // Sun/moon position.
 uniform mat4 gbufferModelViewInverse; // To convert from view to world/player space.
 // For coordinate space conversions to determine the shadowmap sample point.
 uniform mat4 gbufferProjectionInverse; 
 uniform mat4 shadowModelView; 
 uniform mat4 shadowProjection; 
+// For texelFetch in shadowing.
+uniform float viewWidth; 
+uniform float viewHeight; 
 
 in vec2 texcoord;
 
@@ -33,9 +40,10 @@ const vec3 skylight_color = vec3(0.05, 0.15, 0.3);
 const vec3 sunlight_color = vec3(1.0);
 const vec3 ambient_color = vec3(0.1);
 
-vec3 project_and_divide(mat4 projection_matrix, vec3 position) {
-    vec4 homogenous_position = projection_matrix * vec4(position, 1.0);
-    return homogenous_position.xyz / homogenous_position.w; // Perspective division.
+vec4 sample_noise(vec2 texcoord) {
+    ivec2 sample_screen_coord = ivec2(texcoord * vec2(viewWidth, viewHeight));
+    ivec2 sample_noise_coord = sample_screen_coord % 256 ; // 256 by default.
+    return texelFetch(noisetex, sample_noise_coord, 0);
 }
 
 vec3 get_shadow(vec3 shadow_screen_space_position) {
@@ -60,14 +68,21 @@ vec3 get_shadow(vec3 shadow_screen_space_position) {
 
 // TODO: Use a circular kernel instead of a box kernel.
 vec3 get_soft_shadow(vec4 shadow_clip_space_position) {
-    const float SHADOW_BIAS = 0.01;
+    const float SHADOW_BIAS = 0.001;
     const int samples_count = (2 * SHADOW_RANGE) * (2 * SHADOW_RANGE);
+    // Sample noise and construct random rotation matrix.
+    float noise_sample = sample_noise(texcoord).r;
+    float theta = noise_sample * radians(360.0);
+    float sin_t = sin(theta);
+    float cos_t = cos(theta);
+    mat2 rotation = mat2(cos_t, -sin_t, sin_t, cos_t);
 
     vec3 shadow_accumulator = vec3(0.0);    
     for (int x = -SHADOW_RANGE; x < SHADOW_RANGE; /* Increment by one pixel */ x++) {
         for (int y = -SHADOW_RANGE; y < SHADOW_RANGE; /* Increment by one pixel */ y++) {
             vec2 offset = vec2(x, y) * SHADOW_RADIUS / float(SHADOW_RANGE); // Sample `samples_count` # of  points within a grid of side length 2 * SHADOW_RADIUS.
-            offset /= shadowMapResolution; // Resize so offsets are in terms of pixels. Without this division, the offset is in terms of the clip space.
+            offset = rotation * offset; // Rotate sampling offset.
+            offset /= shadowMapResolution; // Resize so offsets are in terms of pixels. Without this division, the offset is in terms of the clip space (i.e., [-1.0, 1.0]^2).
             // Repeat `main` fn coordinate space conversion.
             vec4 shadow_clip_space_position_offset = shadow_clip_space_position + vec4(offset, 0.0, 0.0);
             shadow_clip_space_position_offset.z -= SHADOW_BIAS; // Apply shadow.
@@ -96,6 +111,7 @@ void main() {
     if (depth == 1.0) {
         return;
     }
+
     // Compute shadow map screen position to use to sample from the shadow map.
     vec3 fragment_ndc_position = vec3(texcoord.xy, depth) * 2.0 - 1.0;
     vec3 fragment_ndc_model_view_position = project_and_divide(gbufferProjectionInverse, fragment_ndc_position);

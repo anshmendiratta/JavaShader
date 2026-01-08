@@ -1,5 +1,7 @@
 #version 330 compatibility
 
+// NOTE: Temporary copy from `gbuffers_terrain`.
+
 uniform sampler2D gtexture; // Texture atlas.
 uniform sampler2D lightmap; 
 
