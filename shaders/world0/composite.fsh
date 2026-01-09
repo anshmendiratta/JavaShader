@@ -32,13 +32,16 @@ layout(location = 0) out vec4 color;
 // Tell Iris to up the precision of colortex0 so it can store colors properly in the linear color space. If not for this, we would lose some colors since the buffer is meant to store gamma corrected colors. Of course, increasing the precision increases the mem footprint of the buffer, hence increasing the VRAM usage.
 // Further, note that this is a multi-line comment so Iris reads it. If it were a single line `//` comment, the below would not work.
 /*
-const int colortex0format = RGB16;
+const int colortex0Format = RGBA16;
 */
 
-const vec3 blocklight_color = vec3(1.0, 0.5, 0.08);
-const vec3 skylight_color = vec3(0.05, 0.15, 0.3);
-const vec3 sunlight_color = vec3(1.0);
-const vec3 ambient_color = vec3(0.1);
+const vec3 BLOCKLIGHT_COLOR = vec3(1.0, 0.5, 0.08);
+const vec3 SKYLIGHT_COLOR = vec3(0.05, 0.15, 0.3);
+const vec3 SUNLIGHT_COLOR = vec3(1.0);
+const vec3 AMBIENT_COLOR = vec3(0.1);
+
+const float SUNLIGHT_INTENSITY = 4.0;
+const float SKYLIGHT_INTENSITY = 2.0;
 
 vec4 sample_noise(vec2 texcoord) {
     ivec2 sample_screen_coord = ivec2(texcoord * vec2(viewWidth, viewHeight));
@@ -99,9 +102,9 @@ vec3 get_soft_shadow(vec4 shadow_clip_space_position) {
 
 void main() {
     // Get information from gbuffers.
-    vec2 lightmap = texture(colortex1, texcoord).xy;
+    vec2 lightmap = texture(colortex1, texcoord).rg;
     vec3 encoded_normal = texture(colortex2, texcoord).xyz;
-    vec3 normal = normalize(encoded_normal * 2.0 - 1.0); // Undo encoding from before writing to normal buffer -- convert from [0, 1.0] to [-1.0, 1.0].
+    vec3 normal = normalize((encoded_normal - 0.5) * 2.0); // Undo encoding from before writing to normal buffer -- convert from [0, 1.0] to [-1.0, 1.0].
 
     // Assign color (to "main screen gbuffer").
     color = texture(colortex0, texcoord);
@@ -123,12 +126,12 @@ void main() {
     // Sun/moon light source.
     vec3 light_vector = normalize(shadowLightPosition);
     vec3 light_vector_in_world_space = mat3(gbufferModelViewInverse) * light_vector;
-    float normal_aligned_with_light_vector = dot(normal, light_vector_in_world_space);
+    float normal_aligned_with_light_vector = pow(dot(normal, light_vector_in_world_space), 0.5);
 
-    vec3 blocklight = lightmap.r * blocklight_color; // x is blocklight
-    vec3 skylight = lightmap.g * skylight_color; // y is skylight
-    vec3 sunlight = clamp(normal_aligned_with_light_vector, 0.0, 1.0) * shadow * sunlight_color; // Multiply by the skylight from the light map since if an object is hidden from the sky, the object is also hidden from the sun.
-    vec3 ambient = ambient_color;
+    vec3 blocklight = lightmap.r * BLOCKLIGHT_COLOR; // x is blocklight
+    vec3 skylight = lightmap.g * SKYLIGHT_COLOR; // y is skylight
+    vec3 sunlight = clamp(normal_aligned_with_light_vector, 0.0, 1.0) * shadow * SUNLIGHT_COLOR * SUNLIGHT_COLOR; // Multiply by the skylight from the light map since if an object is hidden from the sky, the object is also hidden from the sun.
+    vec3 ambient = AMBIENT_COLOR;
 
     color.rgb *= blocklight + skylight + sunlight + ambient;
     color.rgb = pow(color.rgb, vec3(2.2)); // Undo gamma correction.

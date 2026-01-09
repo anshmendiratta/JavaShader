@@ -2,7 +2,7 @@
 #define SHADOW_RANGE 4
  
 // Shadow map parameters for Iris.
-const int shadowMapResolution = 2048; // Increases VRAM usage as well as compute cost.
+const int shadowMapResolution = 2048; // [512 1024 2048 4096]
 const bool shadowtex0Nearest = true;
 const bool shadowtex1Nearest = true;
 const bool shadowcolor0Nearest = true;

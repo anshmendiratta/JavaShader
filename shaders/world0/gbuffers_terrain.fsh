@@ -15,6 +15,7 @@ layout(location = 0) out vec4 color;
 layout(location = 1) out vec4 lightmap_data;
 layout(location = 2) out vec4 encoded_normal;
 
+
 void main() {
 	color = texture(gtexture, texcoord) * glcolor; // Block texture with biome color.
 	// color /= texture(lightmap, lmcoord); // Default minecraft lighting. Removed since we want to implement our own lighting.
