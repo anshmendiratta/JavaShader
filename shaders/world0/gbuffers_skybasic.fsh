@@ -5,7 +5,6 @@
 in vec4 glcolor;
 out vec4 color;
 
-
 void main() {
-	color = vec4(SKY_COLOR_START, 1.0);
+    color = vec4(SKY_COLOR_START, 1.0);
 }

@@ -1,6 +1,7 @@
 #version 330 compatibility
 
 #include "/lib/shadow_distort.glsl"
+#include "/lib/noise.glsl"
 #include "/lib/utility.glsl"
 
 // Textures.
@@ -11,18 +12,17 @@ uniform sampler2D shadowcolor0; // Information about the color, including transp
 uniform sampler2D colortex0;
 uniform sampler2D colortex1; // Lightmap.
 uniform sampler2D colortex2; // Encoded normals.
-uniform sampler2D noisetex; // Randomizing box kernel sampling in soft shadowing.
 
 // Other uniforms.
 uniform vec3 shadowLightPosition; // Sun/moon position.
 uniform mat4 gbufferModelViewInverse; // To convert from view to world/player space.
 // For coordinate space conversions to determine the shadowmap sample point.
-uniform mat4 gbufferProjectionInverse; 
-uniform mat4 shadowModelView; 
-uniform mat4 shadowProjection; 
+uniform mat4 gbufferProjectionInverse;
+uniform mat4 shadowModelView;
+uniform mat4 shadowProjection;
 // For texelFetch in shadowing.
-uniform float viewWidth; 
-uniform float viewHeight; 
+uniform float viewWidth;
+uniform float viewHeight;
 
 in vec2 texcoord;
 
@@ -42,12 +42,6 @@ const vec3 AMBIENT_COLOR = vec3(0.1);
 
 const float SUNLIGHT_INTENSITY = 4.0;
 const float SKYLIGHT_INTENSITY = 2.0;
-
-vec4 sample_noise(vec2 texcoord) {
-    ivec2 sample_screen_coord = ivec2(texcoord * vec2(viewWidth, viewHeight));
-    ivec2 sample_noise_coord = sample_screen_coord % 256 ; // 256 by default.
-    return texelFetch(noisetex, sample_noise_coord, 0);
-}
 
 vec3 get_shadow(vec3 shadow_screen_space_position) {
     float is_visible = step(shadow_screen_space_position.z, texture(shadowtex0, shadow_screen_space_position.xy).r);
@@ -74,13 +68,13 @@ vec3 get_soft_shadow(vec4 shadow_clip_space_position) {
     const float SHADOW_BIAS = 0.001;
     const int samples_count = (2 * SHADOW_RANGE) * (2 * SHADOW_RANGE);
     // Sample noise and construct random rotation matrix.
-    float noise_sample = sample_noise(texcoord).r;
+    float noise_sample = sample_default_noise(texcoord, viewWidth, viewHeight).r; // Randomizing box kernel sampling in soft shadowing.
     float theta = noise_sample * radians(360.0);
     float sin_t = sin(theta);
     float cos_t = cos(theta);
     mat2 rotation = mat2(cos_t, -sin_t, sin_t, cos_t);
 
-    vec3 shadow_accumulator = vec3(0.0);    
+    vec3 shadow_accumulator = vec3(0.0);
     for (int x = -SHADOW_RANGE; x < SHADOW_RANGE; /* Increment by one pixel */ x++) {
         for (int y = -SHADOW_RANGE; y < SHADOW_RANGE; /* Increment by one pixel */ y++) {
             vec2 offset = vec2(x, y) * SHADOW_RADIUS / float(SHADOW_RANGE); // Sample `samples_count` # of  points within a grid of side length 2 * SHADOW_RADIUS.

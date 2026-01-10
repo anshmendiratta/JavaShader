@@ -15,16 +15,14 @@ out vec2 texcoord;
 // const float SUN_SCALAR = 1.5;
 // const float MOON_SCALAR = 0.1;
 
-
 void main() {
-	texcoord = (gl_TextureMatrix[0] * gl_MultiTexCoord0).xy;
-	
-	if (renderStage == MC_RENDER_STAGE_SUN) {
-		gl_Position = ftransform();
+    texcoord = (gl_TextureMatrix[0] * gl_MultiTexCoord0).xy;
 
-	}
-	// if (renderStage == MC_RENDER_STAGE_MOON) {
-	// 	gl_Position = ftransform();
-	// }
-	glcolor = gl_Color;
+    if (renderStage == MC_RENDER_STAGE_SUN) {
+        gl_Position = ftransform();
+    }
+    // if (renderStage == MC_RENDER_STAGE_MOON) {
+    // 	gl_Position = ftransform();
+    // }
+    glcolor = gl_Color;
 }
