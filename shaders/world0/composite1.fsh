@@ -39,5 +39,5 @@ void main() {
     float object_distance_as_render_distance_proportion = length(fragment_ndc_model_view_position) / far;
     float fog_factor = exp(-FOG_DENSITY * (1 - object_distance_as_render_distance_proportion));
     // TODO: Figure out why I _don't_ need gamma correction for the FOG_COLOR to match the SKY_COLOR.
-    color.rgb = mix(color.rgb, /* Undo gamma correction */ pow(FOG_COLOR, vec3(2.2)), clamp(fog_factor, 0.0, 1.0));
+    color.rgb = mix(color.rgb, /* Undo gamma correction */ FOG_COLOR, clamp(fog_factor, 0.0, 1.0));
 }

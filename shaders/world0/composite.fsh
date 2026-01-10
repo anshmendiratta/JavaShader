@@ -6,6 +6,7 @@
 
 // Textures.
 uniform sampler2D depthtex0; // For sky pixel check.
+uniform sampler2D lightmap; // For sky pixel check.
 uniform sampler2D shadowtex0; // For shadows cast by all objects.
 uniform sampler2D shadowtex1; // For shadows cast *only* by opaque objects.
 uniform sampler2D shadowcolor0; // Information about the color, including transparency, of things that cast a shadow.
@@ -25,6 +26,7 @@ uniform float viewWidth;
 uniform float viewHeight;
 
 in vec2 texcoord;
+in vec2 lmcoord;
 
 /* RENDERTARGETS: 0 */
 layout(location = 0) out vec4 color;
@@ -96,7 +98,7 @@ vec3 get_soft_shadow(vec4 shadow_clip_space_position) {
 
 void main() {
     // Get information from gbuffers.
-    vec2 lightmap = texture(colortex1, texcoord).rg;
+    vec2 lightmap_coords = texture(colortex1, texcoord).xy;
     vec3 encoded_normal = texture(colortex2, texcoord).xyz;
     vec3 normal = normalize((encoded_normal - 0.5) * 2.0); // Undo encoding from before writing to normal buffer -- convert from [0, 1.0] to [-1.0, 1.0].
 
@@ -119,14 +121,16 @@ void main() {
 
     // Sun/moon light source.
     vec3 light_vector = normalize(shadowLightPosition);
-    vec3 light_vector_in_world_space = mat3(gbufferModelViewInverse) * light_vector;
-    float normal_aligned_with_light_vector = pow(dot(normal, light_vector_in_world_space), 0.5);
+    vec3 light_vector_in_world_space = normalize(mat3(gbufferModelViewInverse) * light_vector);
+    float normal_aligned_with_light_vector = dot(normal, light_vector_in_world_space);
 
-    vec3 blocklight = lightmap.r * BLOCKLIGHT_COLOR; // x is blocklight
-    vec3 skylight = lightmap.g * SKYLIGHT_COLOR; // y is skylight
-    vec3 sunlight = clamp(normal_aligned_with_light_vector, 0.0, 1.0) * shadow * SUNLIGHT_COLOR * SUNLIGHT_COLOR; // Multiply by the skylight from the light map since if an object is hidden from the sky, the object is also hidden from the sun.
+    vec3 blocklight = lightmap_coords.x * BLOCKLIGHT_COLOR; // x is blocklight
+    vec3 skylight = lightmap_coords.y * SKYLIGHT_COLOR; // y is skylight
+    vec3 sunlight = clamp(normal_aligned_with_light_vector, 0.0, 1.0) * shadow * lightmap_coords.y; // Multiply by the skylight from the light map since if an object is hidden from the sky, the object is also hidden from the sun.
     vec3 ambient = AMBIENT_COLOR;
 
-    color.rgb *= blocklight + skylight + sunlight + ambient;
+    // color *= texture(lightmap, lightmap_coords);
+    // color.rgb *= shadow;
+    // color.rgb *= blocklight + sunlight + ambient + skylight;
     color.rgb = pow(color.rgb, vec3(2.2)); // Undo gamma correction.
 }
