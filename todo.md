@@ -1,22 +1,24 @@
 # General
-- [ ] Further soften shadows to remove pixelization (see TODO in code).
-- [ ] Fix night lighting.
-- [ ] Add documentation / shader options.
+- Sky
+- Textures/Materials
+- Lighting
+- Fixes
 
 # Sky
 - [ ] Fix sun size.
 - [ ] Add sky gradient.
 - [ ] Clouds.
+
+# Lighting
+- [ ] SSAO.
+- [ ] Subsurface scattering.
 - [ ] Bloom.
+- [ ] Further soften shadows to remove pixelization (see TODO in code).
+- [ ] Reflections
 
-# Green
-- [ ] Waving foliage.
+# Textures/Materials
+- [ ] PBR
 
-# Textures
-- [ ] Add emissive textures.
-- [ ] Allow specular and normal maps.
-
-# Screen Space
-- [ ] AO
-- [ ] Reflection
-
+# Fixes
+- [ ] Lighting at night.
+- [ ] Shadows on water.

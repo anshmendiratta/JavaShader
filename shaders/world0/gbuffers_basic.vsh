@@ -1,11 +1,10 @@
 #version 330 compatibility
 
-uniform sampler2D colortex4;
-
+out vec4 glcolor;
 out vec2 texcoord;
 
 void main() {
     gl_Position = ftransform();
     texcoord = (gl_TextureMatrix[0] * gl_MultiTexCoord0).xy;
-    // texcoord = texture(colortex4, (gl_TextureMatrix[0] * gl_MultiTexCoord0).xy).xy;
+    glcolor = gl_Color;
 }

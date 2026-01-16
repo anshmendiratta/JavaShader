@@ -1,8 +1,8 @@
 #version 330 compatibility
 
-#include "/lib/shadow_distort.glsl"
-#include "/lib/utility.glsl"
-#include "/lib/constants.glsl"
+#include "/common/shadow_distort.glsl"
+#include "/common/utility.glsl"
+#include "/common/constants.glsl"
 
 #define FOG_DENSITY 10.0
 

@@ -1,15 +1,10 @@
 #version 330 compatibility
 
-// Reflection.
-uniform int renderStage;
-
-out vec4 glcolor;
+out vec2 texcoord;
+out vec4 starData; //rgb = star color, a = flag for weather or not this pixel is a star.
 
 void main() {
-    if (renderStage == MC_RENDER_STAGE_STARS) {
-        return;
-    }
-
     gl_Position = ftransform();
-    glcolor = gl_Color;
+    texcoord = (gl_TextureMatrix[0] * gl_MultiTexCoord0).xy;
+    starData = vec4(gl_Color.rgb, float(gl_Color.r == gl_Color.g && gl_Color.g == gl_Color.b && gl_Color.r > 0.0)); // Check if white.
 }
