@@ -3,6 +3,7 @@
 // TODO: Understand why the sky coloring works how it does.
 
 uniform sampler2D colortex0;
+uniform sampler2D depthtex0;
 
 uniform mat4 gbufferModelView;
 uniform mat4 gbufferModelViewInverse;
@@ -196,11 +197,14 @@ void main() {
     if (starData.a > 0.5) {
         final_color = starData.rgb;
     } else {
-        vec3 fragment_screen_space_position = vec3(texcoord.xy, 1.0);
+        vec3 fragment_screen_space_position = vec3(texcoord.xy, texture(depthtex0, texcoord));
         vec3 fragment_ndc_space_position = fragment_screen_space_position * 2.0 - 1.0;
         vec3 fragment_view_space_position = project_and_divide(gbufferProjectionInverse, fragment_ndc_space_position);
-        vec3 fragment_feet_space_position = mat3(gbufferModelViewInverse) * fragment_view_space_position;
-        final_color = calc_sky_color(fragment_feet_space_position);
+        vec3 fragment_feet_space_position = (gbufferModelViewInverse * vec4(fragment_view_space_position, 1.0)).xyz;
+        vec3 world_up = vec3(0.0, 1.0, 0.0);
+        float up_dot = clamp(dot(world_up, fragment_feet_space_position), 0.0, 1.0);
+        // final_color = mix(skyColor, FOG_COLOR, 1 - up_dot);
+        final_color = FOG_COLOR;
 
         // vec2 uv = fragment_screen_space_position.xy;
         // vec3 rayDir = normalize(vec3(uv.x, uv.y + 0.8, 1.0));

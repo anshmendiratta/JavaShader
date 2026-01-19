@@ -1,10 +1,8 @@
 #version 330 compatibility
 
 // ----------
-// SSAO.
+// Fog.
 // ----------
-
-uniform sampler2D colortex4;
 
 out vec2 texcoord;
 

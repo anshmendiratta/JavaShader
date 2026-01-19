@@ -19,14 +19,21 @@
 #define SKY_COLOR_END_G 0.84 // Sky opposite the sun green content. [0.5 0.6 0.7 0.8 0.9 1.0 1.1 1.2 1.3 1.4 1.5]
 #define SKY_COLOR_END_B 1.0 // Sky opposite the sun blue content. [0.5 0.6 0.7 0.8 0.9 1.0 1.1 1.2 1.3 1.4 1.5]
 // Intensities.
-#define SUNLIGHT_COLOR_INTENSITY 0.8 // Skylight color blue content. [0.5 0.6 0.7 0.8 0.9 1.0 1.1 1.2 1.3 1.4 1.5]
-#define MOONLIGHT_COLOR_INTENSITY 0.1 // Skylight color blue content. [0.5 0.6 0.7 0.8 0.9 1.0 1.1 1.2 1.3 1.4 1.5]
-#define AMBIENT_COLOR_INTENSITY 0.2 // Skylight color blue content. [0.0 0.10.2 0.3 0.4 0.5 0.6 0.7 0.8]
+#define SUNLIGHT_COLOR_INTENSITY 0.8 // Sun brightness. [0.5 0.6 0.7 0.8 0.9 1.0 1.1 1.2 1.3 1.4 1.5]
+#define MOONLIGHT_COLOR_INTENSITY 0.1 // Moon brightness. [0.5 0.6 0.7 0.8 0.9 1.0 1.1 1.2 1.3 1.4 1.5]
+#define AMBIENT_COLOR_INTENSITY 0.2 // Minimum light level. [0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8]
 
 #define WATER_WAVE_AMPLITUDE 0.3 // How high a water wave can go. Do not interpret this value as blocks/meters. [0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0]
 
 // --- Materials ---
-#define LABPBR_ENABLED
+#define NORMAL_MAPPING // Enables LabPBR normal mapping.
+#define POM // Enables LabPBR parallax occlusion mapping.
+#define SPECULAR_MAPPING // Enables LabPBR specular mapping.
+
+// --- Screen Space Passes ---
+#define SSAO_SAMPLE_COUNT 64 // [16 32 64 128]
+#define SSAO_RADIUS 2.0 // [0.5 1.0 1.5 2.0 2.5]
+#define SSAO_BIAS 0.025 // [0.01 0.015 0.02 0.025 0.03 0.035]
 
 // --- Dev ---
-#define DEBUG_VIEW
+// #define DEBUG_VIEW

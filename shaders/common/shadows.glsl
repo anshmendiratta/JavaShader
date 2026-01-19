@@ -18,7 +18,10 @@ vec3 get_shadow(vec3 shadow_screen_space_position) {
     return shadow_color.rgb * light_passthrough_proportion;
 }
 
-// TODO: Use a circular kernel instead of a box kernel.
+#define SHADOW_RANGE 4
+#define SHADOW_RADIUS 1
+
+// TODO: Use a better kernel than a box kernel.
 vec3 get_soft_shadow(vec4 shadow_clip_space_position) {
     const int samples_count = (2 * SHADOW_RANGE) * (2 * SHADOW_RANGE);
     // Sample noise and construct random rotation matrix.
@@ -32,7 +35,7 @@ vec3 get_soft_shadow(vec4 shadow_clip_space_position) {
     for (int x = -SHADOW_RANGE; x < SHADOW_RANGE; /* Increment by one pixel */ x++) {
         for (int y = -SHADOW_RANGE; y < SHADOW_RANGE; /* Increment by one pixel */ y++) {
             vec2 offset = vec2(x, y) * SHADOW_RADIUS / float(SHADOW_RANGE); // Sample `samples_count` # of  points within a grid of side length 2 * SHADOW_RADIUS.
-            offset = rotation * offset; // Rotate sampling offset.
+            offset = rotation * offset;
             offset /= SHADOW_MAP_RESOLUTION; // Resize so offsets are in terms of pixels. Without this division, the offset is in terms of the clip space (i.e., [-1.0, 1.0]^2).
             // Repeat `main` fn coordinate space conversion.
             vec4 shadow_clip_space_position_offset = shadow_clip_space_position + vec4(offset, 0.0, 0.0);

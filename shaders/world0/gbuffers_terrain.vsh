@@ -37,6 +37,7 @@ const float FOLIAGE_WAVE_SPEED = 0.5;
 const float FOLIAGE_WAVE_AMPLITUDE = 0.09;
 
 #include "/common/utility.glsl"
+#include "/lib/settings.glsl"
 
 vec2 pom_texcoord_transform(float pbr_pom_displacement, vec2 texcoord, vec3 view_direction) {
     vec2 p = view_direction.xy / view_direction.z * (pbr_pom_displacement * 1.0); // TODO: Replace 1.0 with HEIGHT_SCALE at some point.
@@ -56,10 +57,10 @@ void main() {
 
     normal_feet_space = mc_Entity.x == 10000.0 ? gl_NormalMatrix * vec3(0.0, 1.0, 0.0) : gl_NormalMatrix * gl_Normal; // View space.
     normal_feet_space = mat3(gbufferModelViewInverse) * normal_feet_space; // Feet space.
-    // #ifdef LABPBR_ENABLED
+    #ifdef NORMAL_MAPPING
     tangent_feet_space = at_tangent.w * (gl_NormalMatrix * at_tangent.xyz); // View space.
     tangent_feet_space = mat3(gbufferModelViewInverse) * tangent_feet_space; // Feet space.
-    // #endif
+    #endif
 
     // Waving.
     if (mc_Entity.x == 10000.0) {
@@ -98,14 +99,4 @@ void main() {
         vec4 v_clip_space_wave_position = gbufferProjection * vec4(v_view_space_wave_position, 1.0);
         gl_Position = v_clip_space_wave_position;
     }
-
-    #ifdef LABPBR_ENABLED
-    // POM.
-    // float pbr_pom_displacement = pbr_normal_data.a;
-    // vec3 fragment_position_tangent_space = TBN_matrix * vec3(texcoord, texture(depthtex0, texcoord));
-    // vec3 camera_position_tangent_space = TBN_matrix * cameraPosition;
-    // vec3 view_direction_tangent_space = normalize(fragment_position_tangent_space - camera_position_tangent_space);
-    // texcoord = pom_texcoord_transform(pbr_pom_displacement, texcoord, view_direction_tangent_space);
-    // gl_Position += vec4(pbr_pom_displacement * normalize(pbr_normal_feet_space), 1.0);
-    #endif
 }

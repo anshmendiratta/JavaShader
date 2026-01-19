@@ -22,3 +22,5 @@
 # Fixes
 - [ ] Lighting at night.
 - [ ] Shadows on water.
+- [ ] Normal mapping shadows.
+- [ ] Make foliage waving nicer.

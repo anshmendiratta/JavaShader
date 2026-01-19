@@ -1,6 +1,3 @@
-#define SHADOW_RADIUS 1
-#define SHADOW_RANGE 4
-
 #include "/lib/settings.glsl"
 
 const float SHADOW_BIAS_STARTER = SHADOW_BIAS;
