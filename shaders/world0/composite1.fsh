@@ -96,7 +96,7 @@ void main() {
     vec3 V_hat = normalize(cameraPosition - fragment_world_space_position); // Point back to camera.
     float r_dot_v = clamp(dot(R_hat, V_hat), 0.0, 1.0);
 
-    float shininess = smoothness * 100.0 + 1.0;
+    float shininess = smoothness * 200.0 + 1.0;
     float specular_light_factor = clamp(smoothness * pow(r_dot_v, shininess), 0.0, 1.0);
     float diffuse_light_factor = clamp(roughness * n_dot_l, 0.0, 1.0);
     light_brightness = diffuse_light_factor + specular_light_factor;
@@ -106,10 +106,22 @@ void main() {
     vec3 sunlight = light_brightness * shadow * lightmap_coords.y * SUNLIGHT_COLOR * mix(SUNLIGHT_COLOR_INTENSITY, MOONLIGHT_COLOR_INTENSITY, pow(sin(worldTime / 24000.), 2.0)); // Multiply by the skylight from the light map since if an object is hidden from the sky, the object is also hidden from the sun.
     vec3 blocklight = lightmap_coords.x * BLOCKLIGHT_COLOR; // x is blocklight
     vec3 skylight = lightmap_coords.y * SKYLIGHT_COLOR; // y is skylight
-    float ssao_factor = texture(colortex4, texcoord).r;
-    vec3 ambient = AMBIENT_COLOR * ssao_factor;
-    // vec3 ambient = AMBIENT_COLOR;
+
+    // Blur SSAO with a 2x2 box kernel for ambient lighting.
+    float ssao_factor;
+    vec2 ssao_texel_size = 1.0 / vec2(textureSize(colortex4, 0));
+    const int box_kernel_n_half = 4;
+    for (int x = -box_kernel_n_half; x < box_kernel_n_half; x++) {
+        for (int y = -box_kernel_n_half; y < box_kernel_n_half; y++) {
+            vec2 texcoord_offset = vec2(float(x), float(y)) * ssao_texel_size;
+            ssao_factor += texture(colortex4, texcoord + texcoord_offset).r;
+        }
+    }
+    ssao_factor /= 4 * box_kernel_n_half * box_kernel_n_half;
+
+    vec3 ambient = AMBIENT_COLOR * pow(ssao_factor, 2.0);
     color.rgb *= blocklight + skylight + sunlight + ambient;
+    // color.rgb = vec3(pow(ssao_factor, 2.0));
 
     color.rgb = pow(color.rgb, vec3(2.2)); // Undo gamma correction.
 }
