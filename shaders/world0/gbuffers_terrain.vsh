@@ -25,11 +25,8 @@ in vec4 at_tangent;
 out vec2 lmcoord;
 out vec2 texcoord;
 out vec4 glcolor;
-out vec3 normal_feet_space;
-out vec3 tangent_feet_space;
-// Normal mapping.
-out vec3 pbr_normal_feet_space;
-out float pbr_ao; // Ambient occlusion.
+out vec3 normal_view_space;
+out vec3 tangent_view_space;
 
 // Waving.
 const float FOLIAGE_WAVE_OFFSET = 2 / 7;
@@ -55,11 +52,9 @@ void main() {
     lmcoord = (gl_TextureMatrix[1] * gl_MultiTexCoord1).xy;
     lmcoord = lmcoord / (30.0 / 32.0) - (1.0 / 32.0); // Conversion from [0.033, 0.97] to [0.0, 1.0].
 
-    normal_feet_space = mc_Entity.x == 10000.0 ? gl_NormalMatrix * vec3(0.0, 1.0, 0.0) : gl_NormalMatrix * gl_Normal; // View space.
-    normal_feet_space = mat3(gbufferModelViewInverse) * normal_feet_space; // Feet space.
+    normal_view_space = mc_Entity.x == 10000.0 ? gl_NormalMatrix * vec3(0.0, 1.0, 0.0) : normalize(gl_NormalMatrix * gl_Normal); // View space.
     #ifdef NORMAL_MAPPING
-    tangent_feet_space = at_tangent.w * (gl_NormalMatrix * at_tangent.xyz); // View space.
-    tangent_feet_space = mat3(gbufferModelViewInverse) * tangent_feet_space; // Feet space.
+    tangent_view_space = normalize(at_tangent.w * (gl_NormalMatrix * at_tangent.xyz)); // View space.
     #endif
 
     // Waving.

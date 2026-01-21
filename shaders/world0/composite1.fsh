@@ -119,9 +119,9 @@ void main() {
     }
     ssao_factor /= 4 * box_kernel_n_half * box_kernel_n_half;
 
-    vec3 ambient = AMBIENT_COLOR * pow(ssao_factor, 2.0);
+    vec3 ambient = AMBIENT_COLOR * ssao_factor;
     color.rgb *= blocklight + skylight + sunlight + ambient;
-    // color.rgb = vec3(pow(ssao_factor, 2.0));
+    // color.rgb = vec3(ssao_factor);
 
     color.rgb = pow(color.rgb, vec3(2.2)); // Undo gamma correction.
 }

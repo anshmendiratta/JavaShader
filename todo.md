@@ -23,4 +23,4 @@
 - [ ] Lighting at night.
 - [ ] Shadows on water.
 - [ ] Normal mapping shadows.
-- [ ] Make foliage waving nicer.
+- [ ] Make foliage waving nicer and average around the center of the block. 

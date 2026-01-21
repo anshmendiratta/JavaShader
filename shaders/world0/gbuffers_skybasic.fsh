@@ -24,6 +24,8 @@ layout(location = 0) out vec4 color;
 #include "/lib/constants.glsl"
 #include "/lib/utility.glsl"
 
+const float sunPathRotation = -30.0;
+
 const float EPSILON = 1e-6;
 const float FAR_DISTANCE = 1e20;
 const float EARTH_RADIUS = 6371000.0;
