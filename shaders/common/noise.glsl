@@ -16,8 +16,8 @@ float sample_desmos_noise(vec2 coords) {
 }
 
 // Sample from default noise texture.
-vec4 sample_default_noise(vec2 texcoord, float view_width, float view_height) {
-    ivec2 sample_screen_coord = ivec2(texcoord * vec2(view_width, view_height));
+vec4 sample_default_noise(vec2 uv, float view_width, float view_height) {
+    ivec2 sample_screen_coord = ivec2(uv * vec2(view_width, view_height));
     ivec2 sample_noise_coord = sample_screen_coord % NOISE_TEXTURE_RESOLUTION; // 256 by default.
     return texelFetch(noisetex, sample_noise_coord, 0);
 }

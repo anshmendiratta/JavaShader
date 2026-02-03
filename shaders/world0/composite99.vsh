@@ -1,7 +1,7 @@
 #version 330 compatibility
 
 // ----------
-// Fog.
+// Debug view.
 // ----------
 
 out vec2 uv;

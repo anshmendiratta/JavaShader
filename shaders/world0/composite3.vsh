@@ -4,11 +4,9 @@
 // Bloom.
 // ----------
 
-uniform sampler2D colortex4;
-
-out vec2 texcoord;
+out vec2 uv;
 
 void main() {
     gl_Position = ftransform();
-    texcoord = (gl_TextureMatrix[0] * gl_MultiTexCoord0).xy;
+    uv = (gl_TextureMatrix[0] * gl_MultiTexCoord0).xy;
 }

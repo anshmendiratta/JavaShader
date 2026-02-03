@@ -11,14 +11,14 @@ uniform float frameTimeCounter;
 in vec2 mc_Entity;
 
 out vec4 glcolor;
-out vec2 texcoord;
+out vec2 uv;
 out vec3 water_normal;
 
 #include "/common/water_waves.glsl"
 #include "/lib/settings.glsl"
 
 void main() {
-    texcoord = (gl_TextureMatrix[0] * gl_MultiTexCoord0).xy;
+    uv = (gl_TextureMatrix[0] * gl_MultiTexCoord0).xy;
     gl_Position = ftransform();
     glcolor = gl_Color;
 

@@ -20,23 +20,23 @@ uniform mat4 gbufferProjectionInverse;
 uniform float far; // Render distance in blocks.
 // uniform vec3 fogColor;
 
-in vec2 texcoord;
+in vec2 uv;
 
 /* RENDERTARGETS: 0 */
 layout(location = 0) out vec4 color;
 
 void main() {
     // Assign color (to "main screen gbuffer").
-    color = texture(colortex0, texcoord);
+    color = texture(colortex0, uv);
 
     // Do sky pixel check.
-    float depth = texture(depthtex0, texcoord).r;
+    float depth = texture(depthtex0, uv).r;
     if (depth == 1.0) {
         return;
     }
 
     // Compute shadow map screen position to use to sample from the shadow map.
-    vec3 fragment_ndc_position = vec3(texcoord.xy, depth) * 2.0 - 1.0;
+    vec3 fragment_ndc_position = vec3(uv.xy, depth) * 2.0 - 1.0;
     vec3 fragment_ndc_model_view_position = project_and_divide(gbufferProjectionInverse, fragment_ndc_position);
 
     // Fog.

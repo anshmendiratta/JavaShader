@@ -1,0 +1,36 @@
+# Labels.
+value.DEBUG_VIEW.-1 = Off
+value.DEBUG_VIEW.0 = colortex0
+value.DEBUG_VIEW.1 = colortex1
+value.DEBUG_VIEW.2 = colortex2
+value.DEBUG_VIEW.3 = colortex3
+value.DEBUG_VIEW.4 = colortex4
+value.DEBUG_VIEW.5 = colortex5
+value.DEBUG_VIEW.6 = colortex6
+value.DEBUG_VIEW.7 = colortex7
+value.DEBUG_VIEW.8 = colortex8
+value.DEBUG_VIEW.9 = colortex9
+value.DEBUG_VIEW.10 = colortex10
+value.DEBUG_VIEW.11 = colortex11
+value.DEBUG_VIEW.12 = colortex12
+value.DEBUG_VIEW.13 = colortex13
+value.DEBUG_VIEW.14 = colortex14
+value.DEBUG_VIEW.15 = colortex15
+value.DEBUG_VIEW.16 = depthtex0
+value.DEBUG_VIEW.17 = shadowtex0
+value.DEBUG_VIEW.18 = shadowtex1
+value.DEBUG_VIEW.19 = shadowcolor0
+
+# Switches.
+value.SSAO.0 = Off
+value.SSAO.1 = On
+value.POM.0 = Off
+value.POM.1 = On
+value.NORMAL_MAPPING.0 = Off
+value.NORMAL_MAPPING.1 = On
+value.SPECULAR_MAPPING.0 = Off
+value.SPECULAR_MAPPING.1 = On
+value.BLOOM.0 = Off
+value.BLOOM.1 = On
+value.FOG.0 = Off
+value.FOG.1 = On

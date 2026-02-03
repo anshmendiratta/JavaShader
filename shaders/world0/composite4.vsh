@@ -1,7 +1,7 @@
 #version 330 compatibility
 
 // ----------
-// Fog.
+// Bloom Application.
 // ----------
 
 out vec2 uv;

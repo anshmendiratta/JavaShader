@@ -24,7 +24,7 @@ uniform int viewHeight;
 /* RENDERTARGETS: 4 */
 layout(location = 0) out float occlusion_factor;
 
-in vec2 texcoord;
+in vec2 uv;
 
 #include "/common/utility.glsl"
 #include "/common/noise.glsl"
@@ -32,7 +32,7 @@ in vec2 texcoord;
 
 vec3 ssao_sampling_kernel[SSAO_SAMPLE_COUNT]; // Vectors in tangent space.
 vec3 ssao_noise_vector; // Create less than 1 per fragment to save memory. Use this as a tiling "texture."
-vec2 TEXCOORD_NOISE_SCALE = vec2(viewWidth / 4.0, viewHeight / 4.0);
+vec2 UV_NOISE_SCALE = vec2(viewWidth / 4.0, viewHeight / 4.0);
 
 void main() {
     // Sampling kernel of random vector offsets.
@@ -51,7 +51,7 @@ void main() {
     }
 
     // Random rotation vector.
-    int count = int(16 * rand(texcoord.x + texcoord.y));
+    int count = int(16 * rand(uv.x + uv.y));
     float epsilon_zero = rand(count * 2.0);
     float epsilon_one = rand(count * 1.0);
     float phi = 2 * PI * epsilon_one;
@@ -63,14 +63,14 @@ void main() {
         );
 
     // Construct TBN.
-    vec3 fragment_screen_space_position = vec3(texcoord, texture(depthtex0, texcoord).r);
+    vec3 fragment_screen_space_position = vec3(uv, texture(depthtex0, uv).r);
     vec3 fragment_ndc_space_position = fragment_screen_space_position * 2.0 - 1.0;
     vec3 fragment_view_space_position = project_and_divide(gbufferProjectionInverse, fragment_ndc_space_position);
-    vec3 normal_feet_space = texture(colortex2, texcoord).xyz * 2.0 - 1.0;
+    vec3 normal_feet_space = texture(colortex2, uv).xyz * 2.0 - 1.0;
     vec3 normal_view_space = mat3(gbufferModelView) * normal_feet_space;
     vec3 random_vector = ssao_noise_vector;
     vec3 tangent_view_space = normalize(random_vector - normal_view_space * dot(normal_view_space, random_vector));
-    vec3 bitangent_view_space = cross(normal_view_space, tangent_view_space);
+    vec3 bitangent_view_space = cross(tangent_view_space, normal_view_space);
     mat3 TBN_matrix = mat3(tangent_view_space, bitangent_view_space, normal_view_space); // Tangent space to view space.
 
     // Obtain depth samples for occlusion check.

@@ -25,7 +25,7 @@ vec3 get_shadow(vec3 shadow_screen_space_position) {
 vec3 get_soft_shadow(vec4 shadow_clip_space_position) {
     const int samples_count = (2 * SHADOW_RANGE) * (2 * SHADOW_RANGE);
     // Sample noise and construct random rotation matrix.
-    float noise_sample = sample_default_noise(texcoord, viewWidth, viewHeight).r; // Randomizing box kernel sampling in soft shadowing.
+    float noise_sample = sample_default_noise(uv, viewWidth, viewHeight).r; // Randomizing box kernel sampling in soft shadowing.
     float theta = noise_sample * radians(360.0);
     float sin_t = sin(theta);
     float cos_t = cos(theta);

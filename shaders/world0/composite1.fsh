@@ -15,6 +15,7 @@ uniform sampler2D colortex1; // Lightmap coordinates.
 uniform sampler2D colortex2; // Encoded normals.
 uniform sampler2D colortex3; // Encoded speculars.
 uniform sampler2D colortex4; // SSAO value.
+uniform sampler2D colortex5; // Parallax coordinates.
 
 // Other uniforms.
 uniform vec3 cameraPosition; // In world space.
@@ -33,7 +34,7 @@ uniform int worldTime;
 // Reflection.
 uniform int renderStage;
 
-in vec2 texcoord;
+in vec2 uv;
 in vec2 lmcoord;
 
 /* RENDERTARGETS: 0 */
@@ -53,25 +54,42 @@ const int colortex0Format = RGBA16;
 
 void main() {
     // Get information from gbuffers.
-    vec2 lightmap_coords = texture(colortex1, texcoord).xy;
-    vec3 normal_feet_space = texture(colortex2, texcoord).xyz * 2.0 - 1.0;
+    vec2 lightmap_coords = texture(colortex1, uv).xy;
+    vec3 normal_feet_space = texture(colortex2, uv).xyz * 2.0 - 1.0;
     vec3 normal_world_space = normal_feet_space;
-
-    #ifdef DEBUG_VIEW
-    color.rgb = normal_feet_space;
-    return;
+    #if POM == 1
+    vec2 parallax_coords = texture(colortex5, uv).xy;
     #endif
 
-    color = texture(colortex0, texcoord);
+    color = texture(colortex0, uv);
+
+    // Blur SSAO with a 2x2 box kernel for ambient lighting.
+    float ssao_factor;
+    vec2 ssao_texel_size = 1.0 / vec2(textureSize(colortex4, 0));
+    const int box_kernel_n_half = 4;
+    for (int x = -box_kernel_n_half; x < box_kernel_n_half; x++) {
+        for (int y = -box_kernel_n_half; y < box_kernel_n_half; y++) {
+            vec2 uv_offset = vec2(float(x), float(y)) * ssao_texel_size;
+            ssao_factor += texture(colortex4,
+                    #if POM == 1
+                    parallax_coords
+                    #else
+                    uv
+                        #endif
+                        + uv_offset
+                ).r;
+        }
+    }
+    ssao_factor /= 4 * box_kernel_n_half * box_kernel_n_half;
 
     // Do sky pixel check.
-    float depth = texture(depthtex0, texcoord).r;
+    float depth = texture(depthtex0, uv).r;
     if (depth == 1.0) {
         return;
     }
 
     // Compute shadow map screen position to use to sample from the shadow map.
-    vec3 fragment_ndc_space_position = vec3(texcoord.xy, depth) * 2.0 - 1.0;
+    vec3 fragment_ndc_space_position = vec3(uv.xy, depth) * 2.0 - 1.0;
     vec3 fragment_view_space_position = project_and_divide(gbufferProjectionInverse, fragment_ndc_space_position);
     vec3 fragment_feet_space_position = (gbufferModelViewInverse * vec4(fragment_view_space_position, 1.0)).xyz;
     vec3 shadow_view_space_position = (shadowModelView * vec4(fragment_feet_space_position, 1.0)).xyz;
@@ -85,8 +103,8 @@ void main() {
     float n_dot_l = clamp(dot(light_source_direction_world_space, normal_world_space), 0.0, 1.0);
 
     float light_brightness;
-    #ifdef SPECULAR_MAPPING
-    vec4 specular_data = texture(colortex3, texcoord);
+    #if SPECULAR_MAPPING == 1
+    vec4 specular_data = texture(colortex3, uv);
     float perceptual_roughness = specular_data.r;
     float roughness = pow(1.0 - perceptual_roughness, 2.0);
     float smoothness = 1.0 - roughness;
@@ -106,22 +124,8 @@ void main() {
     vec3 sunlight = light_brightness * shadow * lightmap_coords.y * SUNLIGHT_COLOR * mix(SUNLIGHT_COLOR_INTENSITY, MOONLIGHT_COLOR_INTENSITY, pow(sin(worldTime / 24000.), 2.0)); // Multiply by the skylight from the light map since if an object is hidden from the sky, the object is also hidden from the sun.
     vec3 blocklight = lightmap_coords.x * BLOCKLIGHT_COLOR; // x is blocklight
     vec3 skylight = lightmap_coords.y * SKYLIGHT_COLOR; // y is skylight
-
-    // Blur SSAO with a 2x2 box kernel for ambient lighting.
-    float ssao_factor;
-    vec2 ssao_texel_size = 1.0 / vec2(textureSize(colortex4, 0));
-    const int box_kernel_n_half = 4;
-    for (int x = -box_kernel_n_half; x < box_kernel_n_half; x++) {
-        for (int y = -box_kernel_n_half; y < box_kernel_n_half; y++) {
-            vec2 texcoord_offset = vec2(float(x), float(y)) * ssao_texel_size;
-            ssao_factor += texture(colortex4, texcoord + texcoord_offset).r;
-        }
-    }
-    ssao_factor /= 4 * box_kernel_n_half * box_kernel_n_half;
-
     vec3 ambient = AMBIENT_COLOR * ssao_factor;
     color.rgb *= blocklight + skylight + sunlight + ambient;
-    // color.rgb = vec3(ssao_factor);
 
     color.rgb = pow(color.rgb, vec3(2.2)); // Undo gamma correction.
 }

@@ -15,7 +15,7 @@ uniform float viewWidth;
 uniform float viewHeight;
 
 in vec4 glcolor;
-in vec2 texcoord;
+in vec2 uv;
 in vec3 water_normal;
 
 /* RENDERTARGETS: 0 */
@@ -28,7 +28,7 @@ layout(location = 1) out vec3 encoded_normal;
 #include "/common/shadows.glsl"
 
 void main() {
-    float depth = texture(depthtex0, texcoord).r;
-    color = texture(gtexture, texcoord) * glcolor;
+    float depth = texture(depthtex0, uv).r;
+    color = texture(gtexture, uv) * glcolor;
     encoded_normal = water_normal;
 }

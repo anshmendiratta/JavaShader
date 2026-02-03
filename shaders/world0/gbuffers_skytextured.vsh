@@ -10,13 +10,13 @@ uniform vec3 sunPosition;
 uniform int renderStage;
 
 out vec4 glcolor;
-out vec2 texcoord;
+out vec2 uv;
 
 // const float SUN_SCALAR = 1.5;
 // const float MOON_SCALAR = 0.1;
 
 void main() {
-    texcoord = (gl_TextureMatrix[0] * gl_MultiTexCoord0).xy;
+    uv = (gl_TextureMatrix[0] * gl_MultiTexCoord0).xy;
 
     // if (renderStage == MC_RENDER_STAGE_SUN) {
     gl_Position = ftransform();

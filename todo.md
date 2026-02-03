@@ -1,8 +1,8 @@
 # General
-- Sky
-- Textures/Materials
-- Lighting
-- Fixes
+- Sky.
+- Textures/Materials.
+- Lighting.
+- Fixes.
 
 # Sky
 - [ ] Fix sun size.
@@ -14,13 +14,15 @@
 - [ ] Subsurface scattering.
 - [ ] Bloom.
 - [ ] Further soften shadows to remove pixelization (see TODO in code).
-- [ ] Reflections
+- [ ] Reflections.
 
 # Textures/Materials
-- [ ] PBR
+- [ ] PBR.
+
+# Code
+- [ ] Add debug view to composite99 and debug just (color/depth/shadow)tex.
 
 # Fixes
 - [ ] Lighting at night.
 - [ ] Shadows on water.
-- [ ] Normal mapping shadows.
-- [ ] Make foliage waving nicer and average around the center of the block. 
+- [ ] Make normal mapping shadows more apparent.

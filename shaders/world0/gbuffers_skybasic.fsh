@@ -16,7 +16,7 @@ uniform float viewHeight;
 uniform float viewWidth;
 
 in vec4 starData; //rgb = star color, a = flag for weather or not this pixel is a star.
-in vec2 texcoord;
+in vec2 uv;
 
 /* RENDERTARGETS: 0 */
 layout(location = 0) out vec4 color;
@@ -199,7 +199,7 @@ void main() {
     if (starData.a > 0.5) {
         final_color = starData.rgb;
     } else {
-        vec3 fragment_screen_space_position = vec3(texcoord.xy, texture(depthtex0, texcoord));
+        vec3 fragment_screen_space_position = vec3(uv.xy, texture(depthtex0, uv));
         vec3 fragment_ndc_space_position = fragment_screen_space_position * 2.0 - 1.0;
         vec3 fragment_view_space_position = project_and_divide(gbufferProjectionInverse, fragment_ndc_space_position);
         vec3 fragment_feet_space_position = (gbufferModelViewInverse * vec4(fragment_view_space_position, 1.0)).xyz;

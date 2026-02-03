@@ -8,7 +8,7 @@ uniform sampler2D lightmap;
 uniform float alphaTestRef = 0.1;
 
 in vec2 lmcoord;
-in vec2 texcoord;
+in vec2 uv;
 in vec4 glcolor;
 in vec3 normal;
 
@@ -18,7 +18,7 @@ layout(location = 1) out vec4 lightmap_data; // colortex1
 layout(location = 2) out vec4 encoded_normal; // colortex2
 
 void main() {
-    color = texture(gtexture, texcoord) * glcolor; // Block texture with biome color.
+    color = texture(gtexture, uv) * glcolor; // Block texture with biome color.
     // color /= texture(lightmap, lmcoord); // Default minecraft lighting. Removed since we want to implement our own lighting.
     if (color.a < alphaTestRef) {
         discard;
