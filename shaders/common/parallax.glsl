@@ -20,19 +20,18 @@ vec2 pom_uv_transform(vec2 uv, /* camera to fragment */ vec3 view_direction_tang
     int layers_count = int(mix(POM_MIN_LAYERS, POM_MAX_LAYERS, abs(dot(vec3(0.0, 0.0, 1.0), view_direction_tangent_space)))); // Dot with vec3(0.0, 0.0, 1.0) as we want more layers as the view is steeper.
     float layer_height_interval = rcp(float(layers_count));
 
-    vec2 ray = normalize(view_direction_tangent_space.xy * rcp(view_direction_tangent_space.z)) * POM_HEIGHT_SCALE * layer_height_interval; // Final vector we use as our initial approximation.
-    // Avoid dividing by zero if the ray has very small Y component.
+    vec2 ray = normalize(view_direction_tangent_space.xz * rcp(view_direction_tangent_space.y)) * POM_HEIGHT_SCALE; // Final vector we use as our initial approximation.
     float safeRayY = abs(ray.y) < 1e-6 ? 1e-6 : ray.y;
-    vec2 d_uv = ray * layer_height_interval / safeRayY;
+    vec2 d_uv = ray * layer_height_interval;
 
     // Linear search for last two UVs.
     float current_ray_sample_height = 1.0;
     float current_displacement_height = sample_heightmap(local_uv_to_atlas(uv, texture_bottom_left, single_tex_size), uv_gradient);
 
     // Advance while the sampling ray is above the heightmap value (i.e. we haven't hit the surface).
-    for (int idx = 0; idx < layers_count && current_ray_sample_height < current_displacement_height; idx++) {
+    for (int idx = 0; idx < layers_count && current_ray_sample_height > current_displacement_height; idx++) {
         uv += d_uv;
-        current_ray_sample_height += layer_height_interval; // Go down one layer.
+        current_ray_sample_height -= layer_height_interval; // Go down one layer.
         current_displacement_height = sample_heightmap(local_uv_to_atlas(uv, texture_bottom_left, single_tex_size), uv_gradient);
     }
 
