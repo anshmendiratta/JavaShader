@@ -33,86 +33,65 @@ layout(location = 0) out vec4 color;
 
 #include "/lib/settings.glsl"
 
-vec4 sample_colortex(int debug_view) {
-    vec3 rgb;
-    switch (debug_view) {
-        case 0:
-        rgb = texture(colortex0, uv).rgb;
-        break;
-        case 1:
-        rgb = texture(colortex1, uv).rgb;
-        break;
-        case 2:
-        rgb = texture(colortex2, uv).rgb;
-        break;
-        case 3:
-        rgb = texture(colortex3, uv).rgb;
-        break;
-        case 4:
-        rgb = texture(colortex4, uv).rgb;
-        break;
-        case 5:
-        rgb = texture(colortex5, uv).rgb;
-        break;
-        case 6:
-        rgb = texture(colortex6, uv).rgb;
-        break;
-        case 7:
-        rgb = texture(colortex7, uv).rgb;
-        break;
-        case 8:
-        rgb = texture(colortex8, uv).rgb;
-        break;
-        case 9:
-        rgb = texture(colortex9, uv).rgb;
-        break;
-        case 10:
-        rgb = texture(colortex10, uv).rgb;
-        break;
-        case 11:
-        rgb = texture(colortex11, uv).rgb;
-        break;
-        case 12:
-        rgb = texture(colortex12, uv).rgb;
-        break;
-        case 13:
-        rgb = texture(colortex13, uv).rgb;
-        break;
-        case 14:
-        rgb = texture(colortex14, uv).rgb;
-        break;
-        case 15:
-        rgb = texture(colortex15, uv).rgb;
-        break;
-    }
+vec4 sample_colortex() {
+    vec3 sampled;
 
-    return vec4(rgb, 1.0);
+    #if DEBUG_VIEW == 1
+    sampled = texture(colortex1, uv).rgb;
+    #elif DEBUG_VIEW == 2 // Normals.
+    sampled = texture(colortex2, uv).rgb * 2.0 - 1.0;
+    #elif DEBUG_VIEW == 3
+    sampled = texture(colortex3, uv).rgb;
+    #elif DEBUG_VIEW == 4 // SSAO.
+    sampled = 1.0 - vec3(texture(colortex4, uv).r);
+    #elif DEBUG_VIEW == 5 // Bloom.
+    sampled = texture(colortex5, uv).rgb;
+    #elif DEBUG_VIEW == 6
+    sampled = texture(colortex6, uv).rgb;
+    #elif DEBUG_VIEW == 7
+    sampled = texture(colortex7, uv).rgb;
+    #elif DEBUG_VIEW == 8
+    sampled = texture(colortex8, uv).rgb;
+    #elif DEBUG_VIEW == 9
+    sampled = texture(colortex9, uv).rgb;
+    #elif DEBUG_VIEW == 10
+    sampled = texture(colortex10, uv).rgb;
+    #elif DEBUG_VIEW == 11
+    sampled = texture(colortex11, uv).rgb;
+    #elif DEBUG_VIEW == 12
+    sampled = texture(colortex12, uv).rgb;
+    #elif DEBUG_VIEW == 13
+    sampled = texture(colortex13, uv).rgb;
+    #elif DEBUG_VIEW == 14
+    sampled = texture(colortex14, uv).rgb;
+    #elif DEBUG_VIEW == 15
+    sampled = texture(colortex15, uv).rgb;
+    #else
+    sampled = texture(colortex0, uv).rgb;
+    #endif
+
+    return vec4(sampled, 1.0);
 }
 
 vec4 sample_shadowtex(int debug_view) {
-    vec3 rgb;
-    switch (debug_view) {
-        case 17:
-        rgb = texture(shadowtex0, uv).rgb;
-        break;
-        case 18:
-        rgb = texture(shadowtex1, uv).rgb;
-        break;
-    }
+    vec3 sampled;
 
-    return vec4(rgb, 1.0);
+    #if DEBUG_VIEW == 1:
+    sampled = texture(shadowtex0, uv).rgb;
+    #elif DEBUG_VIEW == 1
+    sampled = texture(shadowtex1, uv).rgb;
+    #endif
+
+    return vec4(sampled, 1.0);
 }
 
 #define sample_depthtex vec4(texture(depthtex0, uv).rgb, 1.0)
-#define sample_shadowtex vec4(texture(shadowcolor0, uv).rgb, 1.0)
+#define sample_shadowcolor vec4(texture(shadowcolor0, uv).rgb, 1.0)
 
 void main() {
-    #if DEBUG_VIEW == -1
-    // No debugging.
-    color = sample_colortex(0);
-    #elif DEBUG_VIEW <= 15
-    // 0-15.
-    color = sample_colortex(DEBUG_VIEW);
+    #if DEBUG_VIEW <= 15
+    // -1 - 15.
+    color = sample_colortex();
     #elif DEBUG_VIEW <= 16
     // 16.
     color = sample_depthtex;

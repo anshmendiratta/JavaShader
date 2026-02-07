@@ -40,7 +40,7 @@
 // --- Screen Space Passes ---
 #define SSAO 1 // Enables screen-space ambient occlusion. [0 1]
 #define SSAO_SAMPLE_COUNT 16 // [16 32 64 128]
-#define SSAO_RADIUS 100.0 // [0.5 1.0 1.5 2.0 2.5]
+#define SSAO_RADIUS 0.5 // [0.5 1.0 1.5 2.0 2.5]
 #define SSAO_BIAS 0.01 // [0.01 0.015 0.02 0.025 0.03 0.035]
 #define BLOOM 1 // Enables a halo around bright objects. [0 1]
 

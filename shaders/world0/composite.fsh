@@ -18,6 +18,7 @@ uniform mat4 gbufferModelView;
 uniform mat4 gbufferProjection;
 uniform mat4 gbufferProjectionInverse;
 
+uniform vec3 cameraPosition;
 uniform int viewWidth;
 uniform int viewHeight;
 
@@ -66,8 +67,8 @@ void main() {
     vec3 fragment_screen_space_position = vec3(uv, texture(depthtex0, uv).r);
     vec3 fragment_ndc_space_position = fragment_screen_space_position * 2.0 - 1.0;
     vec3 fragment_view_space_position = project_and_divide(gbufferProjectionInverse, fragment_ndc_space_position);
-    vec3 normal_feet_space = texture(colortex2, uv).xyz * 2.0 - 1.0;
-    vec3 normal_view_space = mat3(gbufferModelView) * normal_feet_space;
+    vec3 normal_world_space = texture(colortex2, uv).xyz * 2.0 - 1.0;
+    vec3 normal_view_space = mat3(gbufferModelView) * (normal_world_space - cameraPosition);
     vec3 random_vector = ssao_noise_vector;
     vec3 tangent_view_space = normalize(random_vector - normal_view_space * dot(normal_view_space, random_vector));
     vec3 bitangent_view_space = cross(tangent_view_space, normal_view_space);
@@ -82,7 +83,7 @@ void main() {
         float sample_depth = texture(depthtex0, sample_screen_space_position.xy).r;
         float check_range_of_depths = smoothstep(0.0, 1.0, SSAO_RADIUS / abs(fragment_screen_space_position.z - sample_depth)); // For bounding how far away in z an object (that is adjacent in screen space) can be for it to contribute to the AO of our sample fragment.
 
-        // TODO: Why do I check for \leq ?
+        // NOTE: check for \leq because we want to increase the SSAO if a sample is under a surface.
         occlusion_factor += (sample_depth < (sample_screen_space_position.z + SSAO_BIAS) ? 0.5 : 0.0) * check_range_of_depths;
     }
 

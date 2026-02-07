@@ -40,8 +40,9 @@ vec3 get_soft_shadow(vec4 shadow_clip_space_position) {
             // Repeat `main` fn coordinate space conversion.
             vec4 shadow_clip_space_position_offset = shadow_clip_space_position + vec4(offset, 0.0, 0.0);
             float shadow_bias = compute_shadow_bias(shadow_clip_space_position_offset.xyz);
-            shadow_clip_space_position_offset.z -= shadow_bias;
+            shadow_clip_space_position_offset.z -= shadow_bias * 4.0;
             shadow_clip_space_position_offset.xyz = distort_shadow_clip_space_position(shadow_clip_space_position_offset.xyz); // Apply distortion to sample shadow map.
+            // shadow_clip_space_position_offset *= 1.0002;
             vec3 shadow_space_ndc_position = shadow_clip_space_position_offset.xyz / shadow_clip_space_position_offset.w;
             vec3 shadow_screen_space_position = shadow_space_ndc_position * 0.5 + 0.5; // Conversion from [-1.0, 1.0] to OpenGL's [0.0, 1.0].
             // Add to accumulator.

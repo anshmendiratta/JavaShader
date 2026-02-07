@@ -21,7 +21,8 @@ in vec3 tangent_view_space;
 in vec3 normal_view_space;
 
 /*
-const int colortex5Format = RG32F;
+const int colortex5Format = RG16F;
+const int colortex2Format = RGB16;
 */
 
 // For POM looking smoother (mode can be anything but 'nearest').
@@ -32,7 +33,7 @@ uniform int textureFilteringMode = 2;
 /* RENDERTARGETS: 0,1,2,3,5 */
 layout(location = 0) out vec4 color;
 layout(location = 1) out vec4 lightmap_data;
-layout(location = 2) out vec4 encoded_normal;
+layout(location = 2) out vec3 encoded_normal;
 layout(location = 3) out vec4 encoded_pbr_specular;
 layout(location = 4) out vec2 transformed_uv;
 
@@ -85,12 +86,12 @@ void main() {
     vec3 pbr_normal_normal_space = vec3(pbr_normal_data.xy, sqrt(1.0 - dot(pbr_normal_data.xy, pbr_normal_data.xy)));
     // Apply.
     vec3 pbr_normal_view_space = normalize(TBN_matrix * pbr_normal_normal_space);
-    vec3 pbr_normal_feet_space = mat3(gbufferModelViewInverse) * pbr_normal_view_space;
-    encoded_normal = vec4(pbr_normal_feet_space * 0.5 + 0.5, 1.0);
+    vec3 pbr_normal_world_space = mat3(gbufferModelViewInverse) * pbr_normal_view_space;
+    encoded_normal = pbr_normal_world_space * 0.5 + 0.5;
     #else
     // No normal mapping.
-    vec3 normal_feet_space = mat3(gbufferModelViewInverse) * normal_view_space;
-    encoded_normal = vec4(normal_feet_space * 0.5 + 0.5, 1.0); // Feet space.
+    vec3 normal_world_space = mat3(gbufferModelViewInverse) * normal_view_space;
+    encoded_normal = normal_world_space * 0.5 + 0.5;
     #endif
 
     if (color.a < alphaTestRef) {

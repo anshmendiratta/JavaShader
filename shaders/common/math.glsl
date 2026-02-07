@@ -6,6 +6,6 @@
 
 #define rcp(x) 1.0 / x
 
-bool eq(x, y) {
+bool eq(float x, float y) {
     return abs(x - y) < FP_OP_TOLERANCE;
 }

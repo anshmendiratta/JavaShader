@@ -40,8 +40,7 @@ in vec2 lmcoord;
 /* RENDERTARGETS: 0 */
 layout(location = 0) out vec4 color;
 
-// Tell Iris to up the precision of colortex0 so it can store colors properly in the linear color space. If not for this, we would lose some colors since the buffer is meant to store gamma corrected colors. Of course, increasing the precision increases the mem footprint of the buffer, hence increasing the VRAM usage.
-// Further, note that this is a multi-line comment so Iris reads it. If it were a single line `//` comment, the below would not work.
+// Increased size for the storage of linear color space.
 /*
 const int colortex0Format = RGBA16;
 */
@@ -55,8 +54,7 @@ const int colortex0Format = RGBA16;
 void main() {
     // Get information from gbuffers.
     vec2 lightmap_coords = texture(colortex1, uv).xy;
-    vec3 normal_feet_space = texture(colortex2, uv).xyz * 2.0 - 1.0;
-    vec3 normal_world_space = normal_feet_space;
+    vec3 normal_world_space = texture(colortex2, uv).xyz * 2.0 - 1.0;
     #if POM == 1
     vec2 parallax_coords = texture(colortex5, uv).xy;
     #endif
