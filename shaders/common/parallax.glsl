@@ -23,8 +23,8 @@ vec2 pom_uv_transform(in vec2 local_uv, /* camera to fragment */ vec3 view_direc
     int layers_count = POM_MAX_LAYERS;
     float layer_height_interval = rcp(float(layers_count));
 
-    vec2 ray_direction = view_direction_tangent_space.xy * rcp(view_direction_tangent_space.z); // Final vector we use as our initial approximation.
-    vec2 d_uv = ray_direction * layer_height_interval * POM_HEIGHT_SCALE;
+    vec3 ray_direction = view_direction_tangent_space * rcp(view_direction_tangent_space.y); // Final vector we use as our initial approximation.
+    vec2 d_uv = ray_direction.xz * layer_height_interval * POM_HEIGHT_SCALE;
 
     // Linear search for last two UVs.
     float current_ray_sample_height = 1.0;
@@ -39,7 +39,7 @@ vec2 pom_uv_transform(in vec2 local_uv, /* camera to fragment */ vec3 view_direc
     int layer = 0;
     while (layer < 64 && current_displacement_height < current_ray_sample_height) {
         local_uv += d_uv;
-        current_ray_sample_height -= layer_height_interval; // Go down one layer.
+        current_ray_sample_height -= layer_height_interval * POM_HEIGHT_SCALE; // Go down one layer.
         current_displacement_height = sample_heightmap(local_uv, uv_gradient);
         layer += 1;
     }
