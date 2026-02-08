@@ -26,9 +26,9 @@ const int colortex2Format = RGB16;
 */
 
 // For POM looking smoother (mode can be anything but 'nearest').
-#ifdef TEXTURE_FILTERING
-uniform int textureFilteringMode = 2;
-#endif
+// #ifdef TEXTURE_FILTERING
+// uniform int textureFilteringMode = 2;
+// #endif
 
 /* RENDERTARGETS: 0,1,2,3,5 */
 layout(location = 0) out vec4 color;
