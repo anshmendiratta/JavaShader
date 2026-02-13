@@ -5,25 +5,18 @@
 // ----------
 
 // Textures.
-uniform sampler2D depthtex0; // For comparison to determine SSAO factors.
-uniform sampler2D colortex0;
-uniform sampler2D colortex2; // Encoded normals.
-uniform sampler2D colortex4; // SSAO factors.
+uniform sampler2D depthtex0, colortex0, colortex2, colortex4;
+
+uniform mat4 gbufferModelView, gbufferProjection, gbufferProjectionInverse;
+uniform vec3 cameraPosition;
+uniform int viewWidth, viewHeight;
+
+/* RENDERTARGETS: 4 */
+layout(location = 0) out float occlusion_factor;
 
 /*
 colortex4Format = R32F;
 */
-
-uniform mat4 gbufferModelView;
-uniform mat4 gbufferProjection;
-uniform mat4 gbufferProjectionInverse;
-
-uniform vec3 cameraPosition;
-uniform int viewWidth;
-uniform int viewHeight;
-
-/* RENDERTARGETS: 4 */
-layout(location = 0) out float occlusion_factor;
 
 in vec2 uv;
 
@@ -52,11 +45,14 @@ void main() {
     }
 
     // Random rotation vector.
-    int count = int(16 * rand(uv.x + uv.y));
-    float epsilon_zero = rand(count * 2.0);
-    float epsilon_one = rand(count * 1.0);
-    float phi = 2 * PI * epsilon_one;
-    float theta = acos(sqrt(epsilon_zero));
+    // int count = int(16 * rand(uv.x + uv.y));
+    // float epsilon_zero = rand(count * 2.0);
+    // float epsilon_zero = rand(count * 2.0);
+    // float epsilon_one = rand(count * 1.0);
+    // float phi = 2 * PI * epsilon_one;
+    // float theta = acos(sqrt(epsilon_zero));
+    float phi = rand(length(uv));
+    float theta = phi * 2;
     ssao_noise_vector = vec3(
             cos(phi) * sin(theta),
             sin(phi) * sin(theta),
@@ -71,7 +67,7 @@ void main() {
     vec3 normal_view_space = mat3(gbufferModelView) * (normal_world_space - cameraPosition);
     vec3 random_vector = ssao_noise_vector;
     vec3 tangent_view_space = normalize(random_vector - normal_view_space * dot(normal_view_space, random_vector));
-    vec3 bitangent_view_space = cross(tangent_view_space, normal_view_space);
+    vec3 bitangent_view_space = normalize(cross(tangent_view_space, normal_view_space));
     mat3 TBN_matrix = mat3(tangent_view_space, bitangent_view_space, normal_view_space); // Tangent space to view space.
 
     // Obtain depth samples for occlusion check.

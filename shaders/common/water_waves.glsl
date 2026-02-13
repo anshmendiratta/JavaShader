@@ -6,11 +6,8 @@
 #define ITERATIONS_RAYMARCH 12 // Waves iterations of raymarching.
 #define ITERATIONS_NORMAL 36 // Waves iterations when calculating normals.
 
-#define NormalizedMouse (iMouse.xy / iResolution.xy) // Normalize mouse coords.
-
-// Calculates wave value and its derivative.
-// For the wave direction, position in space, wave frequency and time.
-vec2 wavedx(vec2 position, vec2 direction, float frequency, float timeshift) {
+// Calculates wave value and its derivative. For the wave direction, position in space, wave frequency and time.
+vec2 wave_dx(vec2 position, vec2 direction, float frequency, float timeshift) {
     float x = dot(direction, position) * frequency + timeshift;
     float wave = exp(sin(x) - 1.0);
     float dx = wave * cos(x);
@@ -18,7 +15,7 @@ vec2 wavedx(vec2 position, vec2 direction, float frequency, float timeshift) {
 }
 
 // Calculates waves by summing octaves of various waves with various parameters.
-float get_waves(vec2 position, int iterations) {
+float compute_wave_displacement(vec2 position, int iterations) {
     float wave_phase_shift = length(position) * 0.1; // This is to avoid every octave having exactly the same phase everywhere.
     float iter = 0.0; // This will help generating well distributed wave directions.
     float frequency = 1.0; // Frequency of the wave, this will change every iteration.
@@ -32,7 +29,7 @@ float get_waves(vec2 position, int iterations) {
         vec2 p = vec2(sin(iter), cos(iter));
 
         // Calculate wave data.
-        vec2 res = wavedx(position, p, frequency, frameTimeCounter * time_multiplier + wave_phase_shift);
+        vec2 res = wave_dx(position, p, frequency, frameTimeCounter * time_multiplier + wave_phase_shift);
 
         // Shift position around according to wave drag and derivative of the wave.
         position += p * res.y * weight * DRAG_MULT;
@@ -55,15 +52,15 @@ float get_waves(vec2 position, int iterations) {
 }
 
 // Take two vectors mostly along `pos`'s tangent plane and cross them.
-vec3 get_water_wave_normal(vec2 pos, float epsilon, float depth) {
+vec3 compute_wave_normal(vec2 pos, float epsilon, float depth) {
     vec2 ex = vec2(epsilon, 0);
-    float height = get_waves(pos.xy, ITERATIONS_NORMAL) * depth;
+    float height = compute_wave_displacement(pos.xy, ITERATIONS_NORMAL) * depth;
     vec3 a = vec3(pos.x, height, pos.y);
 
     return normalize(
         cross(
-            a - vec3(pos.x - epsilon, get_waves(pos.xy - ex.xy, ITERATIONS_NORMAL) * depth, pos.y),
-            a - vec3(pos.x, get_waves(pos.xy + ex.yx, ITERATIONS_NORMAL) * depth, pos.y + epsilon)
+            a - vec3(pos.x - epsilon, compute_wave_displacement(pos.xy - ex.xy, ITERATIONS_NORMAL) * depth, pos.y),
+            a - vec3(pos.x, compute_wave_displacement(pos.xy + ex.yx, ITERATIONS_NORMAL) * depth, pos.y + epsilon)
         )
     );
 }

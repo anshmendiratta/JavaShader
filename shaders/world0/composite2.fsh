@@ -10,15 +10,10 @@
 
 #define FOG_DENSITY 10.0
 
-// Textures.
-uniform sampler2D depthtex0; // For sky pixel check.
-uniform sampler2D colortex0;
+uniform sampler2D depthtex0, colortex0;
 
-// Other uniforms.
-// For coordinate space conversions to determine the shadowmap sample point.
 uniform mat4 gbufferProjectionInverse;
 uniform float far; // Render distance in blocks.
-// uniform vec3 fogColor;
 
 in vec2 uv;
 

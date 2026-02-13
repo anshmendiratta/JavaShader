@@ -4,8 +4,6 @@
 // SSAO.
 // ----------
 
-uniform sampler2D colortex4;
-
 out vec2 uv;
 
 void main() {

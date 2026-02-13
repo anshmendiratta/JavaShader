@@ -34,3 +34,5 @@ value.BLOOM.0 = Off
 value.BLOOM.1 = On
 value.FOG.0 = Off
 value.FOG.1 = On
+value.SMART_DENOISING.0 = Off
+value.SMART_DENOISING.1 = On

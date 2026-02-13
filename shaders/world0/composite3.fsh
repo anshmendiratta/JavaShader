@@ -5,11 +5,9 @@
 // ----------
 
 // Textures.
-uniform sampler2D colortex0;
-uniform sampler2D colortex5; // Bloom.
+uniform sampler2D colortex0, colortex5;
 
-uniform int viewWidth;
-uniform int viewHeight;
+uniform int viewWidth, viewHeight;
 
 /* RENDERTARGETS: 5 */
 layout(location = 0) out vec4 blurred_light;

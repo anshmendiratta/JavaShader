@@ -1,34 +1,24 @@
 #version 330 compatibility
 
-uniform sampler2D gtexture; // Texture atlas.
-uniform sampler2D lightmap;
-uniform sampler2D normals;
-uniform sampler2D specular;
-uniform sampler2D depthtex0;
+uniform sampler2D gtexture /* texture atlas */ , lightmap, normals, specular, depthtex0;
 
-uniform mat4 gbufferModelViewInverse;
-uniform mat4 gbufferProjectionInverse;
-
+uniform mat4 gbufferModelViewInverse, gbufferProjectionInverse;
 uniform vec3 cameraPosition;
 uniform float alphaTestRef = 0.1;
 
+in vec4 glcolor;
+in vec3 tangent_view_space;
+in vec3 normal_view_space;
 in vec2 lmcoord;
 in vec2 uv;
 in vec2 texture_bottom_left; // vec2(x_min, y_min).
 in vec2 single_tex_size; // vec2(x_range, y_range).
-in vec4 glcolor;
-in vec3 tangent_view_space;
-in vec3 normal_view_space;
 
 /*
+const int colortex2Format = RGBA16;
+const int colortex2Format = RGBA16;
 const int colortex5Format = RG16F;
-const int colortex2Format = RGB16;
 */
-
-// For POM looking smoother (mode can be anything but 'nearest').
-// #ifdef TEXTURE_FILTERING
-// uniform int textureFilteringMode = 2;
-// #endif
 
 /* RENDERTARGETS: 0,1,2,3,5 */
 layout(location = 0) out vec4 color;

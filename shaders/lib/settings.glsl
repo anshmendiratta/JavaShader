@@ -5,6 +5,13 @@
 #define SHADOW_MAP_RESOLUTION 1024 // Shadow map resolution in pixels. [512 1024 2048 4096]
 #define NOISE_TEXTURE_RESOLUTION 256 // Resolution of the noise texture used to randomize box kernel sampling of the shadow map. [256 512 1024 2048]
 #define SHADOW_BIAS 1.0 // Bias used to mitigate shadow acne. [1.0 1.1 1.2 1.3 1.4 1.5]
+#define SHADOW_RANGE 4 // `width/height / 2 - 1` of the box kernel used for shadow blurring. [1 2 3 4 5 6 7 8]
+#define SHADOW_RADIUS 1 // Spacing of pixels used for shadow blur sampling. [1 2 3 4 5 6 7 8]
+
+// --- Waving foliage ---
+#define FOLIAGE_WAVE_OFFSET 2 / 7
+#define FOLIAGE_WAVE_SPEED 0.5
+#define FOLIAGE_WAVE_AMPLITUDE 0.09
 
 // --- Sky ---
 // Blocklight.
@@ -24,7 +31,7 @@
 // Intensities.
 #define SUNLIGHT_COLOR_INTENSITY 0.8 // Sun brightness. [0.5 0.6 0.7 0.8 0.9 1.0 1.1 1.2 1.3 1.4 1.5]
 #define MOONLIGHT_COLOR_INTENSITY 0.1 // Moon brightness. [0.5 0.6 0.7 0.8 0.9 1.0 1.1 1.2 1.3 1.4 1.5]
-#define AMBIENT_COLOR_INTENSITY 0.1 // Minimum light level. [0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8]
+#define AMBIENT_COLOR_INTENSITY 0.0 // Minimum light level. [0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8]
 
 #define WATER_WAVE_AMPLITUDE 0.3 // How high a water wave can go. Do not interpret this value as blocks/meters. [0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0]
 
@@ -44,5 +51,11 @@
 #define SSAO_BIAS 0.01 // [0.01 0.015 0.02 0.025 0.03 0.035]
 #define BLOOM 1 // Enables a halo around bright objects. [0 1]
 
+// --- Smart Denoiser ---
+#define SMART_DENOISING 1 // Enable/disable the denoiser. [0 1]
+#define SIGMA 5.0 // [1.0 1.5 2.0 2.5 3.0 3.5 4.0 4.5 5.0 5.5 6.0 6.5 7.0 7.5 8.0 8.5 9.0 9.5 10.0]
+#define K_SIGMA 2.0 // [1.0 1.5 2.0 2.5 3.0]
+#define THRESHOLD 0.10 // [0.02 0.04 0.06 0.08 0.10 0.12 0.14 0.16 0.18 0.2]
+
 // --- Dev ---
-#define DEBUG_VIEW -1 // Off, colortex0-15, depthtex0, shadowtex0-1, shadowcolor0. [-1 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19].
+#define DEBUG_VIEW -1 // Off, colortex0-15, depthtex0, shadowtex0-1, shadowcolor0. [-1 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19]

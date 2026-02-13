@@ -4,35 +4,13 @@
 // Lighting.
 // ----------
 
-// Textures.
-uniform sampler2D depthtex0; // For sky pixel check.
-uniform sampler2D lightmap; // For sky pixel check.
-uniform sampler2D shadowtex0; // For shadows cast by all objects.
-uniform sampler2D shadowtex1; // For shadows cast *only* by opaque objects.
-uniform sampler2D shadowcolor0; // Information about the color, including transparency, of things that cast a shadow.
-uniform sampler2D colortex0;
-uniform sampler2D colortex1; // Lightmap coordinates.
-uniform sampler2D colortex2; // Encoded normals.
-uniform sampler2D colortex3; // Encoded speculars.
-uniform sampler2D colortex4; // SSAO value.
-uniform sampler2D colortex5; // Parallax coordinates.
+uniform sampler2D depthtex0, lightmap, shadowtex0, shadowtex1, shadowcolor0, colortex0, colortex1, colortex2, colortex3, colortex4, colortex5;
 
-// Other uniforms.
-uniform vec3 cameraPosition; // In world space.
-uniform vec3 shadowLightPosition; // Sun/moon position.
-uniform mat4 gbufferModelView; // To convert from view to world/player space.
-uniform mat4 gbufferModelViewInverse; // To convert from view to world/player space.
-// For coordinate space conversions to determine the shadowmap sample point.
-uniform mat4 gbufferProjectionInverse;
-uniform mat4 shadowModelView;
-uniform mat4 shadowProjection;
-// For texelFetch in shadowing.
-uniform float viewWidth;
-uniform float viewHeight;
-// Control sunlight intensity.
-uniform int worldTime;
-// Reflection.
-uniform int renderStage;
+uniform mat4 gbufferModelView, gbufferModelViewInverse, gbufferProjectionInverse, shadowModelView, shadowProjection;
+uniform vec2 mc_Entity;
+uniform vec3 cameraPosition, shadowLightPosition;
+uniform float viewWidth, viewHeight;
+uniform int worldTime, renderStage;
 
 in vec2 uv;
 in vec2 lmcoord;
@@ -45,6 +23,7 @@ layout(location = 0) out vec4 color;
 const int colortex0Format = RGBA16;
 */
 
+#include "/lib/settings.glsl"
 #include "/common/utility.glsl"
 #include "/common/constants.glsl"
 #include "/common/noise.glsl"
@@ -92,7 +71,7 @@ void main() {
     vec3 fragment_feet_space_position = (gbufferModelViewInverse * vec4(fragment_view_space_position, 1.0)).xyz;
     vec3 shadow_view_space_position = (shadowModelView * vec4(fragment_feet_space_position, 1.0)).xyz;
     vec4 shadow_clip_space_position = shadowProjection * vec4(shadow_view_space_position, 1.0);
-    vec3 shadow = get_soft_shadow(shadow_clip_space_position);
+    vec3 shadow = get_soft_shadow(shadow_clip_space_position, normal_world_space);
 
     // Sun/moon light source.
     vec3 fragment_world_space_position = fragment_feet_space_position + cameraPosition;

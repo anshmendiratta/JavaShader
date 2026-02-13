@@ -5,8 +5,7 @@
 // ----------
 
 // Textures.
-uniform sampler2D colortex0;
-uniform sampler2D colortex5; // Bloom.
+uniform sampler2D colortex0, colortex5; // Bloom.
 
 /* RENDERTARGETS: 0 */
 layout(location = 0) out vec4 color;

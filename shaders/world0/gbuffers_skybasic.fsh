@@ -2,18 +2,11 @@
 
 // TODO: Understand why the sky coloring works how it does.
 
-uniform sampler2D colortex0;
-uniform sampler2D depthtex0;
+uniform sampler2D colortex0, depthtex0;
 
-uniform mat4 gbufferModelView;
-uniform mat4 gbufferModelViewInverse;
-uniform mat4 gbufferProjection;
-uniform mat4 gbufferProjectionInverse;
-uniform vec3 skyColor;
-uniform vec3 fogColor;
-uniform vec3 shadowLightPosition;
-uniform float viewHeight;
-uniform float viewWidth;
+uniform mat4 gbufferModelView, gbufferModelViewInverse, gbufferProjection, gbufferProjectionInverse;
+uniform vec3 skyColor, fogColor, shadowLightPosition;
+uniform float viewHeight, viewWidth;
 
 in vec4 starData; //rgb = star color, a = flag for weather or not this pixel is a star.
 in vec2 uv;
