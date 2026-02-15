@@ -4,7 +4,6 @@ vec3 project_and_divide(mat4 projection_matrix, vec3 position) {
 }
 
 mat3 tbn_normal_tangent(vec3 normal, vec3 tangent) {
-    // TODO: Figure out why this works.
     // For DirectX normal mapping you want to switch the order of these
     vec3 bi_tangent = normalize(cross(tangent, normal));
 

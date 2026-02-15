@@ -14,8 +14,8 @@ in vec2 uv;
 /* RENDERTARGETS: 0 */
 layout(location = 0) out vec4 color;
 
-#include "/lib/constants.glsl"
-#include "/lib/utility.glsl"
+#include "/common/constants.glsl"
+#include "/common/utility.glsl"
 
 const float sunPathRotation = -30.0;
 

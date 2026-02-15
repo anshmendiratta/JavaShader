@@ -14,12 +14,6 @@ in vec2 uv;
 in vec2 texture_bottom_left; // vec2(x_min, y_min).
 in vec2 single_tex_size; // vec2(x_range, y_range).
 
-/*
-const int colortex2Format = RGBA16;
-const int colortex2Format = RGBA16;
-const int colortex5Format = RG16F;
-*/
-
 /* RENDERTARGETS: 0,1,2,3,5 */
 layout(location = 0) out vec4 color;
 layout(location = 1) out vec4 lightmap_data;
@@ -39,7 +33,6 @@ void main() {
     vec3 bitangent_view_space = normalize(cross(tangent_view_space, normal_view_space));
     mat3 TBN_matrix = mat3(tangent_view_space, bitangent_view_space, normal_view_space);
     #if POM == 1
-    // TODO: Fix POM.
     vec3 fragment_ndc_space_position = vec3(uv, texture(depthtex0, uv).r) * 2.0 - 1.0;
     vec3 fragment_view_space_position = project_and_divide(gbufferProjectionInverse, fragment_ndc_space_position);
     vec3 view_direction_view_space = normalize(fragment_view_space_position);

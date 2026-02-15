@@ -38,26 +38,28 @@ void main() {
     lmcoord = lmcoord / (30.0 / 32.0) - (1.0 / 32.0); // Conversion from [0.033, 0.97] to [0.0, 1.0].
 
     normal_view_space = mc_Entity.x == 10000.0 ? gl_NormalMatrix * vec3(0.0, 1.0, 0.0) : normalize(gl_NormalMatrix * gl_Normal); // View space.
+    // normal_view_space = normalize(gl_NormalMatrix * gl_Normal); // View space.
     #if NORMAL_MAPPING == 1
     normal_view_space = normalize(gl_NormalMatrix * gl_Normal); // View space.
     tangent_view_space = normalize(at_tangent.w * (gl_NormalMatrix * at_tangent.xyz)); // View space.
     #endif
 
+    #if WAVING_FOLIAGE == 1
     // Waving foliage.
+    // TODO: foliage "jitters" when the camera does.
     vec3 vertex_view_space_position = (gbufferProjectionInverse * ftransform()).xyz;
     vec3 vertex_player_space_position = (gbufferModelViewInverse * vec4(vertex_view_space_position, 1.0)).xyz;
     vec3 vertex_world_space_position = vertex_player_space_position + cameraPosition;
     vec3 vertex_offset_world_space = vec3(0.0, 0.0, 0.0);
 
+    // TODO: Make look nicer.
     if (mc_Entity.x == 10000.0) { // Rooted foliage.
         // TOOD: Figure out why this check doesn't just move one half of the block.
         if (uv.y < mc_midTexCoord.y) {
-            // TODO: Make look nicer.
-            float rng = sample_default_noise(uv + vertex_world_space_position.yx, viewWidth, viewHeight).r;
-            vertex_offset_world_space = FOLIAGE_WAVE_AMPLITUDE * vec3(
-                        sin(2.0 * FOLIAGE_WAVE_SPEED * frameTimeCounter),
+            vertex_offset_world_space = 5.0 * FOLIAGE_WAVE_AMPLITUDE * vec3(
+                        sample_desmos_noise(vec2(frameTimeCounter * FOLIAGE_WAVE_SPEED) + vertex_world_space_position.xy / 3.0),
                         0.0,
-                        -sin(3.0 * FOLIAGE_WAVE_SPEED * frameTimeCounter + rng * 20.0)
+                        sample_desmos_noise(vec2(frameTimeCounter * FOLIAGE_WAVE_SPEED) + vertex_world_space_position.zx / 3.0)
                     );
         }
     } else if (mc_Entity.x == 10001.0) { // Leaves.
@@ -71,4 +73,5 @@ void main() {
     vec3 vertex_offset_view_space = mat3(gbufferModelView) * vertex_offset_world_space;
     vertex_view_space_position += vertex_offset_view_space;
     gl_Position = gbufferProjection * vec4(vertex_view_space_position, 1.0);
+    #endif
 }

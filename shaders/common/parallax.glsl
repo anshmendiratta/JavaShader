@@ -2,6 +2,8 @@
 // - POM_HEIGHT_SCALE (/lib/settings.glsl)
 // - `normals` texture.
 
+// TOOD: fix everything.
+
 #include "/common/math.glsl"
 
 vec2 local_uv_to_atlas(vec2 local_uv, vec2 bottom_left_coord, vec2 texture_size) {

@@ -12,13 +12,13 @@ float sample_desmos_noise(vec2 coords) {
         accumulator += f(a, coords);
     }
 
-    return accumulator;
+    return accumulator - 0.55; // subtraction to attempt to bring the average value of the above sum function  over some closed domain to 0.0
 }
 
 // Sample from default noise texture.
 vec4 sample_default_noise(vec2 uv, float view_width, float view_height) {
     ivec2 sample_screen_coord = ivec2(uv * vec2(view_width, view_height));
-    ivec2 sample_noise_coord = sample_screen_coord % NOISE_TEXTURE_RESOLUTION; // 256 by default.
+    ivec2 sample_noise_coord = sample_screen_coord; // 256 by default.
     return texelFetch(noisetex, sample_noise_coord, 0);
 }
 

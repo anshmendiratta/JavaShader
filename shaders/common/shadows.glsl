@@ -49,10 +49,10 @@ vec3 get_soft_shadow(vec4 shadow_clip_space_position, vec3 normal_world_space) {
             vec4 shadow_clip_space_position_offset = shadow_clip_space_position + vec4(offset, 0.0, 0.0);
 
             // Bias.
-            const float shadow_bias = (shadowDistance / shadowMapResolution) * 4.0; // Courtesy of @eldeston (https://discord.com/channels/237199950235041794/525510804494221312/1100010778133794827) in the shaderLABS discord.
+            const float shadow_bias = (shadowDistance / shadowMapResolution) * 16.0 * SHADOW_BIAS; // Courtesy of @eldeston (https://discord.com/channels/237199950235041794/525510804494221312/1100010778133794827) in the shaderLABS discord.
             float distortion_factor = compute_distortion_factor(shadow_clip_space_position_offset.xyz);
-            shadow_clip_space_position_offset.xyz += mat3(shadowProjection) *
-                    (mat3(shadowModelView) * normal_world_space) * distortion_factor * shadow_bias; // Offset using normal.
+            shadow_clip_space_position_offset.xyz += (mat3(shadowProjection) *
+                    (mat3(shadowModelView) * normal_world_space)) * distortion_factor * shadow_bias; // Offset using normal.
             shadow_clip_space_position_offset.xyz = distort_shadow_clip_space_position(shadow_clip_space_position_offset.xyz); // Apply distortion to sample shadow map.
 
             // Conversions.

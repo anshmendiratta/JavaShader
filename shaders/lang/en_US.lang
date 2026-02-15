@@ -36,3 +36,5 @@ value.FOG.0 = Off
 value.FOG.1 = On
 value.SMART_DENOISING.0 = Off
 value.SMART_DENOISING.1 = On
+value.WAVING_FOLIAGE.0 = Off
+value.WAVING_FOLIAGE.1 = On
