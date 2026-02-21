@@ -8,11 +8,13 @@
 - [ ] Better bloom.
 - [ ] CSM.
 - [ ] Reflections.
+- [ ] Use BRDF.
 
 # Textures/Materials
 - [ ] POM.
 
 # Code
+- [ ] Refactor lighting.
 
 # Fixes
 - [ ] Lighting at night.

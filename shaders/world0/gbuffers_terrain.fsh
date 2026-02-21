@@ -1,9 +1,5 @@
 #version 330 compatibility
 
-uniform sampler2D gtexture /* texture atlas */ , lightmap, normals, specular, depthtex0;
-
-uniform mat4 gbufferModelViewInverse, gbufferProjectionInverse;
-uniform vec3 cameraPosition;
 uniform float alphaTestRef = 0.1;
 
 in vec4 glcolor;
@@ -22,9 +18,10 @@ layout(location = 3) out vec4 encoded_pbr_specular;
 layout(location = 4) out vec2 transformed_uv;
 
 #include "/lib/settings.glsl"
-#include "/common/utility.glsl"
+#include "/include/uniforms.glsl"
+#include "/include/utility/random.glsl"
 #if POM == 1
-#include "/common/parallax.glsl"
+#include "/include/pbr/parallax.glsl"
 #endif
 
 void main() {

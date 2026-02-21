@@ -1,67 +1,22 @@
-// Textures.
-uniform sampler2D colortex0;
-
-uniform int viewWidth, viewHeight;
-
-/* RENDERTARGETS: 0,7 */
-layout(location = 0) out vec4 color;
-layout(location = 1) out vec4 blurred_light;
-
 in vec2 uv;
 
-#include "/common/utility.glsl"
-#include "/common/noise.glsl"
-#include "/common/math.glsl"
+/* RENDERTARGETS: 6 */
+layout(location = 0) out vec3 blurred_light;
 
-// sc = sample_color
-#define sc(offset_x, offset_y) texture(colortex0, uv + vec2(offset_x, offset_y) / vec2(textureSize(colortex0, 0)))
+#include "/lib/settings.glsl"
+#include "/include/uniforms.glsl"
+#include "/include/utility/vogel_disk_blur.glsl"
+#include "/include/utility/math_fp.glsl"
 
-// 5x5 Gaussian blur kernel.
-// const mat5 kernel = mat5(
-//         1.0 / 256.0, 4.0 / 256.0, 6.0 / 256.0, 4.0 / 256.0, 1.0 / 256.0,
-//         4.0 / 256.0, 16.0 / 256.0, 24.0 / 256.0, 16.0 / 256.0, 4.0 / 256.0,
-//         6.0 / 256.0, 24.0 / 256.0, 36.0 / 256.0, 24.0 / 256.0, 6.0 / 256.0,
-//         4.0 / 256.0, 16.0 / 256.0, 24.0 / 256.0, 16.0 / 256.0, 4.0 / 256.0,
-//         1.0 / 256.0, 4.0 / 256.0, 6.0 / 256.0, 4.0 / 256.0, 1.0 / 256.0
-//     );
+#define BLOOM_BLUR_SAMPLE_COUNT 16 // Hard-code value as the bloom will be fine-tuned.
 
-// TODO: Bloom colortex is completely black.
 void main() {
-    color = texture(colortex0, uv);
+    vec3 final_out = vec3(0.0);
 
-    vec4 final_out = vec4(0.0);
+    for (int idx = 0; idx < BLOOM_BLUR_SAMPLE_COUNT; idx += 1) {
+        vec2 sample_uv = BLOOM_RADIUS * compute_vogel_disk_sample_uv(idx, BLOOM_BLUR_SAMPLE_COUNT); // multplication by BLOOM_RADIUS is mostly arbitary and seems to produce sensible results
+        final_out += sample_colortex(colortex0, uv, sample_uv).rgb;
+    }
 
-    final_out.r =
-        (1.0 / 256.0) * (sc(-2 * BLOOM_RADIUS, 2 * BLOOM_RADIUS).r + sc(2 * BLOOM_RADIUS, 2 * BLOOM_RADIUS).r + sc(-2 * BLOOM_RADIUS, -2 * BLOOM_RADIUS).r + sc(2 * BLOOM_RADIUS, -2 * BLOOM_RADIUS).r) +
-            (4.0 / 256.0) * (sc(-1 * BLOOM_RADIUS, 2 * BLOOM_RADIUS).r + sc(1 * BLOOM_RADIUS, 2 * BLOOM_RADIUS).r + sc(-2 * BLOOM_RADIUS, 1 * BLOOM_RADIUS).r + sc(2 * BLOOM_RADIUS, 1 * BLOOM_RADIUS).r + sc(-2 * BLOOM_RADIUS, -1 * BLOOM_RADIUS).r + sc(2 * BLOOM_RADIUS, -1 * BLOOM_RADIUS).r + sc(-1 * BLOOM_RADIUS, -2 * BLOOM_RADIUS).r + sc(1 * BLOOM_RADIUS, -2 * BLOOM_RADIUS).r) +
-            (6.0 / 256.0) * (sc(0, 2 * BLOOM_RADIUS).r + sc(-2 * BLOOM_RADIUS, 0).r + sc(2 * BLOOM_RADIUS, 0).r + sc(0, -2 * BLOOM_RADIUS).r) +
-            (16.0 / 256.0) * (sc(-1 * BLOOM_RADIUS, 1 * BLOOM_RADIUS).r + sc(1 * BLOOM_RADIUS, 1 * BLOOM_RADIUS).r + sc(-1 * BLOOM_RADIUS, -1 * BLOOM_RADIUS).r + sc(1 * BLOOM_RADIUS, -1 * BLOOM_RADIUS).r) +
-            (24.0 / 256.0) * (sc(-1 * BLOOM_RADIUS, 0).r + sc(1 * BLOOM_RADIUS, 0).r + sc(0, 1 * BLOOM_RADIUS).r + sc(0, -1 * BLOOM_RADIUS).r) +
-            (36.0 / 256.0) * sc(0, 0).r;
-
-    final_out.g =
-        (1.0 / 256.0) * (sc(-2 * BLOOM_RADIUS, 2 * BLOOM_RADIUS).g + sc(2 * BLOOM_RADIUS, 2 * BLOOM_RADIUS).g + sc(-2 * BLOOM_RADIUS, -2 * BLOOM_RADIUS).g + sc(2 * BLOOM_RADIUS, -2 * BLOOM_RADIUS).g) +
-            (4.0 / 256.0) * (sc(-1 * BLOOM_RADIUS, 2 * BLOOM_RADIUS).g + sc(1 * BLOOM_RADIUS, 2 * BLOOM_RADIUS).g + sc(-2 * BLOOM_RADIUS, 1 * BLOOM_RADIUS).g + sc(2 * BLOOM_RADIUS, 1 * BLOOM_RADIUS).g + sc(-2 * BLOOM_RADIUS, -1 * BLOOM_RADIUS).g + sc(2 * BLOOM_RADIUS, -1 * BLOOM_RADIUS).g + sc(-1 * BLOOM_RADIUS, -2 * BLOOM_RADIUS).g + sc(1 * BLOOM_RADIUS, -2 * BLOOM_RADIUS).g) +
-            (6.0 / 256.0) * (sc(0, 2 * BLOOM_RADIUS).g + sc(-2 * BLOOM_RADIUS, 0).g + sc(2 * BLOOM_RADIUS, 0).g + sc(0, -2 * BLOOM_RADIUS).g) +
-            (16.0 / 256.0) * (sc(-1 * BLOOM_RADIUS, 1 * BLOOM_RADIUS).g + sc(1 * BLOOM_RADIUS, 1 * BLOOM_RADIUS).g + sc(-1 * BLOOM_RADIUS, -1 * BLOOM_RADIUS).g + sc(1 * BLOOM_RADIUS, -1 * BLOOM_RADIUS).g) +
-            (24.0 / 256.0) * (sc(-1 * BLOOM_RADIUS, 0).g + sc(1 * BLOOM_RADIUS, 0).g + sc(0, 1 * BLOOM_RADIUS).g + sc(0, -1 * BLOOM_RADIUS).g) +
-            (36.0 / 256.0) * sc(0, 0).g;
-
-    final_out.b =
-        (1.0 / 256.0) * (sc(-2 * BLOOM_RADIUS, 2 * BLOOM_RADIUS).b + sc(2 * BLOOM_RADIUS, 2 * BLOOM_RADIUS).b + sc(-2 * BLOOM_RADIUS, -2 * BLOOM_RADIUS).b + sc(2 * BLOOM_RADIUS, -2 * BLOOM_RADIUS).b) +
-            (4.0 / 256.0) * (sc(-1 * BLOOM_RADIUS, 2 * BLOOM_RADIUS).b + sc(1 * BLOOM_RADIUS, 2 * BLOOM_RADIUS).b + sc(-2 * BLOOM_RADIUS, 1 * BLOOM_RADIUS).b + sc(2 * BLOOM_RADIUS, 1 * BLOOM_RADIUS).b + sc(-2 * BLOOM_RADIUS, -1 * BLOOM_RADIUS).b + sc(2 * BLOOM_RADIUS, -1 * BLOOM_RADIUS).b + sc(-1 * BLOOM_RADIUS, -2 * BLOOM_RADIUS).b + sc(1 * BLOOM_RADIUS, -2 * BLOOM_RADIUS).b) +
-            (6.0 / 256.0) * (sc(0, 2 * BLOOM_RADIUS).b + sc(-2 * BLOOM_RADIUS, 0).b + sc(2 * BLOOM_RADIUS, 0).b + sc(0, -2 * BLOOM_RADIUS).b) +
-            (16.0 / 256.0) * (sc(-1 * BLOOM_RADIUS, 1 * BLOOM_RADIUS).b + sc(1 * BLOOM_RADIUS, 1 * BLOOM_RADIUS).b + sc(-1 * BLOOM_RADIUS, -1 * BLOOM_RADIUS).b + sc(1 * BLOOM_RADIUS, -1 * BLOOM_RADIUS).b) +
-            (24.0 / 256.0) * (sc(-1 * BLOOM_RADIUS, 0).b + sc(1 * BLOOM_RADIUS, 0).b + sc(0, 1 * BLOOM_RADIUS).b + sc(0, -1 * BLOOM_RADIUS).b) +
-            (36.0 / 256.0) * sc(0, 0).b;
-
-    final_out.a =
-        (1.0 / 256.0) * (sc(-2 * BLOOM_RADIUS, 2 * BLOOM_RADIUS).a + sc(2 * BLOOM_RADIUS, 2 * BLOOM_RADIUS).a + sc(-2 * BLOOM_RADIUS, -2 * BLOOM_RADIUS).a + sc(2 * BLOOM_RADIUS, -2 * BLOOM_RADIUS).a) +
-            (4.0 / 256.0) * (sc(-1 * BLOOM_RADIUS, 2 * BLOOM_RADIUS).a + sc(1 * BLOOM_RADIUS, 2 * BLOOM_RADIUS).a + sc(-2 * BLOOM_RADIUS, 1 * BLOOM_RADIUS).a + sc(2 * BLOOM_RADIUS, 1 * BLOOM_RADIUS).a + sc(-2 * BLOOM_RADIUS, -1 * BLOOM_RADIUS).a + sc(2 * BLOOM_RADIUS, -1 * BLOOM_RADIUS).a + sc(-1 * BLOOM_RADIUS, -2 * BLOOM_RADIUS).a + sc(1 * BLOOM_RADIUS, -2 * BLOOM_RADIUS).a) +
-            (6.0 / 256.0) * (sc(0, 2 * BLOOM_RADIUS).a + sc(-2 * BLOOM_RADIUS, 0).a + sc(2 * BLOOM_RADIUS, 0).a + sc(0, -2 * BLOOM_RADIUS).a) +
-            (16.0 / 256.0) * (sc(-1 * BLOOM_RADIUS, 1 * BLOOM_RADIUS).a + sc(1 * BLOOM_RADIUS, 1 * BLOOM_RADIUS).a + sc(-1 * BLOOM_RADIUS, -1 * BLOOM_RADIUS).a + sc(1 * BLOOM_RADIUS, -1 * BLOOM_RADIUS).a) +
-            (24.0 / 256.0) * (sc(-1 * BLOOM_RADIUS, 0).a + sc(1 * BLOOM_RADIUS, 0).a + sc(0, 1 * BLOOM_RADIUS).a + sc(0, -1 * BLOOM_RADIUS).a) +
-            (36.0 / 256.0) * sc(0, 0).a;
-
-    blurred_light = final_out;
+    blurred_light = final_out / BLOOM_BLUR_SAMPLE_COUNT;
 }

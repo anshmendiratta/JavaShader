@@ -1,6 +1,6 @@
 #version 330 compatibility
 
-#include "/common/shadow_distort.glsl"
+#include "/include/shadows/distort.glsl"
 
 uniform sampler2D gtexture;
 

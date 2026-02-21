@@ -4,7 +4,7 @@
 
 // TOOD: fix everything.
 
-#include "/common/math.glsl"
+#include "/include/utility/math_fp.glsl"
 
 vec2 local_uv_to_atlas(vec2 local_uv, vec2 bottom_left_coord, vec2 texture_size) {
     return fract(local_uv) * texture_size + bottom_left_coord;

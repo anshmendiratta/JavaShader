@@ -1,6 +1,8 @@
-uniform sampler2D noisetex;
+#if !defined INCLUDE_NOISE
+#define INCLUDE_NOISE
 
 #include "/lib/settings.glsl"
+#include "/include/uniforms.glsl"
 
 float f(float a, vec2 coords) {
     return 0.25 * pow(2 + sin(a * coords.x), sin(a * coords.y) * cos(a * coords.x));
@@ -11,15 +13,13 @@ float sample_desmos_noise(vec2 coords) {
     for (int a = 1; a < 3; a++) {
         accumulator += f(a, coords);
     }
-
-    return accumulator - 0.55; // subtraction to attempt to bring the average value of the above sum function  over some closed domain to 0.0
+    return accumulator - 0.5; // subtraction to attempt to bring the average value of the above sum function  over some closed domain to 0.0
 }
 
 // Sample from default noise texture.
 vec4 sample_default_noise(vec2 uv, float view_width, float view_height) {
     ivec2 sample_screen_coord = ivec2(uv * vec2(view_width, view_height));
-    ivec2 sample_noise_coord = sample_screen_coord; // 256 by default.
-    return texelFetch(noisetex, sample_noise_coord, 0);
+    return texelFetch(noisetex, sample_screen_coord, 0);
 }
 
 //	Simplex 3D Noise
@@ -28,6 +28,7 @@ vec4 sample_default_noise(vec2 uv, float view_width, float view_height) {
 vec4 permute(vec4 x) {
     return mod(((x * 34.0) + 1.0) * x, 289.0);
 }
+
 vec4 taylorInvSqrt(vec4 r) {
     return 1.79284291400159 - 0.85373472095314 * r;
 }
@@ -100,3 +101,5 @@ float snoise(vec3 v) {
     return 42.0 * dot(m * m, vec4(dot(p0, x0), dot(p1, x1),
                 dot(p2, x2), dot(p3, x3)));
 }
+
+#endif

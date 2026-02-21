@@ -1,4 +1,13 @@
-// Coordinate space conversions from clip to world space.
+#if !defined INCLUDE_SPACE_CONVERSIONS
+#define INCLUDE_SPACE_CONVERSIONS
+
+#include "/include/uniforms.glsl"
+
+// Coordinate space conversions from ndc/clip to world space.
+vec3 ndc_to_view(vec3 ndc_space_position) {
+    return project_and_divide(gbufferProjectionInverse, ndc_space_position);
+}
+
 vec3 clip_to_view(vec4 clip_space_position) {
     return (gbufferProjectionInverse * clip_space_position).xyz;
 }
@@ -20,6 +29,12 @@ vec3 feet_to_view(vec3 feet_space_position) {
     return (gbufferModelView * vec4(feet_space_position, 1.0)).xyz;
 }
 
-vec3 view_to_clip(vec3 view_space_position) {
+vec4 view_to_clip(vec3 view_space_position) {
     return gbufferProjection * vec4(view_space_position, 1.0);
 }
+
+vec3 view_to_ndc(vec3 view_space_position) {
+    return project_and_divide(gbufferProjection, view_space_position);
+}
+
+#endif

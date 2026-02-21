@@ -1,7 +1,7 @@
 #version 330 compatibility
 
 // ----------
-// Bloom.
+// Bloom Blurring.
 // ----------
 
 out vec2 uv;

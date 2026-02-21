@@ -1,3 +1,3 @@
 #version 330 compatibility
 
-#include "/programs/c1_lambertian_lighting.glsl"
+#include "/programs/c1_ssao_blur.glsl"

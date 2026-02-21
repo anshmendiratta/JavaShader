@@ -1,9 +1,5 @@
 #version 330 compatibility
 
-// ----------
-// Bloom Application.
-// ----------
-
 out vec2 uv;
 
 void main() {

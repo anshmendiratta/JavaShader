@@ -1,16 +1,6 @@
 #version 330 compatibility
 
-#include "/common/noise.glsl"
-
-// LabPBR.
-uniform sampler2D normals, depthtex0;
-
-uniform mat4 gbufferProjection, gbufferModelView, gbufferProjectionInverse, gbufferModelViewInverse;
-uniform vec3 cameraPosition;
-uniform vec2 mc_midTexCoord;
-uniform float viewWidth, viewHeight, frameTimeCounter;
-uniform ivec2 atlasSize;
-
+in vec2 mc_midTexCoord;
 in vec2 mc_Entity;
 in vec4 at_tangent;
 
@@ -22,8 +12,10 @@ out vec4 glcolor;
 out vec3 normal_view_space;
 out vec3 tangent_view_space;
 
-#include "/common/utility.glsl"
 #include "/lib/settings.glsl"
+#include "/include/uniforms.glsl"
+#include "/include/utility/random.glsl"
+#include "/include/utility/noise.glsl"
 
 void main() {
     gl_Position = ftransform();

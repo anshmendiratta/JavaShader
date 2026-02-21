@@ -1,13 +1,12 @@
-// Textures.
-uniform sampler2D colortex0, colortex7; // Bloom.
+in vec2 uv;
 
 /* RENDERTARGETS: 0 */
 layout(location = 0) out vec4 color;
 
-in vec2 uv;
+#include "/include/uniforms.glsl"
+#include "/include/color/conversions.glsl"
 
-// TODO: Bloom colortex is completely black.
 void main() {
     color = texture(colortex0, uv);
-    color += texture(colortex7, uv);
+    color.rgb += texture(colortex6, uv).rgb;
 }

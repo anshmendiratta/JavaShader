@@ -1,9 +1,5 @@
 #version 330 compatibility
 
-// ----------
-// Fog.
-// ----------
-
 out vec2 uv;
 
 void main() {

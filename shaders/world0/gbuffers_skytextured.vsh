@@ -1,8 +1,6 @@
 #version 330 compatibility
 
-uniform mat4 gbufferModelView, gbufferModelViewInverse, gbufferProjection, gbufferProjectionInverse;
-uniform vec3 cameraPosition, sunPosition;
-uniform int renderStage;
+#include "/include/uniforms.glsl"
 
 out vec4 glcolor;
 out vec2 uv;

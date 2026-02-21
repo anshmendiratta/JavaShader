@@ -16,9 +16,9 @@ vec3 exposure(vec3 color) {
     return vec3(1.0) - exp(-color * exposure);
 }
 
-// ---
-// All of the below are taken from https://github.com/dmnsgn/glsl-tone-map.
-// ---
+// ------------------------------------------------------------------------------
+//    All of the below are taken from https://github.com/dmnsgn/glsl-tone-map.
+// ------------------------------------------------------------------------------
 
 // Narkowicz 2015, "ACES Filmic Tone Mapping Curve"
 vec3 aces(vec3 x) {

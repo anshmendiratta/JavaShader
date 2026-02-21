@@ -1,3 +1,6 @@
+#if !defined INCLUDE_MATH_FP
+#define INCLUDE_MATH_FP
+
 // General constants.
 #define PI 3.1415926535897
 #define TAU 2.0 * PI
@@ -10,9 +13,11 @@
 #define rcp(x) 1.0 / x
 
 // CS constants.
-#define FP_OP_TOLERANCE rcp(255.0) // Chosen value because of common comparisons made in the shader.
+#define FP_OP_TOLERANCE rcp(255.0) // Chosen value because of include comparisons made in the shader.
 
 // FP precision circumventing.
 bool fp_eq(float x, float y) {
     return abs(x - y) < FP_OP_TOLERANCE;
 }
+
+#endif

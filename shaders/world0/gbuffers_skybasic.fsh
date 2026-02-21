@@ -1,21 +1,16 @@
 #version 330 compatibility
 
-// TODO: Understand why the sky coloring works how it does.
+// TODO: understand why the sky coloring works how it does.
 
-uniform sampler2D colortex0, depthtex0;
-
-uniform mat4 gbufferModelView, gbufferModelViewInverse, gbufferProjection, gbufferProjectionInverse;
-uniform vec3 skyColor, fogColor, shadowLightPosition;
-uniform float viewHeight, viewWidth;
-
-in vec4 starData; //rgb = star color, a = flag for weather or not this pixel is a star.
+in vec4 starData; // rgb = star color, a = flag for weather or not this pixel is a star.
 in vec2 uv;
 
 /* RENDERTARGETS: 0 */
 layout(location = 0) out vec4 color;
 
-#include "/common/constants.glsl"
-#include "/common/utility.glsl"
+#include "/lib/settings.glsl"
+#include "/include/uniforms.glsl"
+#include "/include/utility/random.glsl"
 
 const float sunPathRotation = -30.0;
 
@@ -39,17 +34,6 @@ const float atmo_density_scale = 1.0;
 const float light_exposure = 10.0;
 const float solar_disc_softness = 0.1;
 const float solar_brightness = 10.0;
-
-const bool apply_aces = true;
-
-vec3 aces_tonemap(vec3 x) {
-    const float a = 2.51;
-    const float b = 0.03;
-    const float c = 2.43;
-    const float d = 0.59;
-    const float e = 0.14;
-    return clamp((x * (a * x + b)) / (x * (c * x + d) + e), 0.0, 1.0);
-}
 
 vec2 intersect_sphere(vec3 origin, vec3 direction, vec3 center, float radius) {
     origin -= center;

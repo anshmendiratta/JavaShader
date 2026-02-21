@@ -1,3 +1,6 @@
+#if !defined INCLUDE_SHADOWS_DISTORT
+#define INCLUDE_SHADOWS_DISTORT
+
 #include "/lib/settings.glsl"
 
 const float SHADOW_BIAS_STARTER = SHADOW_BIAS;
@@ -20,3 +23,5 @@ float compute_shadow_bias(vec3 position) {
 
     return SHADOW_BIAS_STARTER / SHADOW_MAP_RESOLUTION * (distortion_factor * distortion_factor) / SHADOW_BIAS_EPSILON; // 1.0 / shadowMapResolution * square(length(position.xy) + EPSILON) / EPSILON
 }
+
+#endif

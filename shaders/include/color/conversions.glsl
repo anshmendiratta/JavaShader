@@ -35,6 +35,11 @@ vec3 saturate_rgb(vec3 rgb, float saturation) {
     return mix(grayscale, rgb, saturation);
 }
 
-// vec3 brighten_rgb(vec3 rgb, float brightness) {}
+// TODO: complete.
+vec3 brighten_rgb(vec3 rgb, float brightness) {
+    return vec3(0.0);
+}
 
-// vec3 color_grade(vec3 rgb, ColorGrading cg) {}
+vec3 color_grade(vec3 rgb, ColorGrading cg) {
+    return vec3(0.0);
+}

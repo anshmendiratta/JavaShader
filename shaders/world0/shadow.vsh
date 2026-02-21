@@ -1,20 +1,16 @@
 #version 330 compatibility
 
-uniform mat4 gbufferProjectionInverse, gbufferModelViewInverse, shadowModelView, shadowProjectionInverse, shadowProjection, shadowModelViewInverse;
-uniform vec3 cameraPosition;
-uniform vec2 mc_midTexCoord;
-
-uniform float frameTimeCounter, viewWidth, viewHeight;
-
+in vec2 mc_midTexCoord;
 in vec2 mc_Entity;
 
 out vec2 uv;
 out vec4 glcolor;
 
 #include "/lib/settings.glsl"
-#include "/common/shadow_distort.glsl"
-#include "/common/water_waves.glsl"
-#include "/common/noise.glsl"
+#include "/include/uniforms.glsl"
+#include "/include/shadows/distort.glsl"
+#include "/include/vertex/water_waves.glsl"
+#include "/include/utility/noise.glsl"
 
 void main() {
     uv = (gl_TextureMatrix[0] * gl_MultiTexCoord0).xy;

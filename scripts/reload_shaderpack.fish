@@ -22,3 +22,13 @@ else
     set_color -o red
     echo "Unsuccessful resetting shader."
 end
+
+# Display modification timestamp of file in shaderpacks/
+argparse date -- $argv
+or return
+
+if set -ql _flag_date
+    set -l timestamp (ls -l $SHADERPACKS_DIR | rg -e 'shaderpack.zip')
+    set_color -i white
+    echo $timestamp
+end
