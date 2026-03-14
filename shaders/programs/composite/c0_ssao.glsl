@@ -39,11 +39,18 @@ void main() {
             cos(theta)
         );
 
+    // unpack colortex1
+    vec4 normal_map_read, specular_map_read;
+    vec2 lightmap_uv, o_uv;
+    unpack_colortex1_read(texture(colortex1, uv), normal_map_read, specular_map_read, lightmap_uv, o_uv);
+    Material material;
+    init_material_unpacked_colortex_read(material, normal_map_read, specular_map_read);
+
     // Construct TBN.
     vec3 fragment_screen_space_position = vec3(uv, texture(depthtex0, uv).r);
     vec3 fragment_ndc_space_position = fragment_screen_space_position * 2.0 - 1.0;
     vec3 fragment_view_space_position = project_and_divide(gbufferProjectionInverse, fragment_ndc_space_position);
-    vec3 normal_world_space = texture(colortex2, uv).xyz * 2.0 - 1.0;
+    vec3 normal_world_space = material.normal;
     vec3 normal_view_space = normalize(mat3(gbufferModelView) * normal_world_space);
     vec3 random_vector = ssao_noise_vector;
     vec3 tangent_view_space = normalize(random_vector - normal_view_space * dot(normal_view_space, random_vector));
@@ -57,12 +64,11 @@ void main() {
         vec3 sample_view_space_position = fragment_view_space_position + sample_offset_view_space * SSAO_RADIUS;
         vec3 sample_screen_space_position = project_and_divide(gbufferProjection, sample_view_space_position) * 0.5 + 0.5;
         float sample_depth = texture(depthtex0, sample_screen_space_position.xy).r;
-        // TODO: this was done by copilot. why does this work? why convert back to view space with no changes? because the depth buffer is stored in a nonlinear space
         // TODO: check if this is correct. i think its somehow broken
         sample_view_space_position = project_and_divide(gbufferProjectionInverse, vec3(sample_screen_space_position.xy, sample_depth) * 2.0 - 1.0);
 
         float check_range_of_depths = smoothstep(0.0, 1.0, SSAO_RADIUS / abs(fragment_view_space_position.z - sample_view_space_position.z));
-        occlusion_factor += (fragment_view_space_position.z > sample_view_space_position.z - SSAO_BIAS ? 1.0 : 0.0) * check_range_of_depths;
+        occlusion_factor += (fragment_view_space_position.z > fragment_view_space_position.z - SSAO_BIAS ? 1.0 : 0.0) * check_range_of_depths;
     }
 
     // Write occlusion factor.

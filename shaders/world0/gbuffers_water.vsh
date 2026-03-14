@@ -1,4 +1,4 @@
-#version 330 compatibility
+#version 430 compatibility
 
 in vec2 mc_Entity;
 
@@ -6,7 +6,10 @@ out vec4 glcolor;
 out vec2 uv;
 
 #include "/lib/settings.glsl"
+
 #include "/include/uniforms.glsl"
+#include "/include/ids.glsl"
+
 #include "/include/vertex/water_waves.glsl"
 
 void main() {
@@ -14,7 +17,7 @@ void main() {
     gl_Position = ftransform();
     glcolor = gl_Color;
 
-    if (mc_Entity.x == 10002.0) {
+    if (mc_Entity.x == ID_WATER) {
         // Water.
         vec3 view_space_position = (gbufferProjectionInverse * gl_Position).xyz;
         vec3 feet_space_position = (gbufferModelViewInverse * vec4(view_space_position, 1.0)).xyz;

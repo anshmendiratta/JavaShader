@@ -1,3 +1,4 @@
-#version 330 compatibility
+#version 430 compatibility
 
-#include "/programs/c3_fog.glsl"
+#define STAGE_FRAGMENT
+#include "/programs/composite/c3_fog.glsl"

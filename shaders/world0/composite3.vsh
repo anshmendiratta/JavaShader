@@ -1,12 +1,5 @@
-#version 330 compatibility
+#version 430 compatibility
 
-// ----------
-// Bloom Blurring.
-// ----------
+#define STAGE_VERTEX
 
-out vec2 uv;
-
-void main() {
-    gl_Position = ftransform();
-    uv = (gl_TextureMatrix[0] * gl_MultiTexCoord0).xy;
-}
+#include "/programs/composite/c3_fog.glsl"

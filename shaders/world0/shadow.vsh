@@ -1,4 +1,4 @@
-#version 330 compatibility
+#version 430 compatibility
 
 in vec2 mc_midTexCoord;
 in vec2 mc_Entity;

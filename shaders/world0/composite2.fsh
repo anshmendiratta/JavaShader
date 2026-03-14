@@ -1,3 +1,4 @@
-#version 330 compatibility
+#version 430 compatibility
 
-#include "/programs/c2_lighting.glsl"
+#define STAGE_FRAGMENT
+#include "/programs/composite/c2_lighting.glsl"

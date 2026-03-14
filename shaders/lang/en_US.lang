@@ -21,6 +21,8 @@ value.DEBUG_BUFFER.18 = shadowtex1
 value.DEBUG_BUFFER.19 = shadowcolor0
 
 # Switches.
+value.SHADOWS.0 = Off
+value.SHADOWS.1 = On
 value.SSAO.0 = Off
 value.SSAO.1 = On
 value.POM.0 = Off
