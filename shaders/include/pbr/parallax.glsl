@@ -12,7 +12,7 @@
         return (atlas_uv - bottom_left_coord) * rcp(texture_size);
     }
 
-    float sample_heightmap(vec2 uv, mat2 uv_gradient) {
+    float _sample_heightmap(vec2 uv, mat2 uv_gradient) {
         // Requires atlas space coordinates for sampling.
         vec2 atlas_uv = local_uv_to_atlas(uv, texture_bottom_left, single_tex_size);
         return 1.0 - textureGrad(normals, atlas_uv, uv_gradient[0], uv_gradient[1]).a;
@@ -29,7 +29,7 @@
 
         // Linear search for last two UVs.
         float current_ray_sample_height = 1.0;
-        float current_displacement_height = sample_heightmap(local_uv, uv_gradient);
+        float current_displacement_height = _sample_heightmap(local_uv, uv_gradient);
         // Snippet from https://github.com/sixthsurge/photon/blob/40adec318ea608d9f9ba88fcc272730af0899a62/shaders/include/surface/parallax.glsl#L32.
         if (current_displacement_height < rcp(255.0)) {
             return local_uv;
@@ -41,12 +41,12 @@
         while (layer < 64 && current_displacement_height < current_ray_sample_height) {
             local_uv += d_uv;
             current_ray_sample_height -= layer_height_interval * POM_HEIGHT_SCALE; // Go down one layer.
-            current_displacement_height = sample_heightmap(local_uv, uv_gradient);
+            current_displacement_height = _sample_heightmap(local_uv, uv_gradient);
             layer += 1;
         }
 
         // Found first UV above intersection (I think?). Calculate previous UV for weighting.
-        float previous_displacement_height = sample_heightmap(local_uv - d_uv, uv_gradient);
+        float previous_displacement_height = _sample_heightmap(local_uv - d_uv, uv_gradient);
         float current_displacment_sample_height_delta = abs(current_displacement_height - current_ray_sample_height);
         float previous_displacment_sample_height_delta = abs(previous_displacement_height - (current_ray_sample_height + layer_height_interval));
         float uv_weight = current_displacment_sample_height_delta / (current_displacment_sample_height_delta + previous_displacment_sample_height_delta);

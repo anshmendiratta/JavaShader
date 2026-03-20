@@ -9,6 +9,7 @@
 
 #ifdef STAGE_FRAGMENT
     in vec2 uv;
+    in vec2 mc_Entity;
 
     /* RENDERTARGETS: 0 */
     layout(location = 0) out vec4 color;
@@ -41,13 +42,12 @@
         vec2 lightmap_uv, o_uv;
         unpack_colortex1_read(texture(colortex1, uv), normal_map_read, specular_map_read, lightmap_uv, o_uv);
 
+        color = texture(colortex0, uv);
         // do nothing if sky
         float depth = texture(depthtex0, uv).r;
         if (depth == 1.0) {
             return;
         }
-
-        color = texture(colortex0, uv);
 
         Material material;
         init_material_unpacked_colortex_read(material, normal_map_read, specular_map_read);
@@ -68,7 +68,7 @@
         vec3 light_source_direction_world_space = normalize(light_source_world_space_position - fragment_world_space_position);
         float n_dot_l = compute_diffuse(light_source_direction_world_space, normal_world_space);
 
-        float light_brightness = n_dot_l;
+        float direct_lighting = n_dot_l;
 
         // TODO: somehow this doesnt work with h.v but does with r.v
         #if SPECULAR_MAPPING == 1
@@ -79,30 +79,42 @@
             // https://en.wikipedia.org/wiki/Blinn%E2%80%93Phong_reflection_model
             vec3 view_vector_world_space = fragment_world_space_position - cameraPosition;
             float h_dot_v = compute_specular(view_vector_world_space, light_source_direction_world_space, normal_world_space);
-            float shininess = smoothness * 200.0 + 1.0; // alpha
+            float shininess = smoothness * 20.0 + 1.0; // alpha
             float specular_light_factor = smoothness * pow(h_dot_v, 4.0 * shininess);
             float diffuse_light_factor = roughness * n_dot_l;
-            light_brightness = diffuse_light_factor + specular_light_factor;
+            direct_lighting = diffuse_light_factor + specular_light_factor;
         #endif
 
         // kinds of lighting contribution
 
         float BLOCKLIGHT_INTENSITY = lightmap_uv.x;
-        vec3 blocklight = BLOCKLIGHT_INTENSITY * BLOCKLIGHT_COLOR; // x is blocklight
+        vec3 blocklight = hsl_to_rgb(BLOCKLIGHT_INTENSITY_MULTIPLIER * rgb_to_hsl(BLOCKLIGHT_INTENSITY * BLOCKLIGHT_COLOR)); // x is blocklight
 
         float SKYLIGHT_INTENSITY = lightmap_uv.y;
-        vec3 skylight = SKYLIGHT_INTENSITY * SKYLIGHT_COLOR; // y is skylight
-
-        float ssao_factor = texture(colortex4, uv).r;
-        vec3 ambient = vec3(
-                AMBIENT_INTENSITY * ssao_factor
-            );
+        vec3 skylight = hsl_to_rgb(SKYLIGHT_INTENSITY_MULTIPLIER * rgb_to_hsl(SKYLIGHT_INTENSITY * SKYLIGHT_COLOR)); // y is skylight
 
         // TODO: vary sunlight intensity by time of day.
-        vec3 sunlight = light_brightness * shadow * lightmap_uv.y * SUNLIGHT_COLOR; // multiply by lightmap_uv to fix some light leaks.
+        vec3 sunlight = compute_skylight_intensity_scalar(worldTime) * direct_lighting * shadow * lightmap_uv.y * SUNLIGHT_COLOR; // multiply by lightmap_uv to fix some light leaks.
 
-        // color.rgb *= blocklight + skylight + sunlight + ambient;
-        // color.rgb = rgb_to_linear(color.rgb);
-        color.rgb = vec3(1.0);
+        #if POM == 1
+            float ssao_factor = texture(colortex4, o_uv).r;
+        #else
+            float ssao_factor = texture(colortex4, uv).r;
+        #endif
+
+        vec3 direct_contribution = blocklight + sunlight;
+        #if AMBIENT_OCCLUSION == 1
+            vec3 ambient = vec3(1.0 - ssao_factor);
+            vec3 indirect_contribution = skylight * ambient;
+        #else
+            vec3 indirect_contribution = skylight;
+        #endif
+
+        vec3 emission = vec3(abs(material.emissiveness));
+
+        color = texture(gtexture, uv);
+        color.rgb *= vec3(1.0) + emission;
+
+        color.rgb = rgb_to_linear(color.rgb);
     }
 #endif

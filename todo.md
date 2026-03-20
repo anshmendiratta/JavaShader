@@ -23,3 +23,9 @@
 - [ ] Lighting at night.
 - [ ] Shadows on water.
 - [ ] POM.
+
+---
+
+# Immediate
+- [ ] fix deferred apparently not running even though it is a patched shader
+- [ ] handle translucents such as water

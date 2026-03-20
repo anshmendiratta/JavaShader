@@ -1,3 +1,4 @@
 #version 430 compatibility
 
-#include "/programs/c5_bloom_application.glsl"
+#define STAGE_FRAGMENT
+#include "/programs/composite/c5_bloom_application.glsl"

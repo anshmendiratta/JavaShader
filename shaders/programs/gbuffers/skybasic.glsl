@@ -41,6 +41,7 @@
         float up_dot_frag = clamp01(dot(vec3(0.0, 1.0, 0.0), fragment_position_view_space));
         float up_factor = pow(up_dot_frag, 1.0);
 
-        color = vec4(mix(skyColor, fogColor, up_factor), 1.0);
+        color.rgb = skyColor;
+        // color.a = 1.0;
     }
 #endif

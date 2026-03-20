@@ -30,29 +30,25 @@
             material.nonlinear_smoothness = specular_data.r;
             material.f0 = specular_data.g;
             material.specular_b = specular_data.b;
-            material.emissiveness = specular_data.a;
+            material.emissiveness = fract(specular_data.a); // since 0 and 255 are no emission
         #endif
     }
 
     // Likely to be called after a `decode_colortex1`.
     void init_material_unpacked_colortex_read(out Material material, vec4 normal_map_read, vec4 specular_map_read) {
-        #if NORMAL_MAPPING == 1
-            vec2 octahedral_encoded_normal = normal_map_read.xy;
-            vec3 normal_world_space = vector_decode_octahedral(octahedral_encoded_normal);
-            material.normal = vec3(normal_world_space);
+        vec2 octahedral_encoded_normal = normal_map_read.xy * 2.0 - 1.0;
+        vec3 normal_world_space = vector_decode_octahedral(octahedral_encoded_normal);
+        material.normal = vec3(normal_world_space);
 
+        #if NORMAL_MAPPING == 1
             material.ao = normal_map_read.b;
             material.depth = normal_map_read.a;
-        #else
-            vec2 octahedral_encoded_normal = normal_map_read.xy;
-            vec3 normal_world_space = vector_decode_octahedral(octahedral_encoded_normal);
-            material.normal = vec3(normal_world_space);
         #endif
         #if SPECULAR_MAPPING == 1
             material.nonlinear_smoothness = specular_map_read.r;
             material.f0 = specular_map_read.g;
             material.specular_b = specular_map_read.b;
-            material.emissiveness = specular_map_read.a;
+            material.emissiveness = fract(specular_map_read.a);
         #endif
     }
 #endif

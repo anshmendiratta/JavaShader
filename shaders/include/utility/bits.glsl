@@ -9,28 +9,26 @@
     // - uint: 32
 
     // octahedral encoding (apparently used by iris internally too)
-    // code taken from https://knarkowicz.wordpress.com/2014/04/16/octahedron-normal-vector-encoding/
-    vec2 _octahedron_wrap(vec2 vector) {
-        return (1.0 - abs(vector.yx)) * sign_not_zero(vector);
-    }
+    // https://jcgt.org/published/0003/02/01/paper-lowres.pdf
 
-    // assumes `vector` is unit and returns encoding in [0, 1]^2
+    // assumes `vector` is unit and returns encoding in [0, 1]^2. returns x, y each in [-1, 1]
     vec2 vector_encode_octahedral(vec3 vector) {
-        vector /= (abs(vector.x) + abs(vector.y) + abs(vector.z));
-        vector.xy = vector.z >= 0.0 ? vector.xy : _octahedron_wrap(vector.xy);
-        vector.xy = vector.xy * 0.5 + 0.5;
-
-        return vector.xy;
+        vec2 p = vector.xy * (1.0 / (abs(vector.x) + abs(vector.y) + abs(vector.z)));
+        if (vector.z <= 0.0) {
+            // reflect the folds of the lower hemisphere over the diagonals
+            return (1.0 - abs(p.yx)) * sign_not_zero(p);
+        } else {
+            return p;
+        }
     }
 
-    // takes encoding in [0, 1]^2
+    // takes encoding in [-1, 1]^2
     vec3 vector_decode_octahedral(vec2 encoding) {
-        encoding = encoding * 2.0 - 1.0;
-        // https://twitter.com/Stubbesaurus/status/937994790553227264
-        vec3 n = vec3(encoding.xy, 1.0 - abs(encoding.x) - abs(encoding.y));
-        float t = clamp01(-n.z);
-        n.xy += -sign_not_zero(n.xy) * t;
+        vec3 v = vec3(encoding.xy, 1.0 - abs(encoding.x) - abs(encoding.y));
+        if (v.z < 0) {
+            v.xy = (1.0 - abs(v.yx)) * sign_not_zero(v.xy);
+        }
 
-        return normalize(n);
+        return normalize(v);
     }
 #endif

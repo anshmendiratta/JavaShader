@@ -31,17 +31,29 @@
     #define FOLIAGE_WAVE_SPEED 0.5
     #define FOLIAGE_WAVE_AMPLITUDE 0.09
 
+    // ------------------------
+    //     Indirect lighting
+    // ------------------------
+
+    #define AMBIENT_OCCLUSION 1 // Enables ambient occlusion. [0 1]
+    #define AMBIENT_INTENSITY 0.6 // Minimum light level. [0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0 1.1 1.2 1.3]
+
+    #define SSAO_SAMPLE_COUNT 16 // [16 32 64 128]
+    #define SSAO_RADIUS 2.5 // [0.5 1.0 1.5 2.0 2.5]
+    #define SSAO_BIAS 0.01 // [0.01 0.015 0.02 0.025 0.03 0.035]
+
     // -----------
     //     Sky
     // -----------
 
+    #define BLOCKLIGHT_INTENSITY_MULTIPLIER 1.0 // Blocklight luminosity intensity. [0.0 0.2 0.4 0.6 0.8 1.0 1.2 1.4 1.6 1.8 2.0]
     #define BLOCKLIGHT_R 0.3 // Blocklight color red content. [0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0 1.1 1.2 1.3 1.4 1.5]
-    #define BLOCKLIGHT_G 0.2  // Blocklight color green content. [0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0 1.1 1.2 1.3 1.4 1.5]
+    #define BLOCKLIGHT_G 0.2 // Blocklight color green content. [0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0 1.1 1.2 1.3 1.4 1.5]
     #define BLOCKLIGHT_B 0.1 // Blocklight color blue content. [0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0 1.1 1.2 1.3 1.4 1.5]
 
     #define SUNLIGHT_INTENSITY 0.4 // Sun brightness. [0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0 1.1 1.2 1.3 1.4 1.5]
     #define MOONLIGHT_INTENSITY 0.1 // Moon brightness. [0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0 1.1 1.2 1.3 1.4 1.5]
-    #define AMBIENT_INTENSITY 0.0 // Minimum light level. [0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8]
+    #define SKYLIGHT_INTENSITY_MULTIPLIER 0.4 // Sun brightness. [0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0 1.1 1.2 1.3 1.4 1.5]
 
     // TODO: organize this more nicely
     #define SKY_COLOR_HORIZON vec3(0.3, 0.58, 1.0)
@@ -73,14 +85,10 @@
     //     Screen Space Passes
     // ---------------------------
 
-    #define SSAO 1 // Enables screen-space ambient occlusion. [0 1]
     #define BLOOM 1 // Enables a halo around bright objects. [0 1]
 
-    #define SSAO_SAMPLE_COUNT 16 // [16 32 64 128]
-    #define SSAO_RADIUS 2.5 // [0.5 1.0 1.5 2.0 2.5]
-    #define SSAO_BIAS 0.01 // [0.01 0.015 0.02 0.025 0.03 0.035]
-
-    #define BLOOM_RADIUS 1 // Determines the distance of samples used for blurring. Higher increases blue but introduces more banding. [1 2 3 4]
+    #define BLOOM_RADIUS 1 // Determines the distance of samples used for blurring. Higher increases blue but introduces more banding. [1 2 3 4 5 6 7 8 9 10]
+    #define BLOOM_INTENSITY 2.0 // Percentage bias towards the bloom HDR buffer. Higher values increase the bloom effect. [-5.0 -4.0 -3.0 -2.0 -1.0 1.0 2.0 3.0 4.0 5.0]
 
     // ----------------------
     //     Smart Denoiser

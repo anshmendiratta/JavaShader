@@ -9,5 +9,10 @@ layout(location = 0) out vec4 color;
 #include "/include/uniforms.glsl"
 
 void main() {
-    color = texture(colortex0, uv);
+    // manual alpha testing
+    color = texture(gtexture, uv) * glcolor;
+
+    if (color.a < alphaTestRef) {
+        discard;
+    }
 }

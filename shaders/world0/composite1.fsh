@@ -1,3 +1,4 @@
 #version 430 compatibility
 
-#include "/programs/c1_ssao_blur.glsl"
+#define STAGE_FRAGMENT
+#include "/programs/composite/c1_ssao_blur.glsl"

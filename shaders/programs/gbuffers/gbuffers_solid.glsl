@@ -73,8 +73,6 @@
 #endif
 
 #ifdef STAGE_FRAGMENT
-    uniform float alphaTestRef = 0.1;
-
     in vec4 glcolor;
     in vec3 tangent_view_space;
     in vec3 normal_view_space;
@@ -85,7 +83,7 @@
 
     /* RENDERTARGETS: 0,1 */
     layout(location = 0) out vec4 color;
-    layout(location = 1) out uvec4 bitpacked_data; // normal map (4x u8), specular map (4x u8), lightmap uv (2x half), uv (2x half)
+    layout(location = 1) out uvec4 bitpacked_data; // normal map (4x u8 / 2x u16), specular map (4x u8), lightmap uv (2x half), uv (2x half)
 
     #include "/lib/settings.glsl"
 
@@ -110,7 +108,6 @@
             vec2 local_uv = atlas_uv_to_local(uv, texture_bottom_left, single_tex_size);
             vec2 pom_local_uv = pom_uv_transform(local_uv, view_direction_tangent_space);
             vec2 pom_atlas_uv = local_uv_to_atlas(pom_local_uv, texture_bottom_left, single_tex_size);
-            uv = pom_atlas_uv;
         #endif
 
         // packing
@@ -125,24 +122,28 @@
         #else
             // same deal as normal mapping but use all bits for octahedral encoded normal.xy
             vec3 normal_world_space = normalize(mat3(gbufferModelViewInverse) * normal_view_space);
-            vec2 normal_octahedral_encoded = vector_encode_octahedral(normal_world_space);
+            vec2 normal_octahedral_encoded = vector_encode_octahedral(normal_world_space) * 0.5 + 0.5; // in [0, 1]^2
             bitpacked_data.r = packUnorm2x16(normal_octahedral_encoded);
         #endif
         #if SPECULAR_MAPPING == 1
-            vec4 specular_map_read = read_texture(normals, uv);
+            #if POM == 1
+                vec4 specular_map_read = read_texture(specular, pom_atlas_uv);
+            #else
+                vec4 specular_map_read = read_texture(specular, uv);
+            #endif
             bitpacked_data.g = packUnorm4x8(specular_map_read);
         #endif
         bitpacked_data.b = packUnorm2x16(lightmap_uv);
-        bitpacked_data.a = packUnorm2x16(uv);
-
-        #if SPECULAR_MAPPING == 1
-            float emissive_strength = normal_map_read.a;
-            color = emissive_strength * read_texture(gtexture, uv) * glcolor; // Block texture with biome color.
-        #else
-            color = read_texture(gtexture, uv) * glcolor; // Block texture with biome color.
+        #if POM == 1
+            bitpacked_data.a = packUnorm2x16(pom_atlas_uv);
         #endif
 
-        // manual alpha testing
+        color = read_texture(gtexture, uv) * glcolor;
+        #if SPECULAR_MAPPING == 1
+            float emissive_strength = fract(specular_map_read.a);
+            color.rgb *= vec3(8.0 * emissive_strength);
+        #endif
+
         if (color.a < alphaTestRef) {
             discard;
         }

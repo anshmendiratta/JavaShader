@@ -13,12 +13,14 @@
             normal_map_read = unpackUnorm4x8(colortex_read.r);
         #else
             // get usual face world space normal
-            normal_map_read = unpackUnorm2x16(colortex_read.r);
+            normal_map_read = vec4(unpackUnorm2x16(colortex_read.r), 0.0, 0.0);
         #endif
         #if SPECULAR_MAPPING == 1
             specular_map_read = unpackUnorm4x8(colortex_read.g);
         #endif
         lightmap_uv = unpackUnorm2x16(colortex_read.b);
-        uv = unpackUnorm2x16(colortex_read.a);
+        #if POM == 1
+            uv = unpackUnorm2x16(colortex_read.a);
+        #endif
     }
 #endif

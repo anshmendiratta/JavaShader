@@ -3,6 +3,7 @@
 
     #include "/include/uniforms.glsl"
 
+    // NOTE: the z values used below are BETWEEN the near and far planes and cannot substitute `view_space_position.z` !
     // NOTE: the non-linear conversion from z to depth is _proportional_ to 1/z, not equal to it
     // https://learnopengl.com/Advanced-OpenGL/Depth-testing
 
@@ -13,6 +14,6 @@
     }
 
     float depth_to_z(float depth) {
-        return (far * depth - far * near * depth) / (far - near * depth);
+        return (near * far) / (depth * (near - far) + far);
     }
 #endif

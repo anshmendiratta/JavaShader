@@ -8,7 +8,9 @@ layout(location = 0) out vec4 color;
 
 #include "/include/uniforms.glsl"
 
+#include "/include/color/conversions.glsl"
+
 void main() {
-    float depth = texture(depthtex0, uv).r;
     color = texture(gtexture, uv) * glcolor;
+    color.rgb = rgb_to_linear(color.rgb);
 }

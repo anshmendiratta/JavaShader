@@ -15,33 +15,53 @@
     // CS constants.
     #define FP_OP_TOLERANCE rcp(255.0) // Chosen value because of include comparisons made in the shader.
 
-    // FP precision circumventing.
-
-    bool fp_eq(float x, float y) {
-        return abs(x - y) < FP_OP_TOLERANCE;
-    }
-
-    // Convenience.
+    // -------------------
+    //     Convenience
+    // -------------------
 
     float clamp01(float value) {
         return clamp(value, 0.0, 1.0);
     }
 
     vec2 clamp01(vec2 value) {
-        return clamp(value, 0.0, 1.0);
+        return vec2(
+            clamp01(value.x),
+            clamp01(value.y)
+        );
     }
 
     vec3 clamp01(vec3 value) {
-        return clamp(value, 0.0, 1.0);
+        return vec3(
+            clamp01(value.x),
+            clamp01(value.y),
+            clamp01(value.z)
+        );
     }
 
     vec4 clamp01(vec4 value) {
-        return clamp(value, 0.0, 1.0);
+        return vec4(
+            clamp01(value.x),
+            clamp01(value.y),
+            clamp01(value.z),
+            clamp01(value.w)
+        );
     }
 
     float max0(float value) {
         return max(0.0, value);
     }
+
+    float min0(float value) {
+        return min(0.0, value);
+    }
+
+    float smoothstep01(float value) {
+        return smoothstep(0.0, 1.0, value);
+    }
+
+    // ----------------------
+    //     HLSL functions
+    // ----------------------
 
     float sign_not_zero(float value) {
         return value >= 0.0 ? 1.0 : -1.0;

@@ -1,3 +1,4 @@
 #version 430 compatibility
 
-#include "/programs/c99_debug_view.glsl"
+#define STAGE_FRAGMENT
+#include "/programs/composite/c99_debug_view.glsl"

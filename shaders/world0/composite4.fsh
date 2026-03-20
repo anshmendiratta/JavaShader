@@ -1,3 +1,4 @@
 #version 430 compatibility
 
-#include "/programs/c4_bloom_blurring.glsl"
+#define STAGE_FRAGMENT
+#include "/programs/composite/c4_bloom_blurring.glsl"

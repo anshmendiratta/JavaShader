@@ -1,8 +1,4 @@
 #version 430 compatibility
 
-out vec2 uv;
-
-void main() {
-    gl_Position = ftransform();
-    uv = (gl_TextureMatrix[0] * gl_MultiTexCoord0).xy;
-}
+#define STAGE_VERTEX
+#include "/programs/composite/c4_bloom_blurring.glsl"

@@ -3,6 +3,8 @@
 #if !defined INCLUDE_UNIFORMS
     #define INCLUDE_UNIFORMS
 
+    uniform float alphaTestRef = 0.1;
+
     // Uniforms
     uniform vec3 skyColor;
     uniform vec3 fogColor;

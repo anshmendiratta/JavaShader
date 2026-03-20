@@ -1,5 +1,6 @@
 #if !defined INCLUDE_COLOR_CONVERSIONS
     #define INCLUDE_COLOR_CONVERSIONS
+
     // The below two functions are taken from shrimple v2.
     // (https://github.com/search?q=repo%3ANull-MC%2FShrimple%20_RGBToLinear&type=code)
     vec3 rgb_to_linear(vec3 rgb) {
@@ -14,7 +15,12 @@
         return dot(rgb, vec3(0.2126, 0.7152, 0.0722));
     }
 
+    // ---------------
+    //     RGB/HSL
+    // ---------------
+
     // Taken from https://gist.github.com/983/e170a24ae8eba2cd174f.
+
     vec3 rgb_to_hsv(vec3 rgb) {
         vec4 K = vec4(0.0, -1.0 / 3.0, 2.0 / 3.0, -1.0);
         vec4 p = mix(vec4(rgb.bg, K.wz), vec4(rgb.gb, K.xy), step(rgb.b, rgb.g));
@@ -26,16 +32,62 @@
         return vec3(abs(q.z + (q.w - q.y) / (6.0 * d + e)), d / (q.x + e), q.x);
     }
 
-    // Taken from https://gist.github.com/983/e170a24ae8eba2cd174f.
     vec3 hsv_to_rgb(vec3 hsv) {
         vec4 K = vec4(1.0, 2.0 / 3.0, 1.0 / 3.0, 3.0);
         vec3 p = abs(fract(hsv.xxx + K.xyz) * 6.0 - K.www);
         return hsv.z * mix(K.xxx, clamp(p - K.xxx, 0.0, 1.0), hsv.y);
     }
 
-    // ---
-    // Color grading.
-    // ---
+    // ---------------
+    //     RGB/HSL
+    // ---------------
+
+    // taken from https://www.shadertoy.com/view/XljGzV
+
+    vec3 rgb_to_hsl(vec3 rgb) {
+        float h = 0.0;
+        float s = 0.0;
+        float l = 0.0;
+        float r = rgb.r;
+        float g = rgb.g;
+        float b = rgb.b;
+        float rgbMin = min(r, min(g, b));
+        float rgbMax = max(r, max(g, b));
+
+        l = (rgbMax + rgbMin) / 2.0;
+        if (rgbMax > rgbMin) {
+            float rgbDelta = rgbMax - rgbMin;
+
+            //s = l < .05 ? rgbDelta / ( rgbMax + rgbMin ) : rgbDelta / ( 2.0 - ( rgbMax + rgbMin ) ); Original
+            s = l < .0 ? rgbDelta / (rgbMax + rgbMin) : rgbDelta / (2.0 - (rgbMax + rgbMin));
+
+            if (r == rgbMax) {
+                h = (g - b) / rgbDelta;
+            } else if (g == rgbMax) {
+                h = 2.0 + (b - r) / rgbDelta;
+            } else {
+                h = 4.0 + (r - g) / rgbDelta;
+            }
+
+            if (h < 0.0) {
+                h += 6.0;
+            }
+
+            h = h / 6.0;
+        }
+
+        return vec3(h, s, l);
+    }
+
+    vec3 hsl_to_rgb(vec3 hsl) {
+        vec3 rgb = clamp(abs(mod(hsl.x * 6.0 + vec3(0.0, 4.0, 2.0), 6.0) - 3.0) - 1.0, 0.0, 1.0);
+
+        return hsl.z + hsl.y * (rgb - 0.5) * (1.0 - abs(2.0 * hsl.z - 1.0));
+    }
+
+    // ---------------------
+    //     Color grading
+    // ---------------------
 
     struct ColorGrading {
         float saturation;
