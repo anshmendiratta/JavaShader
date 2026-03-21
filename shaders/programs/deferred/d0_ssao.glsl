@@ -19,6 +19,7 @@
     #include "/include/utility/noise.glsl"
     #include "/include/utility/depth_conversion.glsl"
     #include "/include/utility/math_fp.glsl"
+    #include "/include/utility/dither.glsl"
 
     #include "/include/pbr/material.glsl"
     #include "/include/pbr/textures.glsl"
@@ -28,7 +29,7 @@
 
     void main() {
         // skip for the sky
-        float fragment_depth = texture(depthtex0, uv).r;
+        float fragment_depth = texture(depthtex2, uv).r;
         if (fragment_depth == 1.0) {
             occlusion_factor = 1.0 - 0.0;
             return;
@@ -37,9 +38,10 @@
         // Sampling kernel of random vector offsets.
         for (int count = 0; count < SSAO_SAMPLE_COUNT; count += 1) {
             float scale = float(count) / float(SSAO_SAMPLE_COUNT);
-            scale = mix(0.0, 1.0, scale * scale); // Quadratic density.
-            float epsilon_zero = rand(count * 1.0);
-            float epsilon_one = rand(count * 2.0);
+            scale = smoothstep01(scale * scale); // Quadratic density.
+            float dither = compute_dither(count * uv);
+            float epsilon_zero = rand(count * 1.0 + dither);
+            float epsilon_one = rand(count * 2.0 + dither);
             float phi = 2.0 * PI * epsilon_one;
             float theta = acos(sqrt(epsilon_zero));
             ssao_sampling_kernel[count] = scale * vec3(
@@ -50,9 +52,10 @@
         }
 
         // Random rotation vector.
-        int count = int(16.0 * rand(uv.x + uv.y));
-        float epsilon_zero = rand(count * 2.0);
-        float epsilon_one = rand(count * 1.0);
+        float dither = compute_dither(uv);
+        int count = int(4.0 * rand(uv.x + uv.y));
+        float epsilon_zero = rand(count * 2.0 + dither);
+        float epsilon_one = rand(count * 1.0 + dither);
         float phi = 2.0 * PI * epsilon_one;
         float theta = acos(sqrt(epsilon_zero));
         ssao_noise_vector = vec3(
@@ -69,7 +72,7 @@
         init_material_unpacked_colortex_read(material, normal_map_read, specular_map_read);
 
         // Construct TBN.
-        vec3 fragment_screen_space_position = vec3(uv, texture(depthtex0, uv).r);
+        vec3 fragment_screen_space_position = vec3(uv, texture(depthtex2, uv).r);
         vec3 fragment_ndc_space_position = fragment_screen_space_position * 2.0 - 1.0;
         vec3 fragment_view_space_position = project_and_divide(gbufferProjectionInverse, fragment_ndc_space_position);
         vec3 normal_world_space = material.normal;
@@ -88,17 +91,17 @@
             float sample_z = sample_view_space_position.z;
 
             vec3 sample_screen_space_position = project_and_divide(gbufferProjection, sample_view_space_position) * 0.5 + 0.5;
-            float sample_object_depth = texture(depthtex0, sample_screen_space_position.xy).r;
+            float sample_object_depth = texture(depthtex2, sample_screen_space_position.xy).r;
             vec3 sample_object_ndc_position = vec3(sample_screen_space_position.xy, sample_object_depth) * 2.0 - 1.0;
             vec3 sample_object_view_space_position = project_and_divide(gbufferProjectionInverse, sample_object_ndc_position);
             float sample_object_z = sample_object_view_space_position.z;
 
             float is_occluded = sample_z <= sample_object_z + SSAO_BIAS ? 1.0 : 0.0;
-            float within_z_range = smoothstep01(SSAO_RADIUS / abs(fragment_view_space_position.z - sample_z));
+            float within_z_range = smoothstep01(rcp(5.0) * SSAO_RADIUS / abs(fragment_view_space_position.z - sample_object_z));
             occlusion_factor += is_occluded * within_z_range;
         }
 
         occlusion_factor /= float(SSAO_SAMPLE_COUNT);
-        occlusion_factor = 1.0 - occlusion_factor;
+        occlusion_factor = pow(1.0 - occlusion_factor, AMBIENT_INTENSITY);
     }
 #endif

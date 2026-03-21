@@ -112,12 +112,16 @@
 
         // packing
         #if NORMAL_MAPPING == 1
-            vec4 normal_map_read = read_texture(normals, uv);
+            #if POM == 1
+                vec4 normal_map_read = read_texture(normals, pom_atlas_uv);
+            #else
+                vec4 normal_map_read = read_texture(normals, uv);
+            #endif
             normal_map_read.xy = normal_map_read.xy * 2.0 - 1.0;
             vec3 normal_normal_space = vec3(normal_map_read.xy, sqrt(1.0 - dot(normal_map_read.xy, normal_map_read.xy)));
             vec3 normal_view_space = TBN_matrix * normal_normal_space;
             vec3 normal_world_space = normalize(mat3(gbufferModelViewInverse) * normal_view_space);
-            vec2 normal_octahedral_encoded = vector_encode_octahedral(normal_world_space); // in the range [0, 1]^2
+            vec2 normal_octahedral_encoded = vector_encode_octahedral(normal_world_space); // in [0, 1]^2
             bitpacked_data.r = packUnorm4x8(vec4(normal_octahedral_encoded, normal_map_read.zw));
         #else
             // same deal as normal mapping but use all bits for octahedral encoded normal.xy
@@ -138,10 +142,10 @@
             bitpacked_data.a = packUnorm2x16(pom_atlas_uv);
         #endif
 
-        color = read_texture(gtexture, uv) * glcolor;
-        #if SPECULAR_MAPPING == 1
-            float emissive_strength = fract(specular_map_read.a);
-            color.rgb *= vec3(8.0 * emissive_strength);
+        #if POM == 1
+            color = read_texture(gtexture, pom_atlas_uv) * glcolor;
+        #else
+            color = read_texture(gtexture, uv) * glcolor;
         #endif
 
         if (color.a < alphaTestRef) {

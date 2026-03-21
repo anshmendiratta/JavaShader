@@ -29,13 +29,16 @@
 
     #include "/include/color/turbo_colormap_curve.glsl"
 
-    vec2 used_uv = uv; // made variable for debug window rendering purposes
+    vec2 used_uv = uv; // made mutable so the pom uv can be used
 
     vec4 sample_colortex() {
         #if DEBUG_BUFFER == 1 // bitpacked data. currently display normals
             vec4 normal_map_read, specular_map_read;
-            vec2 lightmap_uv, o_uv;
-            unpack_colortex1_read(texture(colortex1, used_uv), normal_map_read, specular_map_read, lightmap_used_uv, o_used_uv);
+            vec2 lightmap_uv, o_used_uv;
+            unpack_colortex1_read(texture(colortex1, used_uv), normal_map_read, specular_map_read, lightmap_uv, o_used_uv);
+            #if POM == 1
+                used_uv = o_used_uv;
+            #endif
             Material material;
             init_material_unpacked_colortex_read(material, normal_map_read, specular_map_read);
             return vec4(material.normal, 1.0);

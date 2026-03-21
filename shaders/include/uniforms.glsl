@@ -17,6 +17,7 @@
     uniform float viewWidth;
     uniform float viewHeight;
     uniform float aspectRatio;
+    uniform vec2 windowDimensions;
 
     uniform vec2 viewSize;
     uniform vec2 texelSize;
@@ -88,6 +89,7 @@
 
     uniform sampler2D depthtex0;
     uniform sampler2D depthtex1;
+    uniform sampler2D depthtex2;
 
     uniform sampler2D shadowtex0;
     uniform sampler2D shadowtex1;

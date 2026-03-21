@@ -36,10 +36,10 @@
     // ------------------------
 
     #define AMBIENT_OCCLUSION 1 // Enables ambient occlusion. [0 1]
-    #define AMBIENT_INTENSITY 0.6 // Minimum light level. [0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0 1.1 1.2 1.3]
+    #define AMBIENT_INTENSITY 2.0 // How much AO is applied. Higher values increase AO.. [0.0 0.5 1.0 1.5 2.0 2.5 3.0]
 
     #define SSAO_SAMPLE_COUNT 16 // [16 32 64 128]
-    #define SSAO_RADIUS 2.5 // [0.5 1.0 1.5 2.0 2.5]
+    #define SSAO_RADIUS 2.5 // [0.5 1.0 1.5 2.0 2.5 3.0 3.5 4.0 4.5 5.0]
     #define SSAO_BIAS 0.01 // [0.01 0.015 0.02 0.025 0.03 0.035]
 
     // -----------

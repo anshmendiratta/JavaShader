@@ -15,6 +15,7 @@
     layout(location = 0) out vec4 color;
 
     #include "/lib/settings.glsl"
+    #include "/lib/buffers.glsl"
 
     #include "/include/uniforms.glsl"
 
@@ -40,9 +41,9 @@
         // unpack colortex1 data
         vec4 normal_map_read, specular_map_read;
         vec2 lightmap_uv, o_uv;
-        unpack_colortex1_read(texture(colortex1, uv), normal_map_read, specular_map_read, lightmap_uv, o_uv);
+        unpack_colortex1_read(texture(BUFFER_BITPACKED_DATA, uv), normal_map_read, specular_map_read, lightmap_uv, o_uv);
 
-        color = texture(colortex0, uv);
+        color = texture(BUFFER_COLOR, uv);
         // do nothing if sky
         float depth = texture(depthtex0, uv).r;
         if (depth == 1.0) {
@@ -54,21 +55,22 @@
 
         vec3 normal_world_space = material.normal;
 
-        // shadows
         vec3 fragment_ndc_space_position = vec3(uv.xy, depth) * 2.0 - 1.0;
         vec3 fragment_view_space_position = ndc_to_view(fragment_ndc_space_position);
         vec3 fragment_feet_space_position = view_to_feet(fragment_view_space_position);
-        vec3 shadow_view_space_position = (shadowModelView * vec4(fragment_feet_space_position, 1.0)).xyz;
-        vec4 shadow_clip_space_position = shadowProjection * vec4(shadow_view_space_position, 1.0);
-        vec3 shadow = get_soft_shadow(shadow_clip_space_position, normal_world_space);
+
+        // shadows
+        #if SHADOWS == 1
+            vec3 shadow_view_space_position = (shadowModelView * vec4(fragment_feet_space_position, 1.0)).xyz;
+            vec4 shadow_clip_space_position = shadowProjection * vec4(shadow_view_space_position, 1.0);
+            vec3 shadow = get_soft_shadow(shadow_clip_space_position, normal_world_space);
+        #endif
 
         // diffuse
         vec3 fragment_world_space_position = feet_to_world(fragment_feet_space_position);
         vec3 light_source_world_space_position = feet_to_world(view_to_feet(shadowLightPosition));
         vec3 light_source_direction_world_space = normalize(light_source_world_space_position - fragment_world_space_position);
         float n_dot_l = compute_diffuse(light_source_direction_world_space, normal_world_space);
-
-        float direct_lighting = n_dot_l;
 
         // TODO: somehow this doesnt work with h.v but does with r.v
         #if SPECULAR_MAPPING == 1
@@ -83,8 +85,19 @@
             float specular_light_factor = smoothness * pow(h_dot_v, 4.0 * shininess);
             float diffuse_light_factor = roughness * n_dot_l;
             direct_lighting = diffuse_light_factor + specular_light_factor;
+        #else
+            // FIX: ao application
+            #if AMBIENT_OCCLUSION == 1
+                #if POM == 1
+                    float ssao_factor = texture(BUFFER_SSAO, o_uv).r;
+                #else
+                    float ssao_factor = texture(BUFFER_SSAO, uv).r;
+                #endif
+                float direct_lighting = n_dot_l * ssao_factor;
+            #else
+                float direct_lighting = n_dot_l;
+            #endif
         #endif
-
         // kinds of lighting contribution
 
         float BLOCKLIGHT_INTENSITY = lightmap_uv.x;
@@ -94,26 +107,18 @@
         vec3 skylight = hsl_to_rgb(SKYLIGHT_INTENSITY_MULTIPLIER * rgb_to_hsl(SKYLIGHT_INTENSITY * SKYLIGHT_COLOR)); // y is skylight
 
         // TODO: vary sunlight intensity by time of day.
-        vec3 sunlight = compute_skylight_intensity_scalar(worldTime) * direct_lighting * shadow * lightmap_uv.y * SUNLIGHT_COLOR; // multiply by lightmap_uv to fix some light leaks.
+        vec3 sunlight = direct_lighting * lightmap_uv.y * SUNLIGHT_COLOR; // multiply by lightmap_uv to fix some light leaks.
 
-        #if POM == 1
-            float ssao_factor = texture(colortex4, o_uv).r;
+        vec3 direct_contribution = blocklight;
+        #if SHADOWS == 1
+            direct_contribution += sunlight * shadow;
         #else
-            float ssao_factor = texture(colortex4, uv).r;
+            direct_contribution += sunlight;
         #endif
+        vec3 indirect_contribution = skylight;
+        vec3 emission = vec3(fract(material.emissiveness));
 
-        vec3 direct_contribution = blocklight + sunlight;
-        #if AMBIENT_OCCLUSION == 1
-            vec3 ambient = vec3(1.0 - ssao_factor);
-            vec3 indirect_contribution = skylight * ambient;
-        #else
-            vec3 indirect_contribution = skylight;
-        #endif
-
-        vec3 emission = vec3(abs(material.emissiveness));
-
-        color = texture(gtexture, uv);
-        color.rgb *= vec3(1.0) + emission;
+        color.rgb *= direct_contribution + indirect_contribution;
 
         color.rgb = rgb_to_linear(color.rgb);
     }
