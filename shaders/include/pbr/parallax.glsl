@@ -21,32 +21,48 @@
     }
 
     vec2 pom_uv_transform(in vec2 local_uv, /* camera to fragment */ vec3 view_direction_tangent_space, vec3 fragment_view_space_position, mat3 TBN_matrix) {
-        int layers_count = int(mix(POM_MIN_LAYERS, POM_MAX_LAYERS, 1.0 - abs(view_direction_tangent_space.z)));
-        float layer_height_interval = rcp(float(layers_count));
+        // More layers when viewing at grazing angles
+        int layers_count = int(mix(POM_MAX_LAYERS, POM_MIN_LAYERS, abs(view_direction_tangent_space.z)));
+        float layer_depth = 1.0 / float(layers_count);
 
-        vec3 transformed_coordinate = vec3(local_uv, 1.0);
-        vec3 d_uv = view_direction_tangent_space * POM_HEIGHT_SCALE * layer_height_interval * rcp(-view_direction_tangent_space.z);
+        // Start at the top surface
+        vec2 current_uv = local_uv;
+        float current_height = 1.0;
+        
+        // Calculate UV offset per layer - proper parallax offset
+        vec2 uv_offset = (view_direction_tangent_space.xy / -view_direction_tangent_space.z) * (POM_HEIGHT_SCALE * layer_depth);
 
-        // Snippet from https://github.com/sixthsurge/photon/blob/40adec318ea608d9f9ba88fcc272730af0899a62/shaders/include/surface/parallax.glsl#L32.
-        if (_sample_heightmap(transformed_coordinate.xy) < rcp(255.0)) {
+        // Early exit for flat surfaces
+        float initial_height = _sample_heightmap(local_uv);
+        if (initial_height < 0.01) {
             return local_uv;
         }
 
-        // Advance while the sampling ray is above the heightmap value (i.e. we haven't hit the surface).
+        // Ray march down until we hit the surface
+        float sampled_height = _sample_heightmap(current_uv);
         int layer = 0;
-        while (layer < layers_count && _sample_heightmap(transformed_coordinate.xy) < transformed_coordinate.z) {
-            transformed_coordinate += d_uv;
+        while (layer < layers_count && current_height > sampled_height) {
+            current_uv += uv_offset;
+            current_height -= layer_depth;
+            sampled_height = _sample_heightmap(current_uv);
             layer += 1;
         }
 
-        // Found first UV above intersection. Calculate previous UV for weighting.
-        vec3 previous_coordinate = transformed_coordinate - d_uv;
-        float previous_displacement_height = _sample_heightmap(previous_coordinate.xy);
-        float current_displacement_height = _sample_heightmap(transformed_coordinate.xy);
-        float current_height_delta = transformed_coordinate.z - current_displacement_height;
-        float previous_height_delta = previous_displacement_height - previous_coordinate.z;
-        float uv_weight = current_height_delta / (current_height_delta + previous_height_delta);
-        vec2 final_uv = mix(transformed_coordinate.xy, previous_coordinate.xy, uv_weight);
+        // Linear interpolation between last two samples for smooth transitions
+        vec2 previous_uv = current_uv - uv_offset;
+        float previous_height = current_height + layer_depth;
+        float previous_sampled = _sample_heightmap(previous_uv);
+        
+        // Calculate the intersection point between the two samples
+        float height_diff_before = previous_height - previous_sampled;
+        float height_diff_after = sampled_height - current_height;
+        
+        // Prevent division by zero and ensure smooth interpolation
+        float total_diff = height_diff_before + height_diff_after;
+        float weight = (total_diff > 0.0001) ? (height_diff_before / total_diff) : 0.5;
+        weight = clamp(weight, 0.0, 1.0);
+        
+        vec2 final_uv = mix(previous_uv, current_uv, weight);
 
         // FIX: z doesnt work for the depth value
         // Mostly inspired by Bliss (Xonk): https://github.com/X0nk/Bliss-Shader/blob/81e403ed308141039a09d792a36f8eb328898a60/shaders/dimensions/all_solid.fsh#L392

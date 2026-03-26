@@ -14,7 +14,7 @@ layout(location = 0) out vec4 color;
 
 void main() {
     color = texture(colortex0, uv);
-    color.rgb = lottes(color.rgb);
+    color.rgb = reinhard2(color.rgb);
 
     color.rgb = linear_to_rgb(color.rgb);
 }

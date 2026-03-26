@@ -117,7 +117,9 @@
             #else
                 float ssao_factor = texture(BUFFER_SSAO, uv).r;
             #endif
-            color.rgb *= vec3(ssao_factor);
+
+            // FIX: doesnt work
+            if (renderStage != MC_RENDER_STAGE_HAND_SOLID && renderStage != MC_RENDER_STAGE_HAND_TRANSLUCENT) color.rgb *= vec3(ssao_factor);
         #endif
 
         color.rgb *= direct_contribution + indirect_contribution;

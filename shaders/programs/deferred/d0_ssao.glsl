@@ -30,6 +30,8 @@
     vec3 ssao_noise_vector; // Create less than 1 per fragment to save memory. Use this as a tiling "texture."
 
     void main() {
+        vec2 screen_uv = gl_FragCoord.xy / windowDimensions;
+
         // skip for the sky
         float fragment_depth = texture(depthtex2, uv).r;
         if (fragment_depth == 1.0) {
@@ -42,8 +44,8 @@
             float scale = float(count) / float(SSAO_SAMPLE_COUNT);
             scale = smoothstep01(scale * scale); // Quadratic density.
             float dither = compute_dither(count * uv);
-            float epsilon_zero = rand(count * 1.0 + dither);
-            float epsilon_one = rand(count * 2.0 + dither);
+            float epsilon_zero = sample_default_noise(screen_uv + vec2(dither) / screen_uv).r;
+            float epsilon_one = sample_default_noise(windowDimensions - screen_uv + vec2(dither) / screen_uv).r;
             float phi = 2.0 * PI * epsilon_one;
             float theta = acos(sqrt(epsilon_zero));
             ssao_sampling_kernel[count] = scale * vec3(
@@ -56,8 +58,8 @@
         // Random rotation vector.
         float dither = compute_dither(uv);
         int count = int(4.0 * rand(uv.x + uv.y));
-        float epsilon_zero = rand(count * 2.0 + dither);
-        float epsilon_one = rand(count * 1.0 + dither);
+        float epsilon_zero = sample_default_noise(screen_uv + vec2(dither) / screen_uv).r;
+        float epsilon_one = sample_default_noise(windowDimensions - screen_uv + vec2(dither) / screen_uv).r;
         float phi = 2.0 * PI * epsilon_one;
         float theta = acos(sqrt(epsilon_zero));
         ssao_noise_vector = vec3(

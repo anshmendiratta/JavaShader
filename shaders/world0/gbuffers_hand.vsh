@@ -1,4 +1,5 @@
 #version 430 compatibility
 
 #define STAGE_VERTEX
-#include "/programs/gbuffers/hand.glsl"
+#define GBUFFER_HAND
+#include "/programs/gbuffers/all_solid.glsl"

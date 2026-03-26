@@ -34,12 +34,12 @@
         lightmap_uv = lightmap_uv / (30.0 / 32.0) - (1.0 / 32.0); // Conversion from [0.033, 0.97] to [0.0, 1.0].
 
         normal_view_space = mc_Entity.x == 10000.0 ? gl_NormalMatrix * vec3(0.0, 1.0, 0.0) : normalize(gl_NormalMatrix * gl_Normal); // View space.
-        #if NORMAL_MAPPING == 1
+        #if NORMAL_MAPPING == 1 && !defined GBUFFER_HAND
             normal_view_space = normalize(gl_NormalMatrix * gl_Normal); // View space.
             tangent_view_space = normalize(at_tangent.w * (gl_NormalMatrix * at_tangent.xyz)); // View space.
         #endif
 
-        #if WAVING_FOLIAGE == 1
+        #if WAVING_FOLIAGE == 1 && !defined GBUFFER_HAND
             // Waving foliage.
             // TODO: foliage "jitters" when the camera does.
             vec3 vertex_view_space_position = (gbufferProjectionInverse * gl_Position).xyz;
@@ -92,7 +92,7 @@
     #include "/include/utility/random.glsl"
 
     #include "/include/pbr/textures.glsl"
-    #if POM == 1
+    #if POM == 1 && !defined GBUFFER_HAND
         #include "/include/pbr/parallax.glsl"
     #endif
 
@@ -100,7 +100,7 @@
         vec3 bitangent_view_space = normalize(cross(tangent_view_space, normal_view_space));
         mat3 TBN_matrix = mat3(tangent_view_space, bitangent_view_space, normal_view_space);
 
-        #if POM == 1
+        #if POM == 1 && !defined GBUFFER_HAND
             vec3 fragment_ndc_space_position = vec3(gl_FragCoord.xy / windowDimensions, gl_FragCoord.z) * 2.0 - 1.0;
             vec3 fragment_view_space_position = project_and_divide(gbufferProjectionInverse, fragment_ndc_space_position);
             vec3 view_direction_view_space = normalize(fragment_view_space_position);
@@ -111,8 +111,8 @@
         #endif
 
         // packing
-        #if NORMAL_MAPPING == 1
-            #if POM == 1
+        #if NORMAL_MAPPING == 1 && !defined GBUFFER_HAND
+            #if POM == 1 && !defined GBUFFER_HAND
                 vec4 normal_map_read = read_texture(normals, pom_atlas_uv);
             #else
                 vec4 normal_map_read = read_texture(normals, uv);
@@ -129,8 +129,8 @@
             vec2 normal_octahedral_encoded = vector_encode_octahedral(normal_world_space) * 0.5 + 0.5; // in [0, 1]^2
             bitpacked_data.r = packUnorm2x16(normal_octahedral_encoded);
         #endif
-        #if SPECULAR_MAPPING == 1
-            #if POM == 1
+        #if SPECULAR_MAPPING == 1 && !defined GBUFFER_HAND
+            #if POM == 1 && !defined GBUFFER_HAND
                 vec4 specular_map_read = read_texture(specular, pom_atlas_uv);
             #else
                 vec4 specular_map_read = read_texture(specular, uv);
@@ -138,11 +138,11 @@
             bitpacked_data.g = packUnorm4x8(specular_map_read);
         #endif
         bitpacked_data.b = packUnorm2x16(lightmap_uv);
-        #if POM == 1
+        #if POM == 1 && !defined GBUFFER_HAND
             bitpacked_data.a = packUnorm2x16(pom_atlas_uv);
         #endif
 
-        #if POM == 1
+        #if POM == 1 && !defined GBUFFER_HAND
             color = read_texture(gtexture, pom_atlas_uv) * glcolor;
         #else
             color = read_texture(gtexture, uv) * glcolor;
