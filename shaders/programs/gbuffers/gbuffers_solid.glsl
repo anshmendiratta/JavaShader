@@ -101,12 +101,12 @@
         mat3 TBN_matrix = mat3(tangent_view_space, bitangent_view_space, normal_view_space);
 
         #if POM == 1
-            vec3 fragment_ndc_space_position = vec3(uv, texture(depthtex0, uv).r) * 2.0 - 1.0;
+            vec3 fragment_ndc_space_position = vec3(gl_FragCoord.xy / windowDimensions, gl_FragCoord.z) * 2.0 - 1.0;
             vec3 fragment_view_space_position = project_and_divide(gbufferProjectionInverse, fragment_ndc_space_position);
             vec3 view_direction_view_space = normalize(fragment_view_space_position);
             vec3 view_direction_tangent_space = transpose(TBN_matrix) * view_direction_view_space;
             vec2 local_uv = atlas_uv_to_local(uv, texture_bottom_left, single_tex_size);
-            vec2 pom_local_uv = pom_uv_transform(local_uv, view_direction_tangent_space);
+            vec2 pom_local_uv = pom_uv_transform(local_uv, view_direction_tangent_space, fragment_view_space_position, TBN_matrix);
             vec2 pom_atlas_uv = local_uv_to_atlas(pom_local_uv, texture_bottom_left, single_tex_size);
         #endif
 
@@ -121,7 +121,7 @@
             vec3 normal_normal_space = vec3(normal_map_read.xy, sqrt(1.0 - dot(normal_map_read.xy, normal_map_read.xy)));
             vec3 normal_view_space = TBN_matrix * normal_normal_space;
             vec3 normal_world_space = normalize(mat3(gbufferModelViewInverse) * normal_view_space);
-            vec2 normal_octahedral_encoded = vector_encode_octahedral(normal_world_space); // in [0, 1]^2
+            vec2 normal_octahedral_encoded = vector_encode_octahedral(normal_world_space) * 0.5 + 0.5; // in [0, 1]^2
             bitpacked_data.r = packUnorm4x8(vec4(normal_octahedral_encoded, normal_map_read.zw));
         #else
             // same deal as normal mapping but use all bits for octahedral encoded normal.xy

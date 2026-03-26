@@ -8,6 +8,8 @@
 #endif
 
 #ifdef STAGE_FRAGMENT
+    // TODO: fix noise coming through in ssao. dither maybe?
+
     in vec2 uv;
 
     /* RENDERTARGETS: 4 */
@@ -102,6 +104,6 @@
         }
 
         occlusion_factor /= float(SSAO_SAMPLE_COUNT);
-        occlusion_factor = pow(1.0 - occlusion_factor, AMBIENT_INTENSITY);
+        occlusion_factor = pow(smoothstep01(1.0 - occlusion_factor), AMBIENT_INTENSITY);
     }
 #endif

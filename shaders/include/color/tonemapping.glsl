@@ -1,5 +1,8 @@
 #if !defined INCLUDE_TONEMAPPING
     #define INCLUDE_TONEMAPPING
+
+    #include "/include/color/conversions.glsl"
+
     // The two below are from LearnOpenGL.
 
     vec3 reinhard(vec3 color) {
@@ -7,7 +10,7 @@
     }
 
     vec3 reinhard2(vec3 x) {
-        const float L_white = 4.0;
+        const float L_white = 1.0;
 
         return (x * (1.0 + x / (L_white * L_white))) / (1.0 + x);
     }
@@ -193,5 +196,10 @@
                 ((pow(hdrMax, a * d) - pow(midIn, a * d)) * midOut);
 
         return pow(x, a) / (pow(x, a * d) * b + c);
+    }
+
+    vec3 unreal(vec3 x) {
+        x = rgb_to_linear(x);
+        return (x / (x + 0.155) * 1.019);
     }
 #endif

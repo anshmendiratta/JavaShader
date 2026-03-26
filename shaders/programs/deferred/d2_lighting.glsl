@@ -73,6 +73,7 @@
         float n_dot_l = compute_diffuse(light_source_direction_world_space, normal_world_space);
 
         // TODO: somehow this doesnt work with h.v but does with r.v
+        // TODO: refactor to extract AO if and generalize `direct_lighting` def
         #if SPECULAR_MAPPING == 1
             float perceptual_roughness = material.nonlinear_smoothness;
             float roughness = pow(1.0 - perceptual_roughness, 2.0);
@@ -84,19 +85,10 @@
             float shininess = smoothness * 20.0 + 1.0; // alpha
             float specular_light_factor = smoothness * pow(h_dot_v, 4.0 * shininess);
             float diffuse_light_factor = roughness * n_dot_l;
-            direct_lighting = diffuse_light_factor + specular_light_factor;
+
+            float direct_lighting = diffuse_light_factor + specular_light_factor;
         #else
-            // FIX: ao application
-            #if AMBIENT_OCCLUSION == 1
-                #if POM == 1
-                    float ssao_factor = texture(BUFFER_SSAO, o_uv).r;
-                #else
-                    float ssao_factor = texture(BUFFER_SSAO, uv).r;
-                #endif
-                float direct_lighting = n_dot_l * ssao_factor;
-            #else
-                float direct_lighting = n_dot_l;
-            #endif
+            float direct_lighting = n_dot_l;
         #endif
         // kinds of lighting contribution
 
@@ -106,8 +98,8 @@
         float SKYLIGHT_INTENSITY = lightmap_uv.y;
         vec3 skylight = hsl_to_rgb(SKYLIGHT_INTENSITY_MULTIPLIER * rgb_to_hsl(SKYLIGHT_INTENSITY * SKYLIGHT_COLOR)); // y is skylight
 
-        // TODO: vary sunlight intensity by time of day.
-        vec3 sunlight = direct_lighting * lightmap_uv.y * SUNLIGHT_COLOR; // multiply by lightmap_uv to fix some light leaks.
+        // TODO: change values this interpolates so sunrise/sunset/nighttime is better
+        vec3 sunlight = compute_skylight_intensity_scalar(sunAngle) * direct_lighting * lightmap_uv.y * SUNLIGHT_COLOR; // multiply by lightmap_uv to fix some light leaks.
 
         vec3 direct_contribution = blocklight;
         #if SHADOWS == 1
@@ -115,10 +107,25 @@
         #else
             direct_contribution += sunlight;
         #endif
-        vec3 indirect_contribution = skylight;
-        vec3 emission = vec3(fract(material.emissiveness));
+        vec3 indirect_contribution = skylight * compute_skylight_intensity_scalar(sunAngle);
+
+        // lighting applications
+
+        #if AMBIENT_OCCLUSION == 1
+            #if POM == 1
+                float ssao_factor = texture(BUFFER_SSAO, o_uv).r;
+            #else
+                float ssao_factor = texture(BUFFER_SSAO, uv).r;
+            #endif
+            color.rgb *= vec3(ssao_factor);
+        #endif
 
         color.rgb *= direct_contribution + indirect_contribution;
+
+        #if SPECULAR_MAPPING == 1
+            vec3 emission = EMISSION_STRENGTH * material.emissiveness * color.rgb; // bruh
+            color.rgb += emission;
+        #endif
 
         color.rgb = rgb_to_linear(color.rgb);
     }

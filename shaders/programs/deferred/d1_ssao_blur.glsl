@@ -19,15 +19,19 @@
 
     #include "/include/utility/vogel_disk_blur.glsl"
     #include "/include/utility/math_fp.glsl"
+    #include "/include/utility/dither.glsl"
 
     #define SSAO_BLUR_SAMPLE_COUNT 16 // Hard-code value as the blur will be fine-tuned.
 
-    // 2x2 box kernel.
+    // TODO: find a way better blur
+
     void main() {
         float final_out = 0.0;
+        vec2 texel_size = 1.0 / textureSize(colortex4, 0);
 
         for (int idx = 0; idx < SSAO_BLUR_SAMPLE_COUNT; idx += 1) {
-            vec2 sample_uv = SSAO_RADIUS * compute_vogel_disk_sample_uv(idx, SSAO_BLUR_SAMPLE_COUNT); // multplication by BLOOM_RADIUS is mostly arbitary and seems to produce sensible results
+            vec2 sample_uv = SSAO_RADIUS * texel_size * compute_vogel_disk_sample_uv(idx, SSAO_BLUR_SAMPLE_COUNT);
+            vec2 dither = vec2(compute_dither(sample_uv)) / uv;
             final_out += sample_colortex(colortex4, uv, sample_uv).r;
         }
 

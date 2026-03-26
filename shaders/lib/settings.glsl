@@ -36,7 +36,7 @@
     // ------------------------
 
     #define AMBIENT_OCCLUSION 1 // Enables ambient occlusion. [0 1]
-    #define AMBIENT_INTENSITY 2.0 // How much AO is applied. Higher values increase AO.. [0.0 0.5 1.0 1.5 2.0 2.5 3.0]
+    #define AMBIENT_INTENSITY 2.0 // How much AO is applied. Higher values increase AO.. [0.0 0.25 0.5 0.75 1.0 1.25 1.5 1.75 2.0 2.25 2.5 2.75 3.0]
 
     #define SSAO_SAMPLE_COUNT 16 // [16 32 64 128]
     #define SSAO_RADIUS 2.5 // [0.5 1.0 1.5 2.0 2.5 3.0 3.5 4.0 4.5 5.0]
@@ -77,9 +77,12 @@
     #define POM 0 // Enables LabPBR parallax occlusion mapping. [0 1]
     #define SSS 0 // Enables subsurface scattering. [0 1]
 
+    #define EMISSION_STRENGTH 1.0 // Determines how bright emissive objects appear. [0.5 0.75 1.0 1.25 1.5 1.75 2.0 2.25 2.5]
+
     #define POM_HEIGHT_SCALE 0.5 // Changes the depth perceived in POM textures. [0.1 0.15 0.2 0.25 0.3 0.5 0.75 1.0]
     #define POM_MIN_LAYERS 8 // The minimum number of layers used for depth samples. [2 4 8]
     #define POM_MAX_LAYERS 64 // The minimum number of layers used for depth samples. [8 16 32 64]
+    #define POM_DEPTH_WRITE 1 // Enables whether or not the parallax mapping can allow shadowing. [0 1]
 
     // ---------------------------
     //     Screen Space Passes
