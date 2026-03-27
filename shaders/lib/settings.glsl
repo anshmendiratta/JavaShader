@@ -80,8 +80,8 @@
     #define EMISSION_STRENGTH 1.0 // Determines how bright emissive objects appear. [0.5 0.75 1.0 1.25 1.5 1.75 2.0 2.25 2.5]
 
     #define POM_HEIGHT_SCALE 0.06 // Changes the depth perceived in POM textures. [0.02 0.04 0.06 0.08 0.10 0.12 0.14 0.16 0.18 0.20 0.25 0.5 0.75 1.0]
-    #define POM_MIN_LAYERS 8 // The minimum number of layers used for depth samples. [2 4 8]
-    #define POM_MAX_LAYERS 64 // The minimum number of layers used for depth samples. [8 16 32 64]
+    #define POM_MIN_LAYERS 8 // The minimum number of layers used for depth samples. [2 4 8 16 32]
+    #define POM_MAX_LAYERS 64 // The minimum number of layers used for depth samples. [32 64 128]
     #define POM_DEPTH_WRITE 1 // Enables whether or not the parallax mapping can allow shadowing. [0 1]
 
     // ---------------------------

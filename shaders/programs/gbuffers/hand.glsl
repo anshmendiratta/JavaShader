@@ -13,16 +13,16 @@
     in vec2 uv;
     in vec4 glcolor;
 
-    /* RENDERTARGETS: 0 */
+    /* RENDERTARGETS: 0,31 */
     layout(location = 0) out vec4 color;
+    layout(location = 1) out uint frag_is_hand;
 
     #include "/include/uniforms.glsl"
 
     void main() {
         color = texture(gtexture, uv) * glcolor;
+        frag_is_hand = 1; // buffer clear is 0 so value is 1 only for hand fragments
 
-        if (color.a < alphaTestRef) {
-            discard;
-        }
+        if (color.a < alphaTestRef) discard;
     }
 #endif

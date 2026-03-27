@@ -30,5 +30,6 @@ void main() {
         vec4 clip_space_position = (gbufferProjection * vec4(view_space_position, 1.0));
 
         gl_Position = clip_space_position;
+        // gl_Normal = compute_wave_normal(world_space_position.xy, 0.01, 1.0);
     }
 }

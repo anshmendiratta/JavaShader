@@ -29,19 +29,24 @@
     #include "/include/utility/math_fp.glsl"
     #include "/include/utility/space_conversions.glsl"
 
+    #include "/include/color/conversions.glsl"
+
     void main() {
         if (starData.a == 1.0) {
-            color = vec4(1.0);
+            // NOTE: maybe add dropoff near the sun later? or some other kind so that stars near the horizon in daytime appear nicer
+            color = vec4(starData.rgb, 1.0);
             return;
         }
 
-        vec3 fragment_position_ndc_space = vec3(uv, 1.0) * 2.0 - 1.0;
+        vec2 screen_uv = gl_FragCoord.xy / windowDimensions;
+        vec3 fragment_position_ndc_space = vec3(screen_uv, /* depth */ 1.0) * 2.0 - 1.0;
         vec3 fragment_position_view_space = project_and_divide(gbufferProjectionInverse, fragment_position_ndc_space);
+        vec3 fragment_position_player_space = mat3(gbufferModelViewInverse) * normalize(fragment_position_view_space);
 
-        float up_dot_frag = clamp01(dot(vec3(0.0, 1.0, 0.0), fragment_position_view_space));
+        float up_dot_frag = clamp01(abs(fragment_position_player_space.y + 0.01)); // frag_player dot {0, 1, 0}
         float up_factor = pow(up_dot_frag, 1.0);
 
-        color.rgb = skyColor;
-        // color.a = 1.0;
+        color.rgb = mix(rgb_to_linear(fogColor), rgb_to_linear(skyColor), up_factor);
+        color.a = 1.0;
     }
 #endif

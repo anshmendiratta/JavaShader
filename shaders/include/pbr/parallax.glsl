@@ -28,7 +28,7 @@
         // Start at the top surface
         vec2 current_uv = local_uv;
         float current_height = 1.0;
-        
+
         // Calculate UV offset per layer - proper parallax offset
         vec2 uv_offset = (view_direction_tangent_space.xy / -view_direction_tangent_space.z) * (POM_HEIGHT_SCALE * layer_depth);
 
@@ -52,22 +52,22 @@
         vec2 previous_uv = current_uv - uv_offset;
         float previous_height = current_height + layer_depth;
         float previous_sampled = _sample_heightmap(previous_uv);
-        
+
         // Calculate the intersection point between the two samples
         float height_diff_before = previous_height - previous_sampled;
         float height_diff_after = sampled_height - current_height;
-        
+
         // Prevent division by zero and ensure smooth interpolation
         float total_diff = height_diff_before + height_diff_after;
         float weight = (total_diff > 0.0001) ? (height_diff_before / total_diff) : 0.5;
         weight = clamp(weight, 0.0, 1.0);
-        
+
         vec2 final_uv = mix(previous_uv, current_uv, weight);
 
         // FIX: z doesnt work for the depth value
         // Mostly inspired by Bliss (Xonk): https://github.com/X0nk/Bliss-Shader/blob/81e403ed308141039a09d792a36f8eb328898a60/shaders/dimensions/all_solid.fsh#L392
         #if POM_DEPTH_WRITE == 1
-            vec3 fragment_with_pom_view_space_position = fragment_view_space_position + layer * transpose(TBN_matrix) * d_uv;
+            vec3 fragment_with_pom_view_space_position = fragment_view_space_position + layer * transpose(TBN_matrix) * vec3(uv_offset, 1.0);
             vec4 fragment_with_pom_clip_space_position = view_to_clip(fragment_with_pom_view_space_position);
             gl_FragDepth = fragment_with_pom_clip_space_position.z;
         #endif

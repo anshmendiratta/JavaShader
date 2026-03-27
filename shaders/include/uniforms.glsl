@@ -10,6 +10,7 @@
     uniform vec3 fogColor;
 
     uniform vec3 shadowLightPosition;
+    uniform vec3 sunDirVector;
 
     uniform vec3 cameraPosition;
     uniform vec3 previousCameraPosition;
@@ -86,6 +87,7 @@
     uniform sampler2D colortex13;
     uniform sampler2D colortex14;
     uniform sampler2D colortex15;
+    uniform usampler2D colortex31;
 
     uniform sampler2D depthtex0;
     uniform sampler2D depthtex1;

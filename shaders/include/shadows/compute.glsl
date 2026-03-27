@@ -4,6 +4,7 @@
     #include "/lib/pipeline.glsl"
     #include "/include/utility/math_fp.glsl"
     #include "/include/utility/vogel_disk_blur.glsl"
+    #include "/include/utility/dither.glsl"
 
     const float shadowDistance = 160.0;
 
@@ -29,15 +30,24 @@
 
     #define SHADOW_BLUR_SAMPLE_COUNT SHADOW_RANGE * SHADOW_RANGE
 
-    // TODO: blur this properly bruh. still bands
     vec3 get_soft_shadow(vec4 shadow_clip_space_position, vec3 normal_world_space) {
         // Courtesy of @eldeston (https://discord.com/channels/237199950235041794/525510804494221312/1100010778133794827) in the shaderLABS discord.
         const float shadow_bias = (shadowDistance / shadowMapResolution) * 16.0 * SHADOW_BIAS;
 
+        // Add rotation to the sampling pattern to reduce banding
+        float dither = compute_dither(gl_FragCoord.xy);
+        float rotation_angle = dither * TAU; // Random rotation per pixel
+        float cos_angle = cos(rotation_angle);
+        float sin_angle = sin(rotation_angle);
+        mat2 rotation_matrix = mat2(cos_angle, -sin_angle, sin_angle, cos_angle);
+
         vec3 shadow_accumulator = vec3(0.0);
 
         for (int idx = 0; idx < SHADOW_BLUR_SAMPLE_COUNT; idx += 1) {
-            vec2 sample_uv_offset = rcp(SHADOW_MAP_RESOLUTION) * rcp(SHADOW_RANGE) * SHADOW_RADIUS * compute_vogel_disk_sample_uv(idx, SHADOW_BLUR_SAMPLE_COUNT);
+            vec2 vogel_sample = compute_vogel_disk_sample_uv(idx, SHADOW_BLUR_SAMPLE_COUNT);
+            // Rotate the sample pattern to break up banding
+            vec2 rotated_sample = rotation_matrix * vogel_sample;
+            vec2 sample_uv_offset = rcp(SHADOW_MAP_RESOLUTION) * rcp(SHADOW_RANGE) * SHADOW_RADIUS * rotated_sample;
             vec4 sample_uv = shadow_clip_space_position + vec4(sample_uv_offset, 0.0, 0.0);
 
             float distortion_factor = compute_distortion_factor(sample_uv.xyz);

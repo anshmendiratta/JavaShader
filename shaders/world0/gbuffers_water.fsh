@@ -13,4 +13,9 @@ layout(location = 0) out vec4 color;
 void main() {
     color = texture(gtexture, uv) * glcolor;
     color.rgb = rgb_to_linear(color.rgb);
+
+    if (color.a < alphaTestRef) discard;
 }
+
+// #define STAGE_FRAGMENT
+// #include "/programs/gbuffers/all_solid.glsl"

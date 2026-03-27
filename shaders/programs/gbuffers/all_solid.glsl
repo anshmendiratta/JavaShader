@@ -33,11 +33,13 @@
         lightmap_uv = (gl_TextureMatrix[1] * gl_MultiTexCoord1).xy;
         lightmap_uv = lightmap_uv / (30.0 / 32.0) - (1.0 / 32.0); // Conversion from [0.033, 0.97] to [0.0, 1.0].
 
-        normal_view_space = mc_Entity.x == 10000.0 ? gl_NormalMatrix * vec3(0.0, 1.0, 0.0) : normalize(gl_NormalMatrix * gl_Normal); // View space.
+        normal_view_space = mc_Entity.x == 10000.0 ? gl_NormalMatrix * vec3(0.0, 1.0, 0.0) : normalize(gl_NormalMatrix * gl_Normal);
         #if NORMAL_MAPPING == 1 && !defined GBUFFER_HAND
-            normal_view_space = normalize(gl_NormalMatrix * gl_Normal); // View space.
-            tangent_view_space = normalize(at_tangent.w * (gl_NormalMatrix * at_tangent.xyz)); // View space.
+            Material material;
+            init_material_raw_read(material, uv);
+            normal_view_space = mat3(gbufferModelView) * material.normal;
         #endif
+        tangent_view_space = normalize(at_tangent.w * (gl_NormalMatrix * at_tangent.xyz)); // View space.
 
         #if WAVING_FOLIAGE == 1 && !defined GBUFFER_HAND
             // Waving foliage.
@@ -90,6 +92,8 @@
     #include "/include/uniforms.glsl"
 
     #include "/include/utility/random.glsl"
+
+    #include "/include/color/conversions.glsl"
 
     #include "/include/pbr/textures.glsl"
     #if POM == 1 && !defined GBUFFER_HAND
@@ -148,8 +152,9 @@
             color = read_texture(gtexture, uv) * glcolor;
         #endif
 
-        if (color.a < alphaTestRef) {
-            discard;
-        }
+        // : for some reason particles need further gamma correction? maybe try and find a way to avoid this
+        if (renderStage == MC_RENDER_STAGE_PARTICLES) color.rgb = rgb_to_linear(color.rgb);
+
+        if (color.a < alphaTestRef) discard;
     }
 #endif

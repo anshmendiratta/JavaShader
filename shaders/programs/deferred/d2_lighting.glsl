@@ -46,7 +46,7 @@
         color = texture(BUFFER_COLOR, uv);
         // do nothing if sky
         float depth = texture(depthtex0, uv).r;
-        if (depth == 1.0) {
+        if (depth == 1.0 || renderStage == MC_RENDER_STAGE_CLOUDS) {
             return;
         }
 
@@ -112,14 +112,12 @@
         // lighting applications
 
         #if AMBIENT_OCCLUSION == 1
-            #if POM == 1
-                float ssao_factor = texture(BUFFER_SSAO, o_uv).r;
-            #else
+            // FIX: hand detection does not work?
+            uint is_hand = texture(BUFFER_HAND_MASK, uv).r;
+            if (is_hand == 0) {
                 float ssao_factor = texture(BUFFER_SSAO, uv).r;
-            #endif
-
-            // FIX: doesnt work
-            if (renderStage != MC_RENDER_STAGE_HAND_SOLID && renderStage != MC_RENDER_STAGE_HAND_TRANSLUCENT) color.rgb *= vec3(ssao_factor);
+                color.rgb *= vec3(ssao_factor);
+            }
         #endif
 
         color.rgb *= direct_contribution + indirect_contribution;
