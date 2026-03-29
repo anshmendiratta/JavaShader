@@ -40,7 +40,7 @@
                 used_uv = o_used_uv;
             #endif
             Material material;
-            init_material_unpacked_colortex_read(material, normal_map_read, specular_map_read);
+            init_material_unpacked_colortex_read(material, normal_map_read, specular_map_read, uv);
             return vec4(material.normal, 1.0);
         #elif DEBUG_BUFFER == 2
             return texture(colortex2, used_uv)
@@ -97,9 +97,31 @@
     }
 
     void main() {
-        if (uv.x <= DEBUG_QUAD_WINDOW_LENGTH_RATIO && uv.y < DEBUG_QUAD_WINDOW_LENGTH_RATIO) { // scaling for rendering debug view in bottom left quadratn
-            used_uv *= rcp(DEBUG_QUAD_WINDOW_LENGTH_RATIO);
+        color = texture(colortex0, uv);
 
+        #if DEBUG_COVER_SCREEN == 0
+            if (uv.x <= DEBUG_QUAD_WINDOW_LENGTH_RATIO && uv.y < DEBUG_QUAD_WINDOW_LENGTH_RATIO) { // scaling for rendering debug view in bottom left quadratn
+                used_uv *= rcp(DEBUG_QUAD_WINDOW_LENGTH_RATIO);
+
+                #if DEBUG_VIEW == 1
+                    #if DEBUG_BUFFER <= 15
+                        // -1 - +15.
+                        color = sample_colortex();
+                    #elif DEBUG_BUFFER <= 16
+                        // 16.
+                        color = vec4(interpolate_turbo(sample_depthtex().r), 1.0);
+                    #elif DEBUG_BUFFER <= 18
+                        // 17-18.
+                        color = sample_shadowtex();
+                    #elif DEBUG_BUFFER <= 19
+                        // 19.
+                        color = sample_shadowcolor();
+                    #endif
+                #endif
+            }
+        #endif
+
+        #if DEBUG_COVER_SCREEN == 1
             #if DEBUG_VIEW == 1
                 #if DEBUG_BUFFER <= 15
                     // -1 - +15.
@@ -114,11 +136,7 @@
                     // 19.
                     color = sample_shadowcolor();
                 #endif
-            #else
-                color = texture(colortex0, uv);
             #endif
-        } else {
-            color = texture(colortex0, uv);
-        }
+        #endif
     }
 #endif

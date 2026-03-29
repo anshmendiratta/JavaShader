@@ -4,7 +4,7 @@
     #include "/include/utility/bits.glsl"
 
     vec4 read_texture(sampler2D tex, vec2 uv) {
-        return textureGrad(tex, uv, dFdx(uv), dFdy(uv));
+        return textureLod(tex, uv, 0);
     }
 
     // colortex1: RGBA32UI

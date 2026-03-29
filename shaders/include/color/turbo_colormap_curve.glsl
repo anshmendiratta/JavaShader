@@ -1,6 +1,8 @@
 #if !defined INCLUDE_TURBO_COLORMAP
     #define INCLUDE_TURBO_COLORMAP
 
+    #include "/include/utility/math_fp.glsl"
+
     const vec3 turboCurve[] = vec3[](
     vec3(0.18995, 0.07176, 0.23217),
     vec3(0.19483, 0.08339, 0.26149),
@@ -261,7 +263,7 @@
     );
 
     vec3 interpolate_turbo(float x) {
-        x = pow(clamp(x, 0.0, 1.0), 2.0) * 255.0;
+        x = pow2(clamp(x, 0.0, 1.0)) * 255.0;
 
         return turboCurve[int(x)] + (turboCurve[min(255, int(x) + 1)] - turboCurve[int(x)]) * fract(x);
     }

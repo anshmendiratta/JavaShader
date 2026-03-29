@@ -60,16 +60,15 @@
         // Prevent division by zero and ensure smooth interpolation
         float total_diff = height_diff_before + height_diff_after;
         float weight = (total_diff > 0.0001) ? (height_diff_before / total_diff) : 0.5;
-        weight = clamp(weight, 0.0, 1.0);
+        weight = clamp01(weight);
 
         vec2 final_uv = mix(previous_uv, current_uv, weight);
 
-        // FIX: z doesnt work for the depth value
         // Mostly inspired by Bliss (Xonk): https://github.com/X0nk/Bliss-Shader/blob/81e403ed308141039a09d792a36f8eb328898a60/shaders/dimensions/all_solid.fsh#L392
         #if POM_DEPTH_WRITE == 1
             vec3 fragment_with_pom_view_space_position = fragment_view_space_position + layer * transpose(TBN_matrix) * vec3(uv_offset, 1.0);
             vec4 fragment_with_pom_clip_space_position = view_to_clip(fragment_with_pom_view_space_position);
-            gl_FragDepth = fragment_with_pom_clip_space_position.z;
+            gl_FragDepth = fragment_with_pom_clip_space_position.z / fragment_with_pom_clip_space_position.w;
         #endif
 
         return final_uv;

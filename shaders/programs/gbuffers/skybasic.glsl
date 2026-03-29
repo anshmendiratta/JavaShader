@@ -43,8 +43,8 @@
         vec3 fragment_position_view_space = project_and_divide(gbufferProjectionInverse, fragment_position_ndc_space);
         vec3 fragment_position_player_space = mat3(gbufferModelViewInverse) * normalize(fragment_position_view_space);
 
-        float up_dot_frag = clamp01(abs(fragment_position_player_space.y + 0.01)); // frag_player dot {0, 1, 0}
-        float up_factor = pow(up_dot_frag, 1.0);
+        float up_dot_frag = clamp01(abs(fragment_position_player_space.y)); // frag_player dot {0, 1, 0}
+        float up_factor = up_dot_frag;
 
         color.rgb = mix(rgb_to_linear(fogColor), rgb_to_linear(skyColor), up_factor);
         color.a = 1.0;

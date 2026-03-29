@@ -43,3 +43,5 @@ value.WAVING_FOLIAGE.0 = Off
 value.WAVING_FOLIAGE.1 = On
 value.DEBUG_VIEW.0 = Off
 value.DEBUG_VIEW.1 = On
+value.DEBUG_COVER_SCREEN.0 = Off
+value.DEBUG_COVER_SCREEN.1 = On

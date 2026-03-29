@@ -109,4 +109,5 @@
 
     #define DEBUG_VIEW 0 // Enables/disables the debug view for buffers. [0 1]
     #define DEBUG_BUFFER 0 // colortex0-15, depthtex0, shadowtex0-1, shadowcolor0. [0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19]
+    #define DEBUG_COVER_SCREEN 0 // Toggles between the debug output rendering to a fourth of the screen and the entire screen. [0 1]
 #endif

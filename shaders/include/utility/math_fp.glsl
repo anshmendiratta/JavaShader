@@ -13,7 +13,7 @@
     #define rcp(x) (1.0 / (x))
 
     // CS constants.
-    #define FP_OP_TOLERANCE rcp(255.0) // Chosen value because of include comparisons made in the shader.
+    #define EPSILON rcp(255.0) // chosen value because of include comparisons made in the shader.
 
     // -------------------
     //     Convenience
@@ -58,6 +58,32 @@
     float smoothstep01(float value) {
         return smoothstep(0.0, 1.0, value);
     }
+
+    #define _define_float_pow(exp) float pow##exp(float value) { return pow(value, exp##.0); }
+
+    _define_float_pow(2)
+    _define_float_pow(3)
+    _define_float_pow(4)
+    _define_float_pow(5)
+
+    #undef _define_float_pow
+
+    #define _define_vec_pow(dim, exp) vec##dim pow##exp(vec##dim value) { return pow(value, vec##dim(exp##.0)); }
+
+    _define_vec_pow(2, 2)
+    _define_vec_pow(2, 3)
+    _define_vec_pow(2, 4)
+    _define_vec_pow(2, 5)
+    _define_vec_pow(3, 2)
+    _define_vec_pow(3, 3)
+    _define_vec_pow(3, 4)
+    _define_vec_pow(3, 5)
+    _define_vec_pow(4, 2)
+    _define_vec_pow(4, 3)
+    _define_vec_pow(4, 4)
+    _define_vec_pow(4, 5)
+
+    #undef _define_vec_pow
 
     // ----------------------
     //     HLSL functions

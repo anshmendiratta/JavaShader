@@ -51,11 +51,11 @@
         }
 
         Material material;
-        init_material_unpacked_colortex_read(material, normal_map_read, specular_map_read);
+        init_material_unpacked_colortex_read(material, normal_map_read, specular_map_read, uv);
 
         vec3 normal_world_space = material.normal;
 
-        vec3 fragment_ndc_space_position = vec3(uv.xy, depth) * 2.0 - 1.0;
+        vec3 fragment_ndc_space_position = vec3(gl_FragCoord.xy / windowDimensions, depth) * 2.0 - 1.0;
         vec3 fragment_view_space_position = ndc_to_view(fragment_ndc_space_position);
         vec3 fragment_feet_space_position = view_to_feet(fragment_view_space_position);
 
@@ -69,27 +69,20 @@
         // diffuse
         vec3 fragment_world_space_position = feet_to_world(fragment_feet_space_position);
         vec3 light_source_world_space_position = feet_to_world(view_to_feet(shadowLightPosition));
-        vec3 light_source_direction_world_space = normalize(light_source_world_space_position - fragment_world_space_position);
-        float n_dot_l = compute_diffuse(light_source_direction_world_space, normal_world_space);
+        vec3 light_source_vector_world_space = normalize(light_source_world_space_position - fragment_world_space_position);
+        float n_dot_l = compute_diffuse(light_source_vector_world_space, normal_world_space);
 
-        // TODO: somehow this doesnt work with h.v but does with r.v
-        // TODO: refactor to extract AO if and generalize `direct_lighting` def
+        // TODO: generalize `direct_lighting` def
         #if SPECULAR_MAPPING == 1
-            float perceptual_roughness = material.nonlinear_smoothness;
-            float roughness = pow(1.0 - perceptual_roughness, 2.0);
-            float smoothness = 1.0 - roughness;
-
-            // https://en.wikipedia.org/wiki/Blinn%E2%80%93Phong_reflection_model
             vec3 view_vector_world_space = fragment_world_space_position - cameraPosition;
-            float h_dot_v = compute_specular(view_vector_world_space, light_source_direction_world_space, normal_world_space);
-            float shininess = smoothness * 20.0 + 1.0; // alpha
-            float specular_light_factor = smoothness * pow(h_dot_v, 4.0 * shininess);
-            float diffuse_light_factor = roughness * n_dot_l;
+            vec3 specular_light_factor = compute_specular(material, light_source_vector_world_space, n_dot_l);
+            vec3 diffuse_light_factor = vec3(material.roughness * n_dot_l);
 
-            float direct_lighting = diffuse_light_factor + specular_light_factor;
+            vec3 direct_lighting = diffuse_light_factor + specular_light_factor;
         #else
-            float direct_lighting = n_dot_l;
+            vec3 direct_lighting = vec3(n_dot_l);
         #endif
+
         // kinds of lighting contribution
 
         float BLOCKLIGHT_INTENSITY = lightmap_uv.x;
@@ -114,9 +107,9 @@
         #if AMBIENT_OCCLUSION == 1
             // FIX: hand detection does not work?
             uint is_hand = texture(BUFFER_HAND_MASK, uv).r;
+            float ao_factor = texture(BUFFER_SSAO, uv).r;
             if (is_hand == 0) {
-                float ssao_factor = texture(BUFFER_SSAO, uv).r;
-                color.rgb *= vec3(ssao_factor);
+                color.rgb *= vec3(ao_factor);
             }
         #endif
 

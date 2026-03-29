@@ -73,7 +73,7 @@
         vec2 lightmap_uv, o_uv;
         unpack_colortex1_read(texture(colortex1, uv), normal_map_read, specular_map_read, lightmap_uv, o_uv);
         Material material;
-        init_material_unpacked_colortex_read(material, normal_map_read, specular_map_read);
+        init_material_unpacked_colortex_read(material, normal_map_read, specular_map_read, uv);
 
         // Construct TBN.
         vec3 fragment_screen_space_position = vec3(uv, texture(depthtex2, uv).r);
