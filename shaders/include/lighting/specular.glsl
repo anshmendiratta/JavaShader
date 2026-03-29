@@ -19,7 +19,7 @@
 
         // TODO: find a fresnel func that isnt metal/dielectric specific
         if (material.is_metal) {
-            fresnel = _fresnel_rescaled_schlick(material, light_source_vector_world_space); // TODO: why does the second arg need negating...?
+            fresnel = _fresnel_rescaled_schlick(material, light_source_vector_world_space);
         } else {
             fresnel = _fresnel_schlick(material, view_vector_world_space, light_source_vector_world_space);
         }
@@ -29,8 +29,7 @@
         float geometric_attenuation = min1(min(first_attenuation_term, second_attenuation_term)); // g
         float intensity_distribution = _distribution_beckmann(material, view_vector_world_space, light_source_vector_world_space); // d
 
-        vec3 specular_highlight = fresnel * intensity_distribution * geometric_attenuation;
-        // vec3 specular_highlight = fresnel / PI * intensity_distribution * geometric_attenuation;
+        vec3 specular_highlight = fresnel / PI * intensity_distribution * geometric_attenuation;
         if (material.is_metal) {
             specular_highlight *= material.albedo;
         }

@@ -78,13 +78,14 @@
             // FIX: temporarily allowing access to fresnel here. privatize later. perhaps a general "get_lighting" func?
             vec3 fresnel;
             vec3 specular_light_factor = compute_specular(material, light_source_vector_world_space, view_vector_world_space, fresnel);
-            vec3 diffuse_light_factor = vec3(n_dot_l * (1.0 - fresnel));
+            vec3 diffuse_light_factor = n_dot_l * (1.0 - fresnel);
 
             vec3 direct_lighting = diffuse_light_factor + specular_light_factor;
 
-            // TODO: this feels like a jank workaround for metals being naturally dim. find an all-encompassing way of handling metals/dielectrics
+            // TODO: this feels like a jank workaround for metals being naturally dim. find an all-encompassing way of handling metals/dielectrics.
+            // NOTE: the level of "diffuse" lighting seems consistent with shrimple. ill trust it for now.
             if (material.is_metal) {
-                direct_lighting += fresnel;
+                // direct_lighting += fresnel; // FIX: this does NOT apply to shadowed regions. their albedo tinting is removed.
             }
         #else
             vec3 direct_lighting = vec3(n_dot_l);
