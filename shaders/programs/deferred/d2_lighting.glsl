@@ -74,11 +74,18 @@
 
         // TODO: generalize `direct_lighting` def
         #if SPECULAR_MAPPING == 1
-            vec3 view_vector_world_space = fragment_world_space_position - cameraPosition;
-            vec3 specular_light_factor = compute_specular(material, light_source_vector_world_space, n_dot_l);
-            vec3 diffuse_light_factor = vec3(material.roughness * n_dot_l);
+            vec3 view_vector_world_space = normalize(cameraPosition - fragment_world_space_position);
+            // FIX: temporarily allowing access to fresnel here. privatize later. perhaps a general "get_lighting" func?
+            vec3 fresnel;
+            vec3 specular_light_factor = compute_specular(material, light_source_vector_world_space, view_vector_world_space, fresnel);
+            vec3 diffuse_light_factor = vec3(n_dot_l * (1.0 - fresnel));
 
             vec3 direct_lighting = diffuse_light_factor + specular_light_factor;
+
+            // TODO: this feels like a jank workaround for metals being naturally dim. find an all-encompassing way of handling metals/dielectrics
+            if (material.is_metal) {
+                direct_lighting += fresnel;
+            }
         #else
             vec3 direct_lighting = vec3(n_dot_l);
         #endif

@@ -55,6 +55,10 @@
         return min(0.0, value);
     }
 
+    float min1(float value) {
+        return min(1.0, value);
+    }
+
     float smoothstep01(float value) {
         return smoothstep(0.0, 1.0, value);
     }
