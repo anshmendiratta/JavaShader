@@ -26,7 +26,7 @@
             vec3(3.9291, 3.1900, 2.3808) // silver
     };
 
-    #include "/include/utility/math_fp.glsl"
+    #include "/include/math/convenience.glsl"
 
     // assumes the incident ray always comes from air. hence, n_i = 1.0
     vec3 compute_hcm_f0(uint metal_id) {

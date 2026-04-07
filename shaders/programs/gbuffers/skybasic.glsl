@@ -12,24 +12,20 @@
 #endif
 
 #ifdef STAGE_FRAGMENT
-    // TODO: understand why the sky coloring works how it does.
-
-    in vec4 starData; // rgb = star color, a = flag for weather or not this pixel is a star.
+    in vec4 starData; // rgb = star color, a = flag for whether or not this pixel is a star.
     in vec2 uv;
     in vec4 glcolor;
 
     /* RENDERTARGETS: 0 */
     layout(location = 0) out vec4 color;
 
-    #include "/lib/settings.glsl"
-
+    #include "/include/settings.glsl"
     #include "/include/uniforms.glsl"
 
-    #include "/include/utility/random.glsl"
-    #include "/include/utility/math_fp.glsl"
+    #include "/include/math/convenience.glsl"
     #include "/include/utility/space_conversions.glsl"
 
-    #include "/include/color/conversions.glsl"
+    #include "/include/sky/color.glsl"
 
     void main() {
         if (starData.a == 1.0) {
@@ -40,13 +36,12 @@
 
         vec2 screen_uv = gl_FragCoord.xy / windowDimensions;
         vec3 fragment_position_ndc_space = vec3(screen_uv, /* depth */ 1.0) * 2.0 - 1.0;
-        vec3 fragment_position_view_space = project_and_divide(gbufferProjectionInverse, fragment_position_ndc_space);
-        vec3 fragment_position_player_space = mat3(gbufferModelViewInverse) * normalize(fragment_position_view_space);
+        vec3 fragment_position_view_space = ndc_to_view(fragment_position_ndc_space);
+        vec3 fragment_vector_world_space = mat3(gbufferModelViewInverse) * normalize(fragment_position_view_space); // treat as vector
 
-        float up_dot_frag = clamp01(abs(fragment_position_player_space.y)); // frag_player dot {0, 1, 0}
-        float up_factor = up_dot_frag;
+        float up_factor = max0(fragment_vector_world_space.y); // frag_player dot {0, 1, 0}
 
-        color.rgb = mix(rgb_to_linear(fogColor), rgb_to_linear(skyColor), up_factor);
+        color.rgb = get_sky_color(skyColor, fogColor, up_factor);
         color.a = 1.0;
     }
 #endif

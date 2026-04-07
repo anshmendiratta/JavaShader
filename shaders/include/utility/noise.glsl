@@ -1,7 +1,7 @@
 #if !defined INCLUDE_NOISE
     #define INCLUDE_NOISE
 
-    #include "/lib/settings.glsl"
+    #include "/include/settings.glsl"
     #include "/include/uniforms.glsl"
 
     // --------------------
@@ -23,6 +23,6 @@
     // --------------------
 
     vec4 sample_default_noise(vec2 screen_uv) {
-        return textureLod(noisetex, screen_uv, 0);
+        return texture(noisetex, screen_uv);
     }
 #endif

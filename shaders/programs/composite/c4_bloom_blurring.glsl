@@ -11,25 +11,22 @@
     in vec2 uv;
 
     /* RENDERTARGETS: 6 */
-    layout(location = 0) out vec4 blurred_light;
+    layout(location = 0) out vec4 bloom_downscale;
 
-    #include "/lib/settings.glsl"
-
+    #include "/include/settings.glsl"
     #include "/include/uniforms.glsl"
-
-    #include "/include/utility/vogel_disk_blur.glsl"
-    #include "/include/utility/math_fp.glsl"
-
-    #define BLOOM_BLUR_SAMPLE_COUNT 16 // Hard-code value as the bloom will be fine-tuned.
+    #include "/include/post/bloom.glsl"
 
     void main() {
-        vec4 final_out = vec4(0.0);
-
-        for (int idx = 0; idx < BLOOM_BLUR_SAMPLE_COUNT; idx += 1) {
-            vec2 sample_uv = BLOOM_RADIUS * compute_vogel_disk_sample_uv(idx, BLOOM_BLUR_SAMPLE_COUNT); // multplication by BLOOM_RADIUS is mostly arbitary and seems to produce sensible results
-            final_out += sample_colortex(colortex0, uv, sample_uv);
-        }
-
-        blurred_light = final_out / BLOOM_BLUR_SAMPLE_COUNT;
+        // First downscale pass: extract bright pixels and downsample
+        vec2 texel_size = 1.0 / vec2(viewWidth, viewHeight);
+        vec3 color = bloom_downsample(colortex0, uv, texel_size);
+        
+        // Extract only bright pixels above threshold
+        float brightness = max(color.r, max(color.g, color.b));
+        float threshold = 1.0; // Only pixels brighter than 1.0 will bloom
+        vec3 bloom = max(color - threshold, 0.0);
+        
+        bloom_downscale = vec4(bloom, 1.0);
     }
 #endif

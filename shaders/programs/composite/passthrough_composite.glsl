@@ -13,7 +13,7 @@
     /* RENDERTARGETS: 0 */
     layout(location = 0) out vec4 color;
 
-    #include "/lib/buffers.glsl"
+    #include "/include/buffers.glsl"
 
     #include "/include/uniforms.glsl"
 

@@ -13,20 +13,23 @@
     /* RENDERTARGETS: 4 */
     layout(location = 0) out float ssao_factor;
 
-    #include "/lib/settings.glsl"
-
+    #include "/include/settings.glsl"
     #include "/include/uniforms.glsl"
 
     #include "/include/utility/vogel_disk_blur.glsl"
-    #include "/include/utility/math_fp.glsl"
+    #include "/include/math/convenience.glsl"
+    #include "/include/utility/random.glsl"
     #include "/include/utility/dither.glsl"
     #include "/include/utility/depth_conversion.glsl"
 
     #define SSAO_BLUR_SAMPLE_COUNT 64
-    #define BLUR_RADIUS 16.0 // Pixel radius for blur
     #define DEPTH_SENSITIVITY 300.0 // Higher = sharper edges
 
     void main() {
+        // skip ssao for hand geometry
+        bool is_hand = fragment_is_hand(uv);
+        if (is_hand) return;
+
         vec2 texel_size = 1.0 / textureSize(colortex4, 0);
 
         // Get center depth for edge-aware filtering
@@ -47,7 +50,7 @@
         // Very aggressive bilateral blur to completely eliminate noise
         for (int idx = 0; idx < SSAO_BLUR_SAMPLE_COUNT; idx += 1) {
             vec2 offset_uv = compute_vogel_disk_sample_uv(idx, SSAO_BLUR_SAMPLE_COUNT);
-            vec2 sample_offset = BLUR_RADIUS * texel_size * offset_uv;
+            vec2 sample_offset = SSAO_BLUR_RADIUS * texel_size * offset_uv;
             vec2 sample_uv = uv + sample_offset;
 
             // Sample SSAO and depth

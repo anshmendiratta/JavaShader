@@ -13,7 +13,7 @@
     /* RENDERTARGETS: 0 */
     layout(location = 0) out vec4 color;
 
-    #include "/lib/settings.glsl"
+    #include "/include/settings.glsl"
 
     #include "/include/uniforms.glsl"
 
@@ -22,6 +22,6 @@
         vec4 bloom_color = texture(colortex6, uv);
 
         color.a = base_color.a;
-        color.rgb = mix(base_color.rgb, bloom_color.rgb, 0.5 + BLOOM_INTENSITY / 2.0);
+        color.rgb = mix(base_color.rgb, bloom_color.rgb, BLOOM_INTENSITY);
     }
 #endif

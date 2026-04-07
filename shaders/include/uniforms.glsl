@@ -25,6 +25,7 @@
     uniform ivec2 atlasSize;
 
     uniform int worldTime;
+    uniform float dayProgress; // [0, 1] = [0, 24 hours]
     uniform int framemod;
     uniform int frameCounter;
     uniform float frameTime;
@@ -81,12 +82,28 @@
     uniform sampler2D colortex6;
     uniform sampler2D colortex7;
     uniform sampler2D colortex8;
+    uniform sampler2D colortex9;
     uniform sampler2D colortex10;
     uniform sampler2D colortex11;
     uniform sampler2D colortex12;
     uniform sampler2D colortex13;
     uniform sampler2D colortex14;
     uniform sampler2D colortex15;
+    uniform sampler2D colortex16;
+    uniform sampler2D colortex17;
+    uniform sampler2D colortex18;
+    uniform sampler2D colortex19;
+    uniform sampler2D colortex20;
+    uniform sampler2D colortex21;
+    uniform sampler2D colortex22;
+    uniform sampler2D colortex23;
+    uniform sampler2D colortex24;
+    uniform sampler2D colortex25;
+    uniform sampler2D colortex26;
+    uniform sampler2D colortex27;
+    uniform sampler2D colortex28;
+    uniform sampler2D colortex29;
+    uniform sampler2D colortex30;
     uniform usampler2D colortex31;
 
     uniform sampler2D depthtex0;
@@ -96,6 +113,7 @@
     uniform sampler2D shadowtex0;
     uniform sampler2D shadowtex1;
     uniform sampler2D shadowcolor0;
+    uniform sampler2D shadowcolor1;
 
     uniform sampler2D normals;
     uniform sampler2D specular;

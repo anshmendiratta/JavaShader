@@ -1,7 +1,7 @@
 #if !defined INCLUDE_TURBO_COLORMAP
     #define INCLUDE_TURBO_COLORMAP
 
-    #include "/include/utility/math_fp.glsl"
+    #include "/include/math/convenience.glsl"
 
     const vec3 turboCurve[] = vec3[](
     vec3(0.18995, 0.07176, 0.23217),

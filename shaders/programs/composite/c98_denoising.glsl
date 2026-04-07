@@ -5,8 +5,8 @@ in vec2 atlas_uv;
 /* RENDERTARGETS: 0 */
 layout(location = 0) out vec4 color;
 
-#include "/lib/settings.glsl"
-#include "/include/utility/math_fp.glsl"
+#include "/include/settings.glsl"
+#include "/include/math/convenience.glsl"
 
 // Taken from https://www.shadertoy.com/view/3dd3Wr. Original source on https://github.com/BrutPitt/glslSmartDeNoise?tab=readme-ov-file.
 vec4 smart_de_noise(vec2 atlas_uv) {

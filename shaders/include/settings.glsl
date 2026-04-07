@@ -21,6 +21,11 @@
     #define SHADOW_RANGE 4 // `width/height / 2 - 1` of the box kernel used for shadow blurring. [1 2 3 4 5 6 7 8]
     #define SHADOW_DISTANCE_MULTIPLIER 2 // This multiplies the possible shadow distance (256 blocks). [1 2 3 4]
 
+    #define RSM 1 // Enables/disables reflective shadow maps. [0 1]
+    #define RSM_SAMPLE_COUNT 8 // Number of values to use for RSM evaluation interpolation. Higher is worse performance. [2 4 8 16]
+    #define RSM_SAMPLE_RADIUS 0.10 // [0.05 0.10 0.15 0.20 0.25]
+    #define RSM_BRIGHTNESS 0.10 // [0.05 0.10 0.15 0.20 0.25]
+
     // ----------------------
     //     Waving foliage
     // ----------------------
@@ -39,12 +44,17 @@
     #define AMBIENT_INTENSITY 2.0 // How much AO is applied. Higher values increase AO.. [0.0 0.25 0.5 0.75 1.0 1.25 1.5 1.75 2.0 2.25 2.5 2.75 3.0]
 
     #define SSAO_SAMPLE_COUNT 16 // [16 32 64 128]
-    #define SSAO_RADIUS 2.5 // [0.5 1.0 1.5 2.0 2.5 3.0 3.5 4.0 4.5 5.0]
+    #define SSAO_RADIUS 2.5 // [0.5 1.0 1.5 2.0 2.5 3.0 3.5 4.0 4.5 5.0 5.5 6.0 6.5 7.0 7.5]
     #define SSAO_BIAS 0.01 // [0.01 0.015 0.02 0.025 0.03 0.035]
+
+    #define SSAO_BLUR_RADIUS 8 // Pixel radius used for blur. Higher is softer. [8 12 16 20 24 28]
 
     // -----------
     //     Sky
     // -----------
+
+    #define SUN_MOON_SIZE_SCALAR 1.0 // Multiplier of the sun/moon's default size. [0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0 1.1 1.2 1.3 1.4 1.5 1.6 1.7 1.8]
+    #define SUN_MOON_AXIS_ROTATION 0 // Rotation of the sun/moon along their axis towards the player. [-45 -40 -35 -30 -25 -20 -15 -10 -5 0 5 10 15 20 25 30 35 40 45]
 
     #define BLOCKLIGHT_INTENSITY_MULTIPLIER 1.0 // Blocklight luminosity intensity. [0.0 0.2 0.4 0.6 0.8 1.0 1.2 1.4 1.6 1.8 2.0]
     #define BLOCKLIGHT_R 0.3 // Blocklight color red content. [0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0 1.1 1.2 1.3 1.4 1.5]
@@ -72,17 +82,16 @@
     //     Materials
     // -----------------
 
-    #define NORMAL_MAPPING 0 // Enables LabPBR normal mapping. [0 1]
-    #define SPECULAR_MAPPING 0 // Enables LabPBR specular mapping. [0 1]
     #define POM 0 // Enables LabPBR parallax occlusion mapping. [0 1]
     #define SSS 0 // Enables subsurface scattering. [0 1]
 
     #define EMISSION_STRENGTH 1.0 // Determines how bright emissive objects appear. [0.5 0.75 1.0 1.25 1.5 1.75 2.0 2.25 2.5]
 
     #define POM_HEIGHT_SCALE 0.06 // Changes the depth perceived in POM textures. [0.02 0.04 0.06 0.08 0.10 0.12 0.14 0.16 0.18 0.20 0.25 0.5 0.75 1.0]
-    #define POM_MIN_LAYERS 8 // The minimum number of layers used for depth samples. [2 4 8 16 32]
-    #define POM_MAX_LAYERS 64 // The minimum number of layers used for depth samples. [32 64 128]
+    #define POM_LAYERS 8 // Number of layers used for POM. Higher gives more detail. [8 16 32 64 128]
     #define POM_DEPTH_WRITE 1 // Enables whether or not the parallax mapping can allow shadowing. [0 1]
+
+    #define SSS_SAMPLE_COUNT 8 // The number of samples used for SSS. Higher is better with diminshing returns. [2 4 8 16]
 
     // ---------------------------
     //     Screen Space Passes
@@ -91,7 +100,7 @@
     #define BLOOM 1 // Enables a halo around bright objects. [0 1]
 
     #define BLOOM_RADIUS 1 // Determines the distance of samples used for blurring. Higher increases blue but introduces more banding. [1 2 3 4 5 6 7 8 9 10]
-    #define BLOOM_INTENSITY 2.0 // Percentage bias towards the bloom HDR buffer. Higher values increase the bloom effect. [-5.0 -4.0 -3.0 -2.0 -1.0 1.0 2.0 3.0 4.0 5.0]
+    #define BLOOM_INTENSITY 0.25 // Percentage bias towards the bloom HDR buffer. Higher values increase the bloom effect. [0.05 0.1 0.15 0.2 0.25 0.3 0.35 0.4 0.45 0.5 0.55 0.6 0.65 0.7 0.75 0.8]
 
     // ----------------------
     //     Smart Denoiser

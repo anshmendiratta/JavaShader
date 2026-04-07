@@ -1,5 +1,5 @@
-#if !defined INCLUDE_MATH_FP
-    #define INCLUDE_MATH_FP
+#if !defined INCLUDE_CONVENIENCE
+    #define INCLUDE_CONVENIENCE
 
     // General constants.
     #define PI 3.1415926535897
@@ -51,29 +51,50 @@
         return max(0.0, value);
     }
 
+    #define _define_max0_vec(dim) vec##dim max0(vec##dim value) { return max(vec##dim(0.0), value); }
+    _define_max0_vec(2);
+    _define_max0_vec(3);
+    _define_max0_vec(4);
+    #undef _define_max0_vec
+
     float min0(float value) {
         return min(0.0, value);
     }
+
+    #define _define_min0_vec(dim) vec##dim min0(vec##dim value) { return min(vec##dim(0.0), value); }
+    _define_min0_vec(2);
+    _define_min0_vec(3);
+    _define_min0_vec(4);
+    #undef _define_min0_vec
 
     float min1(float value) {
         return min(1.0, value);
     }
 
+    #define _define_min1_vec(dim) vec##dim min1(vec##dim value) { return min(vec##dim(1.0), value); }
+    _define_min1_vec(2);
+    _define_min1_vec(3);
+    _define_min1_vec(4);
+    #undef _define_min1_vec
+
     float smoothstep01(float value) {
         return smoothstep(0.0, 1.0, value);
     }
 
-    #define _define_float_pow(exp) float pow##exp(float value) { return pow(value, exp##.0); }
+    #define _define_smoothstep01_vec(dim) vec##dim smoothstep01(vec##dim value) { return smoothstep(vec##dim(0.0), vec##dim(1.0), value); }
+    _define_smoothstep01_vec(2);
+    _define_smoothstep01_vec(3);
+    _define_smoothstep01_vec(4);
+    #undef _define_smoothstep01_vec
 
+    #define _define_float_pow(exp) float pow##exp(float value) { return pow(value, exp##.0); }
     _define_float_pow(2)
     _define_float_pow(3)
     _define_float_pow(4)
     _define_float_pow(5)
-
     #undef _define_float_pow
 
     #define _define_vec_pow(dim, exp) vec##dim pow##exp(vec##dim value) { return pow(value, vec##dim(exp##.0)); }
-
     _define_vec_pow(2, 2)
     _define_vec_pow(2, 3)
     _define_vec_pow(2, 4)
@@ -86,7 +107,6 @@
     _define_vec_pow(4, 3)
     _define_vec_pow(4, 4)
     _define_vec_pow(4, 5)
-
     #undef _define_vec_pow
 
     // ----------------------
@@ -120,5 +140,4 @@
             sign_not_zero(value.w)
         );
     }
-
 #endif

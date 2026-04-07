@@ -21,8 +21,8 @@
 
     void main() {
         color = texture(gtexture, uv) * glcolor;
-        frag_is_hand = 1; // buffer clear is 0 so value is 1 only for hand fragments
-
         if (color.a < alphaTestRef) discard;
+
+        frag_is_hand = 1; // buffer clear is 0 so value is 1 only for hand fragments
     }
 #endif

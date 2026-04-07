@@ -2,7 +2,7 @@
     #define INCLUDE_PARALLAX
     // TOOD: fix everything.
 
-    #include "/include/utility/math_fp.glsl"
+    #include "/include/math/convenience.glsl"
     #include "/include/utility/space_conversions.glsl"
     #include "/include/utility/depth_conversion.glsl"
 
@@ -22,8 +22,7 @@
 
     vec2 pom_uv_transform(in vec2 local_uv, /* camera to fragment */ vec3 view_direction_tangent_space, vec3 fragment_view_space_position, mat3 TBN_matrix) {
         // More layers when viewing at grazing angles
-        int layers_count = int(mix(POM_MAX_LAYERS, POM_MIN_LAYERS, abs(view_direction_tangent_space.z)));
-        float layer_depth = 1.0 / float(layers_count);
+        float layer_depth = 1.0 / float(POM_LAYERS);
 
         // Start at the top surface
         vec2 current_uv = local_uv;
@@ -41,7 +40,7 @@
         // Ray march down until we hit the surface
         float sampled_height = _sample_heightmap(current_uv);
         int layer = 0;
-        while (layer < layers_count && current_height > sampled_height) {
+        while (layer < POM_LAYERS && current_height > sampled_height) {
             current_uv += uv_offset;
             current_height -= layer_depth;
             sampled_height = _sample_heightmap(current_uv);
@@ -68,7 +67,9 @@
         #if POM_DEPTH_WRITE == 1
             vec3 fragment_with_pom_view_space_position = fragment_view_space_position + layer * transpose(TBN_matrix) * vec3(uv_offset, 1.0);
             vec4 fragment_with_pom_clip_space_position = view_to_clip(fragment_with_pom_view_space_position);
-            gl_FragDepth = fragment_with_pom_clip_space_position.z / fragment_with_pom_clip_space_position.w;
+            // vec3 fragment_with_pom_screen_space_position = clip_to_ndc(fragment_with_pom_clip_space_position) * 0.5 + 0.5;
+            // gl_FragDepth = fragment_with_pom_clip_space_position.z / fragment_with_pom_clip_space_position.w;
+            gl_FragDepth = fragment_with_pom_clip_space_position.z / fragment_with_pom_clip_space_position.w * 0.5 + 0.5;
         #endif
 
         return final_uv;

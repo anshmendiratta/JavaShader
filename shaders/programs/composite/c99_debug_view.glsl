@@ -3,7 +3,7 @@
 #ifdef STAGE_VERTEX
     out vec2 uv;
 
-    #include "/include/utility/math_fp.glsl"
+    #include "/include/math/convenience.glsl"
 
     void main() {
         gl_Position = ftransform();
@@ -17,11 +17,11 @@
     /* RENDERTARGETS: 0 */
     layout(location = 0) out vec4 color;
 
-    #include "/lib/settings.glsl"
+    #include "/include/settings.glsl"
 
     #include "/include/uniforms.glsl"
 
-    #include "/include/utility/math_fp.glsl"
+    #include "/include/math/convenience.glsl"
     #include "/include/utility/depth_conversion.glsl"
 
     #include "/include/pbr/material.glsl"
@@ -43,7 +43,7 @@
             init_material_unpacked_colortex_read(material, normal_map_read, specular_map_read, uv);
             return vec4(material.normal, 1.0);
         #elif DEBUG_BUFFER == 2
-            return texture(colortex2, used_uv)
+            return texture(colortex2, used_uv);
         #elif DEBUG_BUFFER == 3
             return texture(colortex3, used_uv);
         #elif DEBUG_BUFFER == 4 // AO.

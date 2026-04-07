@@ -1,0 +1,32 @@
+#ifdef STAGE_VERTEX
+    out vec2 uv;
+
+    void main() {
+        gl_Position = ftransform();
+        uv = (gl_TextureMatrix[0] * gl_MultiTexCoord0).xy;
+    }
+#endif
+
+#ifdef STAGE_FRAGMENT
+    in vec2 uv;
+
+    /* RENDERTARGETS: 2 */
+    layout(location = 0) out vec3 rsm_gi; // reflective shadow map global illumuination
+
+    #include "/include/uniforms.glsl"
+
+    #include "/include/pbr/textures.glsl"
+    #include "/include/pbr/material.glsl"
+
+    #include "/include/shadows/rsm.glsl"
+
+    void main() {
+        vec4 normal_map_read, specular_map_read;
+        vec2 lightmap_uv, o_uv;
+        unpack_colortex1_read(texture(colortex1, uv), normal_map_read, specular_map_read, lightmap_uv, o_uv);
+        Material material;
+        init_material_unpacked_colortex_read(material, normal_map_read, specular_map_read, uv);
+
+        rsm_gi = compute_rsm_gi(material.normal);
+    }
+#endif

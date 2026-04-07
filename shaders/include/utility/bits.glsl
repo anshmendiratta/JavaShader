@@ -3,7 +3,7 @@
 
     #include "/include/uniforms.glsl"
 
-    #include "/include/utility/math_fp.glsl"
+    #include "/include/math/convenience.glsl"
 
     // Type sizes (bits):
     // - uint: 32

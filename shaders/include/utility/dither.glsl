@@ -1,7 +1,8 @@
 #if !defined INCLUDE_DITHER
     #define INCLUDE_DITHER
 
-    #include "/include/utility/math_fp.glsl"
+    #include "/include/math/convenience.glsl"
+    #include "/include/utility/noise.glsl"
 
     // taken from https://docs.rs/dithereens/latest/src/dithereens/spatial.rs.html#30-37.
     float _interleaved_gradient_noise(vec2 xy) {
@@ -10,12 +11,18 @@
         return value * 2.0 - 1.0;
     }
 
-    // uses whatever dither generation technique. currently interleaved gradient noise
-    float compute_dither(vec2 xy) {
-        float x_dither = _interleaved_gradient_noise(xy);
-        float y_dither = _interleaved_gradient_noise(xy.yx);
-        vec2 xy_dither = vec2(x_dither, y_dither);
+    // uses blue noise texture for high-quality, stable dithering without banding
+    float _blue_noise_dither(vec2 xy) {
+        // Tile noise texture to avoid repetition patterns
+        vec2 noise_uv = xy / 256.0; // assuming 256x256 noise texture
+        vec4 blue_noise = sample_default_noise(fract(noise_uv));
+        
+        // Return value in [0, 1] range
+        return blue_noise.r;
+    }
 
-        return rcp(2.0) * (xy_dither.x + xy_dither.y);
+    // uses whatever dither generation technique. currently blue noise
+    float compute_dither(vec2 xy) {
+        return _blue_noise_dither(xy);
     }
 #endif

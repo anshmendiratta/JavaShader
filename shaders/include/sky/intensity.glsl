@@ -1,7 +1,7 @@
 #if !defined INCLUDE_SKY_INTENSITY
     #define INCLUDE_SKY_INTENSITY
 
-    #include "/include/utility/math_fp.glsl"
+    #include "/include/math/convenience.glsl"
 
     // Input range: [0., 1.]
     //

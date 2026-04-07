@@ -13,12 +13,12 @@
     /* RENDERTARGETS: 0 */
     layout(location = 0) out vec4 color;
 
-    #include "/lib/settings.glsl"
+    #include "/include/settings.glsl"
 
     #include "/include/uniforms.glsl"
 
     #include "/include/utility/random.glsl"
-    #include "/include/utility/math_fp.glsl"
+    #include "/include/math/convenience.glsl"
 
     #include "/include/color/conversions.glsl"
 
@@ -27,7 +27,7 @@
 
         // ignore sky/dh
         float depth = texture(depthtex0, uv).r;
-        if (depth == 1.0 && renderStage != MC_RENDER_STAGE_CLOUDS) {
+        if (depth == 1.0) {
             // FIX: clouds are still being ignored. try using cloudDistance for clouds specifically instead of the far plane
             return;
         }

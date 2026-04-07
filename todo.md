@@ -29,4 +29,4 @@
 # Immediate
 - [ ] handle translucents such as water
 - [ ] blur shadows better
-- [ ] figure out the LoD-like issue when normal/specular mapping are enabled. might have to do with packing into colortex1 with just 8 bits per channel
+- [ ] look into better diffuse brdfs (hammon)

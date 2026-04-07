@@ -20,7 +20,7 @@
     #include "/include/utility/random.glsl"
     #include "/include/utility/noise.glsl"
     #include "/include/utility/depth_conversion.glsl"
-    #include "/include/utility/math_fp.glsl"
+    #include "/include/math/convenience.glsl"
     #include "/include/utility/dither.glsl"
 
     #include "/include/pbr/material.glsl"
@@ -30,14 +30,20 @@
     vec3 ssao_noise_vector; // Create less than 1 per fragment to save memory. Use this as a tiling "texture."
 
     void main() {
-        vec2 screen_uv = gl_FragCoord.xy / windowDimensions;
-
-        // skip for the sky
-        float fragment_depth = texture(depthtex2, uv).r;
-        if (fragment_depth == 1.0) {
-            occlusion_factor = 1.0 - 0.0;
+        // skip ssao for hand geometry
+        bool is_hand = fragment_is_hand(uv);
+        if (is_hand) {
+            occlusion_factor = 1.0;
             return;
         }
+        // skip for the sky
+        float fragment_depth = texture(depthtex0, uv).r;
+        if (fragment_depth == 1.0) {
+            occlusion_factor = 1.0;
+            return;
+        }
+
+        vec2 screen_uv = gl_FragCoord.xy / windowDimensions;
 
         // Sampling kernel of random vector offsets.
         for (int count = 0; count < SSAO_SAMPLE_COUNT; count += 1) {
@@ -57,7 +63,6 @@
 
         // Random rotation vector.
         float dither = compute_dither(uv);
-        int count = int(4.0 * rand(uv.x + uv.y));
         float epsilon_zero = sample_default_noise(screen_uv + vec2(dither) / screen_uv).r;
         float epsilon_one = sample_default_noise(windowDimensions - screen_uv + vec2(dither) / screen_uv).r;
         float phi = 2.0 * PI * epsilon_one;
