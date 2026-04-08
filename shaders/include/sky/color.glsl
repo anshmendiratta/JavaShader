@@ -18,6 +18,6 @@
         vec3 oklab_mixed = mix(skycolor_oklab, fogcolor_oklab, fogified_factor);
         vec3 rgb_mixed = oklab_to_rgb(oklab_mixed);
 
-        return rgb_to_linear(rgb_mixed);
+        return rgb_mixed;
     }
 #endif

@@ -20,8 +20,9 @@
     #include "/include/utility/random.glsl"
     #include "/include/utility/noise.glsl"
     #include "/include/utility/depth_conversion.glsl"
-    #include "/include/math/convenience.glsl"
     #include "/include/utility/dither.glsl"
+
+    #include "/include/math/convenience.glsl"
 
     #include "/include/pbr/material.glsl"
     #include "/include/pbr/textures.glsl"

@@ -31,6 +31,7 @@
 
     #include "/include/lighting/diffuse.glsl"
     #include "/include/lighting/specular.glsl"
+    #include "/include/lighting/subsurface_scattering.glsl"
 
     #include "/include/shadows/distort.glsl"
     #include "/include/shadows/compute.glsl"
@@ -44,6 +45,7 @@
         unpack_colortex1_read(texture(BUFFER_BITPACKED_DATA, uv), normal_map_read, specular_map_read, lightmap_uv, o_uv);
 
         color = texture(BUFFER_COLOR, uv);
+        color.rgb = rgb_to_linear(color.rgb); // NOTE: SHADING IS ONLY IN LINEAR COLOR SPACE !!!!!!!!!!!!!!!!
         float depth = texture(depthtex0, uv).r;
         if (depth == 1.0) { // don't shade sky
             return;
@@ -92,7 +94,9 @@
             float ao_factor = 1.0;
         #endif
 
-        vec3 diffuse_light_factor = n_dot_l * (blocklight + sunlight);
+        vec3 sss = approximate_material_sss(material, fragment_world_position, light_source_vector_world, -frag_view_vector_world);
+
+        vec3 diffuse_light_factor = n_dot_l * (blocklight + sunlight) + sss;
         // FIX: temporarily allowing access to fresnel here. privatize later. perhaps a general "get_lighting" func?
         // NOTE: the level of "diffuse" lighting seems consistent with shrimple. ill trust it for now.
         // NOTE: this is apparently "correct" but the lighting wth specular mapping is still pretty meh.
@@ -103,6 +107,5 @@
         bool is_hand = fragment_is_hand(uv);
 
         color.rgb *= int(!is_hand) * (direct_lighting + indirect_lighting + emission); // do nothing if hand. FIX: hand is fully black
-        color.rgb = rgb_to_linear(color.rgb);
     }
 #endif

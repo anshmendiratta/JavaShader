@@ -72,7 +72,7 @@
 
     #include "/include/shadows/distort.glsl"
 
-    #include "/include/lighting/subsurface_scattering.glsl"
+    // #include "/include/lighting/subsurface_scattering.glsl"
 
     in vec2 uv;
     in vec4 glcolor;

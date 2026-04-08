@@ -17,7 +17,8 @@
         float depth;
         float roughness;
         vec3 f0; // reflectance.
-        float specular_b; // porosity/sss.
+        float porosity;
+        float sss; // subsurface scattering
         float emissiveness;
 
         // flags. some taken from photon
@@ -38,7 +39,8 @@
         // specular map
         vec4 specular_data = texture(specular, uv);
         material.roughness = pow2(1.0 - specular_data.r);
-        material.specular_b = specular_data.b;
+        material.porosity = specular_data.b <= 64.0 / 255.0 ? (specular_data.b / 64.0) : 0.0;
+        material.sss = specular_data.b >= 65.0 / 255.0 ? (specular_data.b - 65.0) / 255.0 : 0.0;
         material.emissiveness = fract(specular_data.a); // since 0 and 255 are no emission
 
         // handle hcm
@@ -65,7 +67,8 @@
         material.depth = normal_map_read.a;
 
         material.roughness = pow2(1.0 - specular_map_read.r);
-        material.specular_b = specular_map_read.b;
+        material.porosity = (specular_map_read.b <= 64.0 / 255.0) ? (specular_map_read.b / 64.0) : 0.0;
+        material.sss = (specular_map_read.b >= 65.0 / 255.0) ? (specular_map_read.b - 65.0) / 255.0 : 0.0;
         material.emissiveness = fract(specular_map_read.a);
 
         material.is_metal = (specular_map_read.g >= 230.0 / 255.0);

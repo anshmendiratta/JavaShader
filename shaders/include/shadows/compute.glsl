@@ -32,8 +32,9 @@
             vec2 rotated_sample = rotation_matrix * vogel_sample;
             vec2 sample_uv_offset = SHADOW_RADIUS * rotated_sample * rcp(SHADOW_MAP_RESOLUTION) * rcp(SHADOW_RANGE);
 
+            // _xonk_gri_emin_shadow_fix(frag_world_position, normal_world, lightmap_sky); // seems useless with normal offsets
             // eldeston's normal bias offset
-            float distortion_factor = _compute_distortion_factor(shadow_clip_position.xyz);
+            float distortion_factor = _compute_distortion_factor(shadow_clip_position.xy);
             const float base_bias = (shadowDistance / shadowMapResolution) * 4.0;
             shadow_clip_position.xyz += mat3(shadowProjection) * (mat3(shadowModelView) * normal_world.xyz) * distortion_factor * base_bias;
 

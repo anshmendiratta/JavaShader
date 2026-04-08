@@ -21,10 +21,11 @@
     #define SHADOW_RANGE 4 // `width/height / 2 - 1` of the box kernel used for shadow blurring. [1 2 3 4 5 6 7 8]
     #define SHADOW_DISTANCE_MULTIPLIER 2 // This multiplies the possible shadow distance (256 blocks). [1 2 3 4]
 
+    // TODO: add a description for some of these
     #define RSM 1 // Enables/disables reflective shadow maps. [0 1]
-    #define RSM_SAMPLE_COUNT 8 // Number of values to use for RSM evaluation interpolation. Higher is worse performance. [2 4 8 16]
-    #define RSM_SAMPLE_RADIUS 0.10 // [0.05 0.10 0.15 0.20 0.25]
-    #define RSM_BRIGHTNESS 0.10 // [0.05 0.10 0.15 0.20 0.25]
+    #define RSM_SAMPLE_COUNT 4 // Number of values to use for RSM evaluation interpolation. Higher is worse performance. [2 3 4 5 6 7 8]
+    #define RSM_SAMPLE_RADIUS 2.0 // [1.0 1.5 2.0 2.5 3.0 3.5 4.0 4.5 5.0]
+    #define RSM_BRIGHTNESS 5.0 // [1.0 1.5 2.0 2.5 3.0 3.5 4.0 4.5 5.0 5.5 6.0 6.5 7.0 7.5 8.0 8.5 9.0 9.5 10.0]
 
     // ----------------------
     //     Waving foliage
@@ -91,7 +92,7 @@
     #define POM_LAYERS 8 // Number of layers used for POM. Higher gives more detail. [8 16 32 64 128]
     #define POM_DEPTH_WRITE 1 // Enables whether or not the parallax mapping can allow shadowing. [0 1]
 
-    #define SSS_SAMPLE_COUNT 8 // The number of samples used for SSS. Higher is better with diminshing returns. [2 4 8 16]
+    #define SSS_SAMPLE_COUNT 8 // The number of samples used for SSS. Higher is better with diminshing returns. [2 4 6 8 10]
 
     // ---------------------------
     //     Screen Space Passes

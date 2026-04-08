@@ -47,6 +47,10 @@
         );
     }
 
+    float max_eps(float value) {
+        return max(EPSILON, value);
+    }
+
     float max0(float value) {
         return max(0.0, value);
     }
