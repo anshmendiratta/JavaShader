@@ -6,6 +6,7 @@
     #include "/include/utility/bits.glsl"
 
     #include "/include/pbr/hcm.glsl"
+    #include "/include/pbr/texturesjglsl"
 
     struct Material {
         // fragment information
@@ -56,7 +57,11 @@
     }
 
     // Likely to be called after a `decode_colortex1`.
-    void init_material_unpacked_colortex_read(out Material material, vec4 normal_map_read, vec4 specular_map_read, vec2 uv) {
+    void init_material_unpacked_colortex_read(out Material material) {
+        vec4 normal_map_read, specular_map_read;
+        vec2 lightmap_uv, o_uv;
+        unpack_colortex1_read(texture(colortex1, uv), normal_map_read, specular_map_read, lightmap_uv, o_uv);
+
         material.albedo = texture(gtexture, uv).rgb;
 
         vec2 octahedral_encoded_normal = normal_map_read.xy * 2.0 - 1.0;

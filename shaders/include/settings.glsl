@@ -48,7 +48,7 @@
     #define SSAO_RADIUS 2.5 // [0.5 1.0 1.5 2.0 2.5 3.0 3.5 4.0 4.5 5.0 5.5 6.0 6.5 7.0 7.5]
     #define SSAO_BIAS 0.01 // [0.01 0.015 0.02 0.025 0.03 0.035]
 
-    #define SSAO_BLUR_RADIUS 8 // Pixel radius used for blur. Higher is softer. [8 12 16 20 24 28]
+    #define SSAO_BLUR_RADIUS 8 // Pixel radius used for blur. Higher is softer. [4 8 12 16 20 24 28 32 36]
 
     // -----------
     //     Sky
@@ -93,6 +93,7 @@
     #define POM_DEPTH_WRITE 1 // Enables whether or not the parallax mapping can allow shadowing. [0 1]
 
     #define SSS_SAMPLE_COUNT 8 // The number of samples used for SSS. Higher is better with diminshing returns. [2 4 6 8 10]
+    #define SSS_STRENGTH 1.0 // How bright subsurface scattering appears. [0.5 0.6 0.7 0.8 0.9 1.0 1.1 1.2 1.3 1.4 1.5]
 
     // ---------------------------
     //     Screen Space Passes

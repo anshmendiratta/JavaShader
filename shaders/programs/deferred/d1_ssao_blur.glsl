@@ -57,7 +57,7 @@
             float sample_ssao = texture(colortex4, sample_uv).r;
             float sample_depth = texture(depthtex2, sample_uv).r;
 
-            // Skip sky samples
+            // Skip sky/cloud samples
             if (sample_depth == 1.0) continue;
 
             float sample_z = depth_to_z(sample_depth);

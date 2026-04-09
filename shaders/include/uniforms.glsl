@@ -118,5 +118,4 @@
     uniform sampler2D normals;
     uniform sampler2D specular;
     uniform sampler2D lightmap;
-
 #endif

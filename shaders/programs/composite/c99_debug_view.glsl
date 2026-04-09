@@ -18,14 +18,19 @@
     layout(location = 0) out vec4 color;
 
     #include "/include/settings.glsl"
-
+    #include "/include/buffers.glsl"
     #include "/include/uniforms.glsl"
+    #include "/include/debug_text.glsl"
+
+    #include "/include/utility/depth_conversion.glsl"
+    #include "/include/utility/space_conversions.glsl"
 
     #include "/include/math/convenience.glsl"
-    #include "/include/utility/depth_conversion.glsl"
 
     #include "/include/pbr/material.glsl"
     #include "/include/pbr/textures.glsl"
+
+    #include "/include/lighting/subsurface_scattering.glsl"
 
     #include "/include/color/turbo_colormap_curve.glsl"
 
@@ -33,14 +38,8 @@
 
     vec4 sample_colortex() {
         #if DEBUG_BUFFER == 1 // bitpacked data. currently display normals
-            vec4 normal_map_read, specular_map_read;
-            vec2 lightmap_uv, o_used_uv;
-            unpack_colortex1_read(texture(colortex1, used_uv), normal_map_read, specular_map_read, lightmap_uv, o_used_uv);
-            #if POM == 1
-                used_uv = o_used_uv;
-            #endif
             Material material;
-            init_material_unpacked_colortex_read(material, normal_map_read, specular_map_read, uv);
+            init_material_unpacked_colortex_read(material);
             return vec4(material.normal, 1.0);
         #elif DEBUG_BUFFER == 2
             return texture(colortex2, used_uv);
@@ -138,5 +137,33 @@
                 #endif
             #endif
         #endif
+
+        // sixthsurge's text renderer
+
+        vec4 normal_map_read, specular_map_read;
+        vec2 lightmap_uv, o_uv;
+        unpack_colortex1_read(texture(BUFFER_BITPACKED_DATA, uv), normal_map_read, specular_map_read, lightmap_uv, o_uv);
+
+        Material material;
+        init_material_unpacked_colortex_read(material);
+        vec3 frag_normal_world = material.normal;
+
+        float depth = texture(depthtex0, uv).r;
+        vec3 fragment_ndc_position = vec3(gl_FragCoord.xy / windowDimensions, depth) * 2.0 - 1.0;
+        vec3 fragment_view_position = ndc_to_view(fragment_ndc_position);
+        vec3 fragment_feet_position = view_to_feet(fragment_view_position);
+
+        // diffuse
+        vec3 fragment_world_position = feet_to_world(fragment_feet_position);
+        vec3 light_source_world_position = feet_to_world(view_to_feet(shadowLightPosition));
+        vec3 light_source_vector_world = normalize(light_source_world_position - fragment_world_position);
+        vec3 frag_view_vector_world = normalize(cameraPosition - fragment_world_position);
+
+        vec3 sss = approximate_material_sss(material, fragment_world_position, light_source_vector_world, -frag_view_vector_world);
+
+        beginText(ivec2(gl_FragCoord.xy), ivec2(0, viewHeight / 2)); // top left is easiest cause text can go offscreen
+        printVec3(sss);
+        // printBool(false);
+        endText(color.rgb);
     }
 #endif

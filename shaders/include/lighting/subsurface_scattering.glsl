@@ -11,7 +11,7 @@
 
     #include "/include/math/convenience.glsl"
 
-    float _approximate_sss_depth(vec4 shadow_position_clip);
+    float _approximate_sss_depth(vec4 frag_shadow_position_clip);
 
     // TODO: complete this
     vec3 approximate_material_sss(Material material, vec3 frag_position_world, vec3 to_light_direction, vec3 from_view_direction) {
@@ -35,31 +35,28 @@
         vec3 forward_scattering = beer * _phase_henyey_greenstein(cos_theta, 0.5);
         vec3 backward_scattering = beer * _phase_henyey_greenstein(cos_theta, -0.5);
 
-        return mix(isotropic_scattering, mix(forward_scattering, backward_scattering, 0.5), 0.5);
+        return SSS_STRENGTH * mix(isotropic_scattering, mix(forward_scattering, backward_scattering, 0.5), 0.5);
     }
 
     // courtesy of @belmu from the shaderLABS discord
-    float _approximate_sss_depth(vec4 shadow_position_clip) {
-        vec2 shadow_position_screen = (shadow_position_clip.xyz / shadow_position_clip.w * 0.5 + 0.5).xy;
+    float _approximate_sss_depth(vec4 frag_position_shadow_clip) {
+        vec2 frag_position_shadow_screen = (frag_position_shadow_clip.xyz / frag_position_shadow_clip.w * 0.5 + 0.5).xy;
 
         float sss_depth = 0.0;
         for (int idx = 0; idx < SSS_SAMPLE_COUNT; idx += 1) {
-            vec2 shadow_sample_uv_offset = compute_vogel_disk_sample_uv(idx, SSS_SAMPLE_COUNT); // in texel size
-            vec2 shadow_sample_position_screen_uv = shadow_position_screen + shadow_sample_uv_offset;
-            vec3 shadow_sample_position_screen = vec3(shadow_sample_position_screen_uv, texture(shadowtex0, shadow_sample_position_screen_uv).r);
-            vec3 shadow_sample_position_view = project_and_divide(shadowProjectionInverse, shadow_sample_position_screen * 2.0 - 1.0);
-            vec4 shadow_sample_position_clip = shadowProjection * vec4(shadow_sample_position_view, 1.0);
+            vec2 sample_position_shadow_screen_uv_offset = compute_vogel_disk_sample_uv(idx, SSS_SAMPLE_COUNT) * texelSize; // in texel size
+            vec2 sample_position_shadow_screen_uv = frag_position_shadow_screen + sample_position_shadow_screen_uv_offset;
+            vec3 sample_position_shadow_screen = vec3(sample_position_shadow_screen_uv, texture(shadowtex0, sample_position_shadow_screen_uv).r);
+            vec4 sample_position_shadow_clip = shadow_screen_to_shadow_clip(sample_position_shadow_screen);
 
-            shadow_sample_position_clip.xy /= _compute_distortion_factor(shadow_sample_position_clip.xy);
-            _multiply_shadow_distance(shadow_sample_position_clip);
-            shadow_sample_position_screen = shadow_sample_position_clip.xyz / shadow_sample_position_clip.w * 0.5 + 0.5;
+            sample_position_shadow_clip.xy /= _compute_distortion_factor(sample_position_shadow_clip.xy);
+            sample_position_shadow_screen = sample_position_shadow_clip.xyz / sample_position_shadow_clip.w * 0.5 + 0.5;
 
-            float depth = texture(shadowtex0, shadow_sample_position_screen.xy).r;
+            float depth = texture(shadowtex0, sample_position_shadow_screen.xy).r;
 
-            sss_depth += max0(shadow_sample_position_screen.z - depth); // max0 instead of abs disallows sss materials hidden behind other blocks from being lit from sss
+            sss_depth += max0(sample_position_shadow_screen.z - depth); // max0 instead of abs disallows sss materials hidden behind other blocks from being lit from sss
         }
 
-        return (-shadowProjectionInverse[2].z * max(0.001, sss_depth)) / (SHADOW_DISTANCE_MULTIPLIER * SSS_SAMPLE_COUNT);
+        return sss_depth / (SHADOW_DISTANCE_MULTIPLIER * SSS_SAMPLE_COUNT);
     }
-
 #endif

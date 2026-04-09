@@ -41,16 +41,17 @@
             float theta = fract((float(i) + dither) / float(RSM_SAMPLE_COUNT)) * 2.0 * PI;
             vec2 offset = r * radius * vec2(sin(theta), cos(theta));
 
-            vec3 sample_position_shadow_screen = vec3(fragment_position_shadow_screen.xy + offset, texture(shadowtex0, fragment_position_shadow_screen.xy + offset).r);
-            vec4 sample_position_shadow_clip = shadowProjection * vec4(project_and_divide(shadowProjectionInverse, sample_position_shadow_screen * 2.0 - 1.0), 1.0);
+            vec2 sample_position_shadow_screen_uv = fragment_position_shadow_screen.xy + offset;
+            vec3 sample_position_shadow_screen = vec3(sample_position_shadow_screen_uv, texture(shadowtex0, sample_position_shadow_screen_uv).r);
+            vec4 sample_position_shadow_clip = shadow_screen_to_shadow_clip(sample_position_shadow_screen);
             vec4 sample_position_shadow_clip_distorted = vec4(distort_shadow_clip_position(sample_position_shadow_clip.xyz), sample_position_shadow_clip.w);
-            vec3 sample_position_shadow_view_distorted = (shadowProjectionInverse * sample_position_shadow_clip_distorted).xyz;
-            vec3 sample_position_shadow_screen_distorted = sample_position_shadow_clip_distorted.xyz / sample_position_shadow_clip_distorted.w * 0.5 + 0.5; // TODO: not sure if i can just use the z of this as depth
+            vec3 sample_position_shadow_screen_distorted = shadow_clip_to_shadow_screen(sample_position_shadow_clip_distorted);
 
             vec4 sample_color = texture(shadowcolor0, sample_position_shadow_screen_distorted.xy);
             vec3 sample_flux = rgb_to_linear(sample_color.rgb * sample_color.a);
             vec3 sample_normal_shadow_view = texture(shadowcolor1, sample_position_shadow_screen_distorted.xy).xyz * 2.0 - 1.0;
 
+            vec3 sample_position_shadow_view_distorted = shadow_clip_to_shadow_view(sample_position_shadow_clip_distorted);
             vec3 direction = normalize(fragment_position_shadow_view - sample_position_shadow_view_distorted);
 
             irradiance += sample_flux *

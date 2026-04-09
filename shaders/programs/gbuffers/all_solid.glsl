@@ -87,6 +87,7 @@
     #include "/include/uniforms.glsl"
 
     #include "/include/utility/random.glsl"
+    #include "/include/utility/space_conversions.glsl"
 
     #include "/include/color/conversions.glsl"
 
@@ -104,7 +105,7 @@
 
         #if POM == 1
             vec3 fragment_ndc_position = vec3(gl_FragCoord.xy / windowDimensions, gl_FragCoord.z) * 2.0 - 1.0;
-            vec3 fragment_view_position = project_and_divide(gbufferProjectionInverse, fragment_ndc_position);
+            vec3 fragment_view_position = ndc_to_view(fragment_ndc_position);
             vec3 view_direction_view = normalize(fragment_view_position);
             vec3 view_direction_tangent = transpose(TBN_matrix) * view_direction_view;
             vec2 local_uv = atlas_uv_to_local(uv, texture_bottom_left, single_tex_size);

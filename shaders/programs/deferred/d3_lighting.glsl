@@ -16,6 +16,7 @@
 
     #include "/include/settings.glsl"
     #include "/include/buffers.glsl"
+    #include "/include/debug_text.glsl"
 
     #include "/include/uniforms.glsl"
 
@@ -52,7 +53,7 @@
         }
 
         Material material;
-        init_material_unpacked_colortex_read(material, normal_map_read, specular_map_read, uv);
+        init_material_unpacked_colortex_read(material);
         vec3 frag_normal_world = material.normal;
 
         vec3 fragment_ndc_position = vec3(gl_FragCoord.xy / windowDimensions, depth) * 2.0 - 1.0;
@@ -96,16 +97,15 @@
 
         vec3 sss = approximate_material_sss(material, fragment_world_position, light_source_vector_world, -frag_view_vector_world);
 
-        vec3 diffuse_light_factor = n_dot_l * (blocklight + sunlight) + sss;
-        // FIX: temporarily allowing access to fresnel here. privatize later. perhaps a general "get_lighting" func?
-        // NOTE: the level of "diffuse" lighting seems consistent with shrimple. ill trust it for now.
-        // NOTE: this is apparently "correct" but the lighting wth specular mapping is still pretty meh.
-        vec3 direct_lighting = (fresnel * specular + int(!material.is_metal) * (1.0 - fresnel) * diffuse_light_factor) * shadow;
-        vec3 indirect_lighting = (rsm_gi + skylight) * ao_factor;
+        vec3 diffuse_light_factor = ao_factor * n_dot_l * sunlight; // ao added here so darkening is more visible
+        // NOTE: the mix between diffuse and specular is physically correct, but some metals still feel pretty dark
+        vec3 direct_lighting = (fresnel * specular + int(!material.is_metal) * (1.0 - fresnel) * diffuse_light_factor) * shadow + blocklight;
+        vec3 indirect_lighting = (rsm_gi + skylight);
         vec3 emission = EMISSION_STRENGTH * material.emissiveness * material.albedo; // bruh. i dont remember why i added this comment
 
         bool is_hand = fragment_is_hand(uv);
 
-        color.rgb *= int(!is_hand) * (direct_lighting + indirect_lighting + emission); // do nothing if hand. FIX: hand is fully black
+        // color.rgb *= int(!is_hand) * (direct_lighting + indirect_lighting + emission); // do nothing if hand. FIX: hand is fully black
+        color.rgb = sss;
     }
 #endif
