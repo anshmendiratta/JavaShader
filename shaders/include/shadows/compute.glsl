@@ -40,7 +40,7 @@
 
             // distortion
             vec4 sample_uv = shadow_clip_position + vec4(sample_uv_offset, 0.0, 0.0);
-            sample_uv.xyz = distort_shadow_clip_position(sample_uv.xyz);
+            sample_uv = distort_shadow_clip_position(sample_uv);
 
             vec3 sample_uv_ndc_position = sample_uv.xyz / sample_uv.w;
             vec3 sample_uv_screen_position = sample_uv_ndc_position * 0.5 + 0.5;

@@ -6,7 +6,7 @@
     #include "/include/utility/bits.glsl"
 
     #include "/include/pbr/hcm.glsl"
-    #include "/include/pbr/texturesjglsl"
+    #include "/include/pbr/textures.glsl"
 
     struct Material {
         // fragment information

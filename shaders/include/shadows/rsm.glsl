@@ -44,7 +44,7 @@
             vec2 sample_position_shadow_screen_uv = fragment_position_shadow_screen.xy + offset;
             vec3 sample_position_shadow_screen = vec3(sample_position_shadow_screen_uv, texture(shadowtex0, sample_position_shadow_screen_uv).r);
             vec4 sample_position_shadow_clip = shadow_screen_to_shadow_clip(sample_position_shadow_screen);
-            vec4 sample_position_shadow_clip_distorted = vec4(distort_shadow_clip_position(sample_position_shadow_clip.xyz), sample_position_shadow_clip.w);
+            vec4 sample_position_shadow_clip_distorted = distort_shadow_clip_position(sample_position_shadow_clip);
             vec3 sample_position_shadow_screen_distorted = shadow_clip_to_shadow_screen(sample_position_shadow_clip_distorted);
 
             vec4 sample_color = texture(shadowcolor0, sample_position_shadow_screen_distorted.xy);

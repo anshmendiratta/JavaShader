@@ -159,7 +159,11 @@
         vec3 light_source_vector_world = normalize(light_source_world_position - fragment_world_position);
         vec3 frag_view_vector_world = normalize(cameraPosition - fragment_world_position);
 
-        vec3 sss = approximate_material_sss(material, fragment_world_position, light_source_vector_world, -frag_view_vector_world);
+        vec3 shadow_view_position = (shadowModelView * vec4(fragment_feet_position, 1.0)).xyz;
+        vec4 shadow_clip_position = shadowProjection * vec4(shadow_view_position, 1.0);
+
+        vec3 sss = vec3(_approximate_sss_depth(shadow_clip_position));
+        // vec3 sss = approximate_material_sss(material, fragment_world_position, light_source_vector_world, frag_view_vector_world);
 
         beginText(ivec2(gl_FragCoord.xy), ivec2(0, viewHeight / 2)); // top left is easiest cause text can go offscreen
         printVec3(sss);

@@ -95,7 +95,8 @@
             float ao_factor = 1.0;
         #endif
 
-        vec3 sss = approximate_material_sss(material, fragment_world_position, light_source_vector_world, -frag_view_vector_world);
+        vec3 sss = vec3(_approximate_sss_depth(shadow_clip_position));
+        // vec3 sss = approximate_material_sss(material, fragment_world_position, light_source_vector_world, frag_view_vector_world);
 
         vec3 diffuse_light_factor = ao_factor * n_dot_l * sunlight; // ao added here so darkening is more visible
         // NOTE: the mix between diffuse and specular is physically correct, but some metals still feel pretty dark

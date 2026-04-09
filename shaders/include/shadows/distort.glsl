@@ -10,7 +10,7 @@
     // void _multiply_shadow_distance(out vec4 shadow_clip_position);
     float _compute_shadow_bias(vec3 position);
 
-    vec3 distort_shadow_clip_position(vec3 shadow_clip_position) {
+    vec4 distort_shadow_clip_position(vec4 shadow_clip_position) {
         float distortion_factor = _compute_distortion_factor(shadow_clip_position.xy) + SHADOW_BIAS_EPSILON;
         shadow_clip_position.xy /= distortion_factor;
 
