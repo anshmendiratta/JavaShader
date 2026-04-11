@@ -134,8 +134,8 @@
     const uint _block = 0xFFFFFFFCu; // █
     const uint _copyr = 0x03AB9AB8u; // ©️
 
-    const int charWidth = 5;
-    const int charHeight = 6;
+    const int charWidth = 5; // default: 5
+    const int charHeight = 6; // default: 6
     const int charSpacing = 1;
     const int lineSpacing = 1;
 
@@ -205,9 +205,9 @@
     }
 
     #define printString(string) {                                               \
-                        	uint[] characters = uint[] string;                                     \
-                        	for (int i = 0; i < characters.length(); ++i) printChar(characters[i]); \
-                        }
+                                                	uint[] characters = uint[] string;                                     \
+                                                	for (int i = 0; i < characters.length(); ++i) printChar(characters[i]); \
+                                                }
 
     void printUnsignedInt(uint value, int len) {
         const uint[36] digits = uint[](

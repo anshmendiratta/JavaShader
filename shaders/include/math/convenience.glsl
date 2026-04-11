@@ -13,7 +13,7 @@
     #define rcp(x) (1.0 / (x))
 
     // CS constants.
-    #define EPSILON rcp(255.0) // chosen value because of include comparisons made in the shader.
+    #define EPSILON 1e-4 // chosen value because of include comparisons made in the shader.
 
     // -------------------
     //     Convenience

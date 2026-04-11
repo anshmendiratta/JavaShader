@@ -5,6 +5,8 @@
 
     #include "/include/utility/random.glsl"
 
+    vec4 view_to_clip(vec3 view_position);
+
     // ---------------------------------------------------------------
     //     Coordinate conversions from screen space to world space
     // ---------------------------------------------------------------
@@ -29,8 +31,16 @@
         return feet_position + cameraPosition;
     }
 
+    vec3 view_to_world(vec3 view_position) {
+        return feet_to_world(view_to_feet(view_position));
+    }
+
     vec3 screen_to_view(vec3 screen_position) {
         return ndc_to_view(screen_to_ndc(screen_position));
+    }
+
+    vec4 screen_to_clip(vec3 screen_position) {
+        return view_to_clip(ndc_to_view(screen_to_ndc(screen_position)));
     }
 
     // ---------------------------------------------------------------
@@ -59,6 +69,18 @@
 
     vec3 view_to_screen(vec3 view_position) {
         return ndc_to_screen(view_to_ndc(view_position));
+    }
+
+    vec3 world_to_view(vec3 world_position) {
+        return feet_to_view(world_to_feet(world_position));
+    }
+
+    vec3 clip_to_ndc(vec4 clip_position) {
+        return clip_position.xyz / clip_position.w;
+    }
+
+    vec3 clip_to_screen(vec4 clip_position) {
+        return ndc_to_screen(clip_to_ndc(clip_position));
     }
 
     // --------------------------------------------------------------

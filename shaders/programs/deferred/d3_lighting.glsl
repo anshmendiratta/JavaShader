@@ -9,7 +9,6 @@
 
 #ifdef STAGE_FRAGMENT
     in vec2 uv;
-    in vec2 mc_Entity;
 
     /* RENDERTARGETS: 0 */
     layout(location = 0) out vec4 color;
@@ -40,10 +39,8 @@
     #include "/include/color/conversions.glsl"
 
     void main() {
-        // unpack colortex1 data
-        vec4 normal_map_read, specular_map_read;
-        vec2 lightmap_uv, o_uv;
-        unpack_colortex1_read(texture(BUFFER_BITPACKED_DATA, uv), normal_map_read, specular_map_read, lightmap_uv, o_uv);
+        Material material;
+        init_material_unpacked_colortex_read(material);
 
         color = texture(BUFFER_COLOR, uv);
         color.rgb = rgb_to_linear(color.rgb); // NOTE: SHADING IS ONLY IN LINEAR COLOR SPACE !!!!!!!!!!!!!!!!
@@ -52,8 +49,6 @@
             return;
         }
 
-        Material material;
-        init_material_unpacked_colortex_read(material);
         vec3 frag_normal_world = material.normal;
 
         vec3 fragment_ndc_position = vec3(gl_FragCoord.xy / windowDimensions, depth) * 2.0 - 1.0;
@@ -70,9 +65,9 @@
         vec3 fresnel;
         vec3 specular = max0(compute_specular(material, light_source_vector_world, frag_view_vector_world, fresnel));
 
-        vec3 blocklight = hsl_to_rgb(vec3(1., 1., BLOCKLIGHT_INTENSITY_MULTIPLIER) * rgb_to_hsl(lightmap_uv.x * BLOCKLIGHT_COLOR)); // x is blocklight
-        vec3 skylight = hsl_to_rgb(vec3(1., 1., SKYLIGHT_INTENSITY_MULTIPLIER) * rgb_to_hsl(lightmap_uv.y * SKYLIGHT_COLOR));
-        vec3 sunlight = compute_skylight_intensity_scalar(dayProgress) * lightmap_uv.y * SUNLIGHT_COLOR; // lightmap_uv.y fixes some light leaks
+        vec3 blocklight = hsl_to_rgb(vec3(1., 1., BLOCKLIGHT_INTENSITY_MULTIPLIER) * rgb_to_hsl(material.lightmap_uv.x * BLOCKLIGHT_COLOR)); // x is blocklight
+        vec3 skylight = hsl_to_rgb(vec3(1., 1., SKYLIGHT_INTENSITY_MULTIPLIER) * rgb_to_hsl(material.lightmap_uv.y * SKYLIGHT_COLOR));
+        vec3 sunlight = compute_skylight_intensity_scalar(dayProgress) * material.lightmap_uv.y * SUNLIGHT_COLOR; // lightmap_uv.y fixes some light leaks
 
         // lighting applications
 
@@ -80,7 +75,7 @@
         #if SHADOWS == 1
             vec3 shadow_view_position = (shadowModelView * vec4(fragment_feet_position, 1.0)).xyz;
             vec4 shadow_clip_position = shadowProjection * vec4(shadow_view_position, 1.0);
-            vec3 shadow = _get_soft_shadow(shadow_clip_position, frag_normal_world, lightmap_uv.y);
+            vec3 shadow = _get_soft_shadow(shadow_clip_position, frag_normal_world, material.lightmap_uv.y);
         #else
             vec3 shadow = vec3(1.0);
         #endif
@@ -95,18 +90,18 @@
             float ao_factor = 1.0;
         #endif
 
-        vec3 sss = vec3(_approximate_sss_depth(shadow_clip_position));
-        // vec3 sss = approximate_material_sss(material, fragment_world_position, light_source_vector_world, frag_view_vector_world);
+        // vec3 sss = vec3(_approximate_sss_depth(shadow_clip_position));
+        vec3 sss = approximate_material_sss(material, fragment_world_position, light_source_vector_world, frag_view_vector_world);
 
         vec3 diffuse_light_factor = ao_factor * n_dot_l * sunlight; // ao added here so darkening is more visible
         // NOTE: the mix between diffuse and specular is physically correct, but some metals still feel pretty dark
         vec3 direct_lighting = (fresnel * specular + int(!material.is_metal) * (1.0 - fresnel) * diffuse_light_factor) * shadow + blocklight;
-        vec3 indirect_lighting = (rsm_gi + skylight);
+        vec3 indirect_lighting = rsm_gi + skylight + sss;
         vec3 emission = EMISSION_STRENGTH * material.emissiveness * material.albedo; // bruh. i dont remember why i added this comment
 
         bool is_hand = fragment_is_hand(uv);
 
-        // color.rgb *= int(!is_hand) * (direct_lighting + indirect_lighting + emission); // do nothing if hand. FIX: hand is fully black
-        color.rgb = sss;
+        color.rgb *= int(!is_hand) * (direct_lighting + indirect_lighting + emission); // do nothing if hand. FIX: hand is fully black
+        // color.rgb = sss;
     }
 #endif

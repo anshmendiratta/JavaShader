@@ -43,7 +43,8 @@
 
             vec2 sample_position_shadow_screen_uv = fragment_position_shadow_screen.xy + offset;
             vec3 sample_position_shadow_screen = vec3(sample_position_shadow_screen_uv, texture(shadowtex0, sample_position_shadow_screen_uv).r);
-            vec4 sample_position_shadow_clip = shadow_screen_to_shadow_clip(sample_position_shadow_screen);
+            vec3 sample_position_shadow_view = shadow_screen_to_shadow_view(sample_position_shadow_screen); // for distance func
+            vec4 sample_position_shadow_clip = shadow_view_to_shadow_clip(sample_position_shadow_view);
             vec4 sample_position_shadow_clip_distorted = distort_shadow_clip_position(sample_position_shadow_clip);
             vec3 sample_position_shadow_screen_distorted = shadow_clip_to_shadow_screen(sample_position_shadow_clip_distorted);
 
@@ -57,7 +58,7 @@
             irradiance += sample_flux *
                     max0(dot(direction, sample_normal_shadow_view)) *
                     max0(dot(-direction, fragment_normal_shadow_view)) *
-                    rcp(pow2(distance(sample_position_shadow_view_distorted, fragment_position_shadow_view)));
+                    rcp(pow2(distance(sample_position_shadow_view, fragment_position_shadow_view)));
         }
 
         irradiance /= float(RSM_SAMPLE_COUNT);

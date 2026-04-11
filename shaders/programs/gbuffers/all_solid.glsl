@@ -7,6 +7,7 @@
     out vec2 lightmap_uv;
     out vec2 texture_bottom_left; // vec2(x_min, y_min).
     out vec2 single_tex_size; // vec2(x_range, y_range).
+    out vec2 mcentity;
     out vec3 frag_normal_view;
     out vec3 frag_tangent_view;
     out vec4 glcolor;
@@ -24,6 +25,7 @@
     void main() {
         gl_Position = ftransform();
         glcolor = gl_Color;
+        mcentity = mc_Entity;
 
         uv = (gl_TextureMatrix[0] * gl_MultiTexCoord0).xy;
         vec2 half_size = abs(uv - mc_midTexCoord);
@@ -70,13 +72,14 @@
 #endif
 
 #ifdef STAGE_FRAGMENT
-    in vec4 glcolor;
-    in vec3 frag_tangent_view;
-    in vec3 frag_normal_view;
     in vec2 lightmap_uv;
     in vec2 uv;
     in vec2 texture_bottom_left; // vec2(x_min, y_min).
     in vec2 single_tex_size; // vec2(x_range, y_range).
+    in vec2 mcentity;
+    in vec3 frag_tangent_view;
+    in vec3 frag_normal_view;
+    in vec4 glcolor;
 
     /* RENDERTARGETS: 0,1 */
     layout(location = 0) out vec4 color;
@@ -134,9 +137,7 @@
         bitpacked_data.r = packUnorm4x8(vec4(frag_normal_octahedral_encoded, normal_map_read.zw));
         bitpacked_data.g = packUnorm4x8(specular_map_read);
         bitpacked_data.b = packUnorm2x16(lightmap_uv);
-        #if POM == 1
-            bitpacked_data.a = packUnorm2x16(pom_atlas_uv);
-        #endif
+        bitpacked_data.a = uint(mcentity.x);
 
         // FIX: for some reason particles need further gamma correction? maybe try and find a way to avoid this line
         if (renderStage == MC_RENDER_STAGE_PARTICLES) color.rgb = rgb_to_linear(color.rgb);

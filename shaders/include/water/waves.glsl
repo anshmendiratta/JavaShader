@@ -1,70 +1,75 @@
-// From https://wWw.shadertoy.com/view/MdXyzX.
-
 #if !defined INCLUDE_WATER_WAVES
     #define INCLUDE_WATER_WAVES
 
-    #define DRAG_MULT 0.38 // Changes how much waves pull on the water.
-    #define WATER_DEPTH 1.0 // How deep is the water.
-    #define CAMERA_HEIGHT 1.5 // How high the camera should be.
-    #define ITERATIONS_RAYMARCH 12 // Waves iterations of raymarching.
-    #define ITERATIONS_NORMAL 36 // Waves iterations when calculating normals.
+    #include "/include/settings.glsl"
+    #include "/include/uniforms.glsl"
 
-    // Calculates wave value and its derivative. For the wave direction, position in space, wave frequency and time.
-    vec2 wave_dx(vec2 position, vec2 direction, float frequency, float timeshift) {
-        float x = dot(direction, position) * frequency + timeshift;
-        float wave = exp(sin(x) - 1.0);
-        float dx = wave * cos(x);
-        return vec2(wave, -dx);
-    }
+    #include "/include/math/convenience.glsl"
 
-    // Calculates waves by summing octaves of various waves with various parameters.
-    float compute_wave_displacement(vec2 position, int iterations) {
-        float wave_phase_shift = length(position) * 0.1; // This is to avoid every octave having exactly the same phase everywhere.
-        float iter = 0.0; // This will help generating well distributed wave directions.
-        float frequency = 1.0; // Frequency of the wave, this will change every iteration.
-        float time_multiplier = 2.0; // Time multiplier for the wave, this will change every iteration.
-        float weight = 1.0; // Weight in final sum for the wave, this will change every iteration.
-        float sum_of_values = 0.0; // Will store final sum of values.
-        float sum_of_weights = 0.0; // Will store final sum of weights.
+    // gerstner waves from https://en.wikipedia.org/wiki/Trochoidal_wave
+    // free variables: amplitude_m, k_m, phi_m with m \in [1, WAVE_COMPONENT_COUNT]
 
-        for (int i = 0; i < iterations; i++) {
-            // Generate some wave direction that looks kind of random.
-            vec2 p = vec2(sin(iter), cos(iter));
+    #define WAVE_COMPONENT_COUNT 10
+    #define MEAN_WATER_DEPTH 0.0
+    #define GRAVITY 9.81
 
-            // Calculate wave data.
-            vec2 res = wave_dx(position, p, frequency, frameTimeCounter * time_multiplier + wave_phase_shift);
+    float phi_m[WAVE_COMPONENT_COUNT];
+    float omega_m[WAVE_COMPONENT_COUNT];
+    float theta_m[WAVE_COMPONENT_COUNT];
 
-            // Shift position around according to wave drag and derivative of the wave.
-            position += p * res.y * weight * DRAG_MULT;
+    const float _k_mx = 3.0;
+    const float _k_mz = 5.0;
+    const vec3 k_m = vec3(_k_mx, 0.0, _k_mz); // NOTE: x/z need to be different
 
-            // Add the results to sums.
-            sum_of_values += res.x * weight;
-            sum_of_weights += weight;
+    float _compute_y();
+    float _compute_theta_m(float alpha, float beta, float t, uint component);
 
-            // Modify next octave ;.
-            weight = mix(weight, 0.0, 0.2);
-            frequency *= 1.18;
-            time_multiplier *= 1.07;
+    vec3 compute_water_displacement(vec3 frag_position_world) {
+        float alpha = frag_position_world.x;
+        float beta = frag_position_world.z;
+        float t = frameTimeCounter * 1e-2;
 
-            // Add some kind of random value to make next wave look random too.
-            iter += 1232.399963;
+        // populate phi, omega, and theta tables
+        for (uint component = 0; component < WAVE_COMPONENT_COUNT; component += 1) {
+            phi_m[component] = sqrt(2.0 * PI * rcp(float(component + 1)));
+            omega_m[component] = sqrt(GRAVITY * length(k_m)); // tanh(k_m h) = 0.0. if we include it, waves are static
+            theta_m[component] = _compute_theta_m(alpha, beta, t, component);
         }
 
-        // Calculate and return.
-        return sum_of_values / sum_of_weights;
+        vec3 water_displacement = vec3(
+                0.0,
+                _compute_y(),
+                0.0
+            );
+
+        return WATER_WAVE_AMPLITUDE * water_displacement;
     }
 
-    // Take two vectors mostly along `pos`'s tangent plane and cross them.
-    vec3 compute_wave_normal(vec2 pos, float epsilon, float depth) {
-        vec2 ex = vec2(epsilon, 0);
-        float height = compute_wave_displacement(pos.xy, ITERATIONS_NORMAL) * depth;
-        vec3 a = vec3(pos.x, height, pos.y);
+    // TODO: naive, expensive way. use derivatives to find approximations of nearby points.
+    // NOTE: returns world space
+    vec3 compute_water_normal(vec3 frag_position_world, vec3 frag_water_displacement) {
+        vec3 dx_frag = frag_position_world + vec3(EPSILON, 0.0, 0.0);
+        vec3 dz_frag = frag_position_world + vec3(0.0, 0.0, EPSILON);
+        vec3 dx = compute_water_displacement(dx_frag) + vec3(EPSILON, 0.0, 0.0);
+        vec3 dz = compute_water_displacement(dz_frag) + vec3(0.0, 0.0, EPSILON);
+        // names not accurate
 
-        return normalize(
-            cross(
-                a - vec3(pos.x - epsilon, compute_wave_displacement(pos.xy - ex.xy, ITERATIONS_NORMAL) * depth, pos.y),
-                a - vec3(pos.x, compute_wave_displacement(pos.xy + ex.yx, ITERATIONS_NORMAL) * depth, pos.y + epsilon)
-            )
-        );
+        return normalize(cross(dz, dx)); // NOTE: unsure about order
     }
+
+    float _compute_y() {
+        float sum = 0.0;
+        for (uint component = 0; component < WAVE_COMPONENT_COUNT; component += 1) {
+            float component_amplitude = pow2(rcp(float(component + 1)));
+
+            sum += component_amplitude * cos(theta_m[component]);
+        }
+
+        return sum;
+    }
+
+    float _compute_theta_m(float alpha, float beta, float t, uint component) {
+        return k_m.x * alpha + k_m.z * beta - omega_m[component] * t * 100. - phi_m[component];
+    }
+
 #endif

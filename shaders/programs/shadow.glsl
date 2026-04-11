@@ -46,13 +46,12 @@
                             sample_desmos_noise(vec2(FOLIAGE_WAVE_SPEED * frameTimeCounter) + vertex_world_space_position.yz),
                             sample_desmos_noise(vec2(FOLIAGE_WAVE_SPEED * frameTimeCounter) + vertex_world_space_position.zx)
                         );
-            } else if (mc_Entity.x == ID_WATER) {
-                vertex_offset_world_space = WATER_WAVE_AMPLITUDE * vec3(
-                            0.0,
-                            compute_wave_displacement(vertex_world_space_position.xz, 3),
-                            0.0
-                        );
             }
+            #if WAVING_WATER == 1
+                else if (mc_Entity.x == ID_WATER) {
+                    vertex_offset_world_space = compute_water_displacement(vertex_world_space_position);
+                }
+            #endif
 
             // Apply offset(s).
             vec3 vertex_offset_shadow_view_space = mat3(shadowModelView) * vertex_offset_world_space;

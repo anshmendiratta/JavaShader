@@ -30,3 +30,6 @@
 - [ ] handle translucents such as water
 - [ ] blur shadows better
 - [ ] look into better diffuse brdfs (hammon)
+- [ ] fix bloom and perf (currently uses entire 1080p texture every pass)
+- [ ] fix shadow distortion and biasing
+- [ ] add gerstner waves for water

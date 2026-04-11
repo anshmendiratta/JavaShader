@@ -13,4 +13,8 @@
 
         return false;
     }
+
+    bool uv_out_of_bounds(vec2 uv) {
+        return abs(uv.x - 0.5) >= 0.5 || abs(uv.y - 0.5) >= 0.5;
+    }
 #endif

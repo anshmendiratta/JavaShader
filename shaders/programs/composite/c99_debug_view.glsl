@@ -140,34 +140,32 @@
 
         // sixthsurge's text renderer
 
-        vec4 normal_map_read, specular_map_read;
-        vec2 lightmap_uv, o_uv;
-        unpack_colortex1_read(texture(BUFFER_BITPACKED_DATA, uv), normal_map_read, specular_map_read, lightmap_uv, o_uv);
+        // vec4 normal_map_read, specular_map_read;
+        // vec2 lightmap_uv, o_uv;
+        // unpack_colortex1_read(texture(BUFFER_BITPACKED_DATA, uv), normal_map_read, specular_map_read, lightmap_uv, o_uv);
 
-        Material material;
-        init_material_unpacked_colortex_read(material);
-        vec3 frag_normal_world = material.normal;
+        // Material material;
+        // init_material_unpacked_colortex_read(material);
+        // vec3 frag_normal_world = material.normal;
 
-        float depth = texture(depthtex0, uv).r;
-        vec3 fragment_ndc_position = vec3(gl_FragCoord.xy / windowDimensions, depth) * 2.0 - 1.0;
-        vec3 fragment_view_position = ndc_to_view(fragment_ndc_position);
-        vec3 fragment_feet_position = view_to_feet(fragment_view_position);
+        // float depth = texture(depthtex0, uv).r;
+        // vec3 fragment_ndc_position = vec3(gl_FragCoord.xy / windowDimensions, depth) * 2.0 - 1.0;
+        // vec3 fragment_view_position = ndc_to_view(fragment_ndc_position);
+        // vec3 fragment_feet_position = view_to_feet(fragment_view_position);
 
-        // diffuse
-        vec3 fragment_world_position = feet_to_world(fragment_feet_position);
-        vec3 light_source_world_position = feet_to_world(view_to_feet(shadowLightPosition));
-        vec3 light_source_vector_world = normalize(light_source_world_position - fragment_world_position);
-        vec3 frag_view_vector_world = normalize(cameraPosition - fragment_world_position);
+        // // diffuse
+        // vec3 fragment_world_position = feet_to_world(fragment_feet_position);
+        // vec3 light_source_world_position = feet_to_world(view_to_feet(shadowLightPosition));
+        // vec3 light_source_vector_world = normalize(light_source_world_position - fragment_world_position);
+        // vec3 frag_view_vector_world = normalize(cameraPosition - fragment_world_position);
 
-        vec3 shadow_view_position = (shadowModelView * vec4(fragment_feet_position, 1.0)).xyz;
-        vec4 shadow_clip_position = shadowProjection * vec4(shadow_view_position, 1.0);
+        // vec4 shadow_clip_position = shadow_view_to_shadow_clip(feet_to_shadow_view(fragment_feet_position));
 
-        vec3 sss = vec3(_approximate_sss_depth(shadow_clip_position));
         // vec3 sss = approximate_material_sss(material, fragment_world_position, light_source_vector_world, frag_view_vector_world);
 
-        beginText(ivec2(gl_FragCoord.xy), ivec2(0, viewHeight / 2)); // top left is easiest cause text can go offscreen
-        printVec3(sss);
-        // printBool(false);
-        endText(color.rgb);
+        // beginText(ivec2(gl_FragCoord.xy), ivec2(viewWidth / 2, viewHeight / 2)); // top left is easiest cause text can go offscreen
+        // printVec3(sss);
+        // // printFloat(sss);
+        // endText(color.rgb);
     }
 #endif

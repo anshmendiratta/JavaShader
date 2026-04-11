@@ -21,9 +21,6 @@
     #include "/include/shadows/rsm.glsl"
 
     void main() {
-        vec4 normal_map_read, specular_map_read;
-        vec2 lightmap_uv, o_uv;
-        unpack_colortex1_read(texture(colortex1, uv), normal_map_read, specular_map_read, lightmap_uv, o_uv);
         Material material;
         init_material_unpacked_colortex_read(material);
 

@@ -67,7 +67,6 @@
 
         // Obtain depth samples for occlusion check.
         occlusion_factor = 0.0;
-
         for (int idx = 0; idx < SSAO_SAMPLE_COUNT; idx += 1) {
             float scale = float(idx) / float(SSAO_SAMPLE_COUNT);
             scale = smoothstep01(scale * scale); // quadratic density

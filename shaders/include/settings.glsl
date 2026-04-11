@@ -28,7 +28,7 @@
     #define RSM_BRIGHTNESS 5.0 // [1.0 1.5 2.0 2.5 3.0 3.5 4.0 4.5 5.0 5.5 6.0 6.5 7.0 7.5 8.0 8.5 9.0 9.5 10.0]
 
     // ----------------------
-    //     Waving foliage
+    //     Waving objects
     // ----------------------
 
     #define WAVING_FOLIAGE 0 // Enables the waving motion in plants/foliage. [0 1]
@@ -37,12 +37,16 @@
     #define FOLIAGE_WAVE_SPEED 0.5
     #define FOLIAGE_WAVE_AMPLITUDE 0.09
 
+    #define WAVING_WATER 0 // Enables waves on the water. [0 1]
+
     // ------------------------
     //     Indirect lighting
     // ------------------------
 
     #define AMBIENT_OCCLUSION 1 // Enables ambient occlusion. [0 1]
     #define AMBIENT_INTENSITY 2.0 // How much AO is applied. Higher values increase AO.. [0.0 0.25 0.5 0.75 1.0 1.25 1.5 1.75 2.0 2.25 2.5 2.75 3.0]
+
+    #define VANILLA_AO 1.0 // Determines how much of vanilla ambient occlusion is applied. [0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0]
 
     #define SSAO_SAMPLE_COUNT 16 // [16 32 64 128]
     #define SSAO_RADIUS 2.5 // [0.5 1.0 1.5 2.0 2.5 3.0 3.5 4.0 4.5 5.0 5.5 6.0 6.5 7.0 7.5]
@@ -77,7 +81,7 @@
     //     Water
     // -------------
 
-    #define WATER_WAVE_AMPLITUDE 0.3 // How high a water wave can go. Do not interpret this value as blocks/meters. [0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0]
+    #define WATER_WAVE_AMPLITUDE 0.01 // How high a water wave can go. Do not interpret this value as blocks/meters. [0.00 0.01 0.02 0.03 0.04]
 
     // -----------------
     //     Materials
@@ -92,8 +96,9 @@
     #define POM_LAYERS 8 // Number of layers used for POM. Higher gives more detail. [8 16 32 64 128]
     #define POM_DEPTH_WRITE 1 // Enables whether or not the parallax mapping can allow shadowing. [0 1]
 
-    #define SSS_SAMPLE_COUNT 8 // The number of samples used for SSS. Higher is better with diminshing returns. [2 4 6 8 10]
-    #define SSS_STRENGTH 1.0 // How bright subsurface scattering appears. [0.5 0.6 0.7 0.8 0.9 1.0 1.1 1.2 1.3 1.4 1.5]
+    #define SSS_SAMPLE_COUNT 16 // The number of samples used for SSS. Higher is better with diminshing returns. [1 2 4 6 8 10 12 14 16 18 20 22 24 26 28 30 32]
+    #define SSS_STRENGTH 15.0 // How bright subsurface scattering appears. [0.5 0.75 1.0 1.25 1.5 1.75 2.0 2.25 2.5 2.75 3.0 3.25 3.5 3.75 4.0 4.25 4.5 4.75 5.0 5.25 5.5 5.75 6.0 6.25 6.5 6.75 7.0 7.25 7.5 7.75 8.0 8.25 8.5 8.75 9.0 9.25 9.5 9.75 10.0 10.25 10.5 10.75 11.0 11.25 11.5 11.75 12.0 12.25 12.5 12.75 13.0 13.25 13.5  13.75 14.0 14.25 14.5 14.75 15.0]
+    #define OPTICAL_DENSITY_MULTIPLIER 2.0 // Scalar for how optically dense SSS materials are. Higher values localize the effect. [0.5 0.75 1.0 1.25 1.5 1.75 2.0 2.25 2.5]
 
     // ---------------------------
     //     Screen Space Passes
@@ -103,6 +108,10 @@
 
     #define BLOOM_RADIUS 1 // Determines the distance of samples used for blurring. Higher increases blue but introduces more banding. [1 2 3 4 5 6 7 8 9 10]
     #define BLOOM_INTENSITY 0.25 // Percentage bias towards the bloom HDR buffer. Higher values increase the bloom effect. [0.05 0.1 0.15 0.2 0.25 0.3 0.35 0.4 0.45 0.5 0.55 0.6 0.65 0.7 0.75 0.8]
+
+    #define SSR 1 // Enables/disables screen-space reflections. [0 1]
+    #define SSR_STEPS 64 // Raymarching steps to use for screen-space reflections. Higher values result in more accurate reflections at the cost of performance. [2 4 6 8 10 12]
+    #define SSR_VISIBILITY 1.0 // How intensely reflections overwrite the material's color. [0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0]
 
     // ----------------------
     //     Smart Denoiser
