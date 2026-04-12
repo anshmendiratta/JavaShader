@@ -110,7 +110,7 @@
     #define BLOOM_INTENSITY 0.25 // Percentage bias towards the bloom HDR buffer. Higher values increase the bloom effect. [0.05 0.1 0.15 0.2 0.25 0.3 0.35 0.4 0.45 0.5 0.55 0.6 0.65 0.7 0.75 0.8]
 
     #define SSR 1 // Enables/disables screen-space reflections. [0 1]
-    #define SSR_STEPS 16 // Raymarching steps to use for screen-space reflections. Higher values result in more accurate reflections at the cost of performance. [2 4 6 8 10 12 14 16]
+    #define SSR_STEPS 16 // Raymarching steps to use for screen-space reflections. Higher values result in more accurate reflections at the cost of performance. [2 4 6 8 10 12 14 16 18 20 22 24]
     #define SSR_QUALITY 10 // A factor into how small the raymarching steps for SSR are. Higher values result in better quality. [1 2 4 6 8 10]
     #define SSR_VISIBILITY 1.0 // How intensely reflections overwrite the material's color. [0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0]
 

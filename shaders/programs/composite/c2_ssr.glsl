@@ -37,7 +37,7 @@
         vec3 frag_view_vector_view = normalize(frag_position_view);
 
         vec3 frag_normal_view = normalize(mat3(gbufferModelView) * material.normal);
-        vec3 frag_reflected_ray_view = -reflect(frag_view_vector_view, frag_normal_view);
+        vec3 frag_reflected_ray_view = reflect(frag_view_vector_view, frag_normal_view);
 
         vec2 reflected_uv = raymarch_ssr(material, uv, frag_position_view, frag_reflected_ray_view); // # of samples used for rough raymarch intersection
         // float reflection_fade = clamp01(1.0 - reflected_uv.z * rcp(SSR_QUALITY * reflected_uv.z / reflected_uv.w));
