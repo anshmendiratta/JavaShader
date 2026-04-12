@@ -19,6 +19,14 @@
     //     Convenience
     // -------------------
 
+    bool eq_eps(float first, float second, float epsilon_scalar) {
+        return abs(first - second) < EPSILON * epsilon_scalar;
+    }
+
+    bool eq_eps(float first, float second) {
+        return abs(first - second) < EPSILON;
+    }
+
     float clamp01(float value) {
         return clamp(value, 0.0, 1.0);
     }
@@ -80,6 +88,18 @@
     _define_min1_vec(3);
     _define_min1_vec(4);
     #undef _define_min1_vec
+
+    float min_of(vec2 value) {
+        return min(value.x, value.y);
+    }
+
+    float min_of(vec3 value) {
+        return min(value.z, min_of(value.xy));
+    }
+
+    float min_of(vec4 value) {
+        return min(value.w, min_of(value.xyz));
+    }
 
     float smoothstep01(float value) {
         return smoothstep(0.0, 1.0, value);

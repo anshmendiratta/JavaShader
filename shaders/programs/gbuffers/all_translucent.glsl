@@ -1,10 +1,13 @@
 #ifdef STAGE_VERTEX
     in vec2 mc_Entity;
+    in vec2 mc_midTexCoord;
     in vec4 at_tangent;
 
     out vec2 uv;
     out vec2 lightmap_uv;
     out vec2 mcentity;
+    out vec2 texture_bottom_left; // vec2(x_min, y_min).
+    out vec2 single_tex_size; // vec2(x_range, y_range).
     out vec3 frag_water_displacement;
     out vec3 frag_normal_view;
     out vec3 frag_tangent_view;
@@ -23,6 +26,10 @@
         gl_Position = ftransform();
         glcolor = gl_Color;
         mcentity = mc_Entity;
+
+        vec2 half_size = abs(uv - mc_midTexCoord);
+        texture_bottom_left = mc_midTexCoord - half_size;
+        single_tex_size = half_size * 2.0;
 
         lightmap_uv = (gl_TextureMatrix[1] * gl_MultiTexCoord1).xy;
         lightmap_uv = lightmap_uv / (30.0 / 32.0) - (1.0 / 32.0); // Conversion from [0.033, 0.97] to [0.0, 1.0].
@@ -48,6 +55,8 @@
     in vec2 uv;
     in vec2 lightmap_uv;
     in vec2 mcentity;
+    in vec2 texture_bottom_left; // vec2(x_min, y_min).
+    in vec2 single_tex_size; // vec2(x_range, y_range).
     in vec3 frag_tangent_view;
     in vec3 frag_normal_view;
     in vec3 frag_water_displacement;
@@ -65,6 +74,8 @@
     #include "/include/math/convenience.glsl"
 
     #include "/include/water/waves.glsl"
+
+    #include "/include/pbr/parallax.glsl"
 
     #include "/include/color/conversions.glsl"
 
@@ -93,6 +104,18 @@
 
         vec3 frag_bitangent_view = normalize(cross(frag_tangent_view, frag_normal_view));
         mat3 TBN_matrix = mat3(frag_tangent_view, frag_bitangent_view, frag_normal_view);
+
+        #if POM == 1
+            vec3 fragment_ndc_position = vec3(gl_FragCoord.xy / windowDimensions, gl_FragCoord.z) * 2.0 - 1.0;
+            vec3 fragment_view_position = ndc_to_view(fragment_ndc_position);
+            vec3 view_direction_view = normalize(fragment_view_position);
+            vec3 view_direction_tangent = transpose(TBN_matrix) * view_direction_view;
+            vec2 local_uv = atlas_uv_to_local(uv, texture_bottom_left, single_tex_size);
+            vec2 pom_local_uv = pom_uv_transform(local_uv, view_direction_tangent, fragment_view_position, TBN_matrix);
+            vec2 pom_atlas_uv = local_uv_to_atlas(pom_local_uv, texture_bottom_left, single_tex_size);
+
+            color = texture(gtexture, pom_atlas_uv) * glcolor;
+        #endif
 
         #if POM == 1
             vec4 normal_map_read = texture(normals, pom_atlas_uv, 0);

@@ -21,6 +21,8 @@
 
     #include "/include/utility/space_conversions.glsl"
 
+    #include "/include/color/conversions.glsl"
+
     void main() {
         vec4 original_color = texture(colortex0, uv);
         color = original_color;
@@ -31,14 +33,16 @@
         init_material_unpacked_colortex_read(material);
 
         vec3 frag_position_screen = vec3(uv, texture(depthtex0, uv).r);
-        vec3 frag_position_view = normalize(screen_to_view(frag_position_screen));
+        vec3 frag_position_view = screen_to_view(frag_position_screen);
+        vec3 frag_view_vector_view = normalize(frag_position_view);
 
         vec3 frag_normal_view = normalize(mat3(gbufferModelView) * material.normal);
-        vec3 frag_reflected_ray_view = reflect(frag_position_view, frag_normal_view);
+        vec3 frag_reflected_ray_view = -reflect(frag_view_vector_view, frag_normal_view);
 
-        vec2 reflected_uv = raymarch_ssr(material, uv, frag_position_view, frag_reflected_ray_view);
-        vec3 reflected_color = texture(colortex0, reflected_uv).rgb;
+        vec2 reflected_uv = raymarch_ssr(material, uv, frag_position_view, frag_reflected_ray_view); // # of samples used for rough raymarch intersection
+        // float reflection_fade = clamp01(1.0 - reflected_uv.z * rcp(SSR_QUALITY * reflected_uv.z / reflected_uv.w));
+        vec3 reflected_color = texture(colortex0, reflected_uv.xy).rgb;
 
-        color.rgb = mix(original_color.rgb, reflected_color, SSR_VISIBILITY);
+        color.rgb = oklab_mix(original_color.rgb, reflected_color, SSR_VISIBILITY);
     }
 #endif

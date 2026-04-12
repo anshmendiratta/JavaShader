@@ -18,6 +18,8 @@
     #include "/include/uniforms.glsl"
 
     #include "/include/utility/random.glsl"
+    #include "/include/utility/space_conversions.glsl"
+
     #include "/include/math/convenience.glsl"
 
     #include "/include/color/conversions.glsl"
@@ -33,13 +35,13 @@
         }
 
         vec2 screen_uv = gl_FragCoord.xy / windowDimensions;
-        vec3 fragment_view_space_position = ndc_to_view(vec3(uv, depth) * 2.0 - 1.0 ; ) ;
+        vec3 fragment_view_space_position = ndc_to_view(vec3(uv, depth) * 2.0 - 1.0);
 
         // Fog.
-    float object_distance_as_render_distance_proportion = length(fragment_view_space_position) / far;
-    float fog_factor = exp(-FOG_DENSITY * (1 - object_distance_as_render_distance_proportion));
+        float object_distance_as_render_distance_proportion = length(fragment_view_space_position) / far;
+        float fog_factor = exp(-FOG_DENSITY * (1 - object_distance_as_render_distance_proportion));
 
-    color . rgb = mix(color.rgb, rgb_to_linear(fogColor), clamp01(fog_factor));
-    color . a = mix(color.a, 0.0, clamp01(fog_factor));
+        color.rgb = oklab_mix(color.rgb, rgb_to_linear(fogColor), clamp01(fog_factor));
+        color.a = mix(color.a, 0.0, clamp01(fog_factor));
     }
-    #endif
+#endif

@@ -3,6 +3,8 @@
 
     #include "/include/uniforms.glsl"
 
+    #include "/include/math/convenience.glsl"
+
     vec3 _project_and_divide(mat4 projection_matrix, vec3 position) {
         vec4 homogenous_position = projection_matrix * vec4(position, 1.0);
         return homogenous_position.xyz / homogenous_position.w; // Perspective division.
@@ -15,6 +17,6 @@
     }
 
     bool uv_out_of_bounds(vec2 uv) {
-        return abs(uv.x - 0.5) >= 0.5 || abs(uv.y - 0.5) >= 0.5;
+        return clamp01(uv) != uv;
     }
 #endif

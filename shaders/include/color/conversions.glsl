@@ -109,6 +109,16 @@
         return OKLAB_TO_RGB_MAP * lms;
     }
 
+    vec3 oklab_mix(vec3 color1_rgb, vec3 color2_rgb, float mix_factor) {
+        vec3 color1_oklab = rgb_to_oklab(color1_rgb);
+        vec3 color2_oklab = rgb_to_oklab(color2_rgb);
+
+        vec3 oklab_mixed = mix(color1_oklab, color2_oklab, mix_factor);
+        vec3 rgb_mixed = oklab_to_rgb(oklab_mixed);
+
+        return rgb_mixed;
+    }
+
     // ---------------------
     //     Color grading
     // ---------------------
