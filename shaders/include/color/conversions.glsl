@@ -119,6 +119,14 @@
         return rgb_mixed;
     }
 
+    vec3 oklab_mix(vec3 color1_rgb, vec3 color2_rgb, vec3 mix_factors) {
+        return vec3(
+            oklab_mix(color1_rgb, color2_rgb, mix_factors.x).x,
+            oklab_mix(color1_rgb, color2_rgb, mix_factors.y).y,
+            oklab_mix(color1_rgb, color2_rgb, mix_factors.z).z
+        );
+    }
+
     // ---------------------
     //     Color grading
     // ---------------------

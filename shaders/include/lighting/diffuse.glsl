@@ -3,38 +3,38 @@
 
     #include "/include/math/convenience.glsl"
 
-    vec3 _diffuse_lambertian(Material material, vec3 light_source_vector_world_space);
-    vec3 _diffuse_silly_lambertian(Material material, vec3 light_source_vector_world_space);
-    vec3 _diffuse_oren_nayar(Material material, vec3 light_source_vector_world_space);
+    vec3 _diffuse_lambertian(Material material, vec3 light_source_vector_world);
+    vec3 _diffuse_silly_lambertian(Material material, vec3 light_source_vector_world);
+    vec3 _diffuse_oren_nayar(Material material, vec3 light_source_vector_world);
 
-    vec3 compute_diffuse(Material material, vec3 light_source_vector_world_space) {
-        // return _diffuse_silly_lambertian(material, light_source_vector_world_space);
-        return _diffuse_lambertian(material, light_source_vector_world_space);
-        // return _diffuse_oren_nayar(material, light_source_vector_world_space);
+    vec3 compute_diffuse(Material material, vec3 light_source_vector_world) {
+        // return _diffuse_silly_lambertian(material, light_source_vector_world);
+        return _diffuse_lambertian(material, light_source_vector_world);
+        // return _diffuse_oren_nayar(material, light_source_vector_world);
     }
 
     // of the below models, N.L is technically the only "correct" one, but the others look nice
 
-    vec3 _diffuse_lambertian(Material material, vec3 light_source_vector_world_space) {
-        float lambertian = clamp01(dot(light_source_vector_world_space, material.normal));
+    vec3 _diffuse_lambertian(Material material, vec3 light_source_vector_world) {
+        float lambertian = clamp01(dot(light_source_vector_world, material.normal));
 
         return vec3(lambertian);
     }
 
     // https://lisyarus.github.io/blog/posts/a-silly-diffuse-shading-model.html
-    vec3 _diffuse_silly_lambertian(Material material, vec3 light_source_vector_world_space) {
-        float silly_lambertian = pow2((1.0 + dot(light_source_vector_world_space, material.normal)) / 2.0);
+    vec3 _diffuse_silly_lambertian(Material material, vec3 light_source_vector_world) {
+        float silly_lambertian = pow2((1.0 + dot(light_source_vector_world, material.normal)) / 2.0);
 
         return vec3(silly_lambertian);
     }
 
     // FIX: broken. all black
     // https://en.wikipedia.org/wiki/Oren%E2%80%93Nayar_reflectance_model#Formulation
-    vec3 _diffuse_oren_nayar(Material material, vec3 light_source_vector_world_space) {
+    vec3 _diffuse_oren_nayar(Material material, vec3 light_source_vector_world) {
         vec3 rho = material.albedo;
         vec3 E_0 = vec3(1.0);
         float sigma_squared = material.roughness; // NOTE: probably wrong
-        float phi_i = acos(dot(light_source_vector_world_space, material.normal));
+        float phi_i = acos(dot(light_source_vector_world, material.normal));
         float phi_r = phi_i;
         float theta_i = 0.0;
         float theta_r = 0.0;

@@ -34,7 +34,7 @@
         lightmap_uv = (gl_TextureMatrix[1] * gl_MultiTexCoord1).xy;
         lightmap_uv = lightmap_uv / (30.0 / 32.0) - (1.0 / 32.0); // Conversion from [0.033, 0.97] to [0.0, 1.0].
 
-        frag_normal_view = mc_Entity.x == 10000.0 ? gl_NormalMatrix * vec3(0.0, 1.0, 0.0) : normalize(gl_NormalMatrix * gl_Normal);
+        frag_normal_view = normalize(gl_NormalMatrix * gl_Normal);
         frag_tangent_view = normalize(at_tangent.w * (gl_NormalMatrix * at_tangent.xyz));
 
         #if WAVING_WATER == 1
@@ -97,6 +97,7 @@
         vec3 frag_position_world = view_to_world(frag_position_view);
 
         vec3 wave_normal = normalize(compute_water_normal(frag_position_world, frag_water_displacement));
+        // vec3 wave_normal = vec3(0.0, abs(sin(frag_position_world.z)), 0.0);
 
         float n_dot_l = clamp01(dot(wave_normal, vec3(0.0, 1.0, 0.0)));
 
@@ -125,9 +126,6 @@
             vec4 specular_map_read = texture(specular, uv, 0);
         #endif
 
-        normal_map_read.xy = normal_map_read.xy * 2.0 - 1.0;
-        vec3 frag_normal_normal = vec3(normal_map_read.xy, sqrt(1.0 - dot(normal_map_read.xy, normal_map_read.xy)));
-        vec3 frag_normal_view = TBN_matrix * frag_normal_normal;
         vec3 frag_normal_world = normalize(mat3(gbufferModelViewInverse) * frag_normal_view);
         vec2 frag_normal_octahedral_encoded = vector_encode_octahedral(frag_normal_world) * 0.5 + 0.5; // in [0, 1]^2
 

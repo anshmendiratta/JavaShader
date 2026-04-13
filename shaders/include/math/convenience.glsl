@@ -101,6 +101,18 @@
         return min(value.w, min_of(value.xyz));
     }
 
+    float avg_vec(vec2 value) {
+        return dot(vec2(rcp(2.0)), value);
+    }
+
+    float avg_vec(vec3 value) {
+        return dot(vec3(rcp(3.0)), value);
+    }
+
+    float avg_vec(vec4 value) {
+        return dot(vec4(rcp(4.0)), value);
+    }
+
     float smoothstep01(float value) {
         return smoothstep(0.0, 1.0, value);
     }
@@ -163,5 +175,15 @@
             sign_not_zero(value.z),
             sign_not_zero(value.w)
         );
+    }
+
+    // -------------------------------
+    //     Mystical math functions
+    // -------------------------------
+
+    // positive characteristic, chi_+
+    float char_positive(float value) {
+        if (value > 0.0) return 1.0;
+        return 0.0;
     }
 #endif

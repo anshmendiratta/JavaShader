@@ -16,6 +16,7 @@
     #include "/include/uniforms.glsl"
 
     #include "/include/lighting/ssr.glsl"
+    #include "/include/lighting/specular.glsl"
 
     #include "/include/pbr/material.glsl"
 
@@ -24,10 +25,10 @@
     #include "/include/color/conversions.glsl"
 
     void main() {
-        vec4 original_color = texture(colortex0, uv);
-        color = original_color;
+        color = texture(colortex0, uv);
 
-        if (fragment_is_hand(uv)) return; // don't reflect hand
+        if (fragment_is_hand(uv) || texture(depthtex0, uv).r == 1.0)
+            return; // don't reflect hand
 
         Material material;
         init_material_unpacked_colortex_read(material);
@@ -39,10 +40,12 @@
         vec3 frag_normal_view = normalize(mat3(gbufferModelView) * material.normal);
         vec3 frag_reflected_ray_view = reflect(frag_view_vector_view, frag_normal_view);
 
-        vec2 reflected_uv = raymarch_ssr(material, uv, frag_position_view, frag_reflected_ray_view); // # of samples used for rough raymarch intersection
-        // float reflection_fade = clamp01(1.0 - reflected_uv.z * rcp(SSR_QUALITY * reflected_uv.z / reflected_uv.w));
+        vec3 specular = compute_specular(material, mat3(gbufferModelViewInverse) * sunDirVector, mat3(gbufferModelViewInverse) * frag_view_vector_view);
+
+        vec2 reflected_uv = raymarch_ssr(material, material.fresnel, uv, frag_position_view, frag_reflected_ray_view);
         vec3 reflected_color = texture(colortex0, reflected_uv.xy).rgb;
 
-        color.rgb = oklab_mix(original_color.rgb, reflected_color, SSR_VISIBILITY);
+        color.rgb = oklab_mix(color.rgb, reflected_color, SSR_VISIBILITY * material.fresnel);
+        // color.rgb = material.fresnel;
     }
 #endif

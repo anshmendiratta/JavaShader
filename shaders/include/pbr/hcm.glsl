@@ -3,6 +3,8 @@
 #if !defined INCLUDE_HCM
     #define INCLUDE_HCM
 
+    #include "/include/math/convenience.glsl"
+
     // n, ior = index of refraction
     const vec3 hcm_ior[8] = {
             vec3(2.91140, 2.94970, 2.58450), // iron
@@ -26,8 +28,6 @@
             vec3(3.9291, 3.1900, 2.3808) // silver
     };
 
-    #include "/include/math/convenience.glsl"
-
     // assumes the incident ray always comes from air. hence, n_i = 1.0
     vec3 compute_hcm_f0(uint metal_id) {
         vec3 n = hcm_ior[metal_id];
@@ -35,6 +35,7 @@
 
         // https://seblagarde.wordpress.com/2013/04/29/memo-on-fresnel-equations/
         // R(0) = Re ((n_t + ik_t) - n_i)((n_t - ik_t) - n_1) / (((n_t + ik_t) + n_i)((n_t - ik_t) + n_i))
+
         vec3 numerator_real = (n - vec3(1.0)) * (n - vec3(1.0));
         vec3 numerator_imag = k * k;
         vec3 denominator_real = (n + vec3(1.0)) * (n + vec3(1.0));

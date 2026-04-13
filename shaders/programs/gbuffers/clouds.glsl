@@ -38,6 +38,6 @@
         // float cosine_to_sun = dot(sun_dir_vector_world_space, fragment_position_player_space);
         // color.rgb *= clamp01(1.0 - cosine_to_sun); // simulate some volumetric lighting by lightening the clouds closer to the sun
 
-        // gl_FragDepth = 1.0;
+        gl_FragDepth = 1.0;
     }
 #endif
