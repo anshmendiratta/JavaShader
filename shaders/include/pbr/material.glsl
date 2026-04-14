@@ -36,6 +36,35 @@
     vec3 _fresnel_schlick(in const Material material, in const vec3 view_vector_world, in const vec3 light_source_vector_world);
     vec3 _fresnel_rescaled_schlick(in const Material material, in const vec3 view_vector_world, in const vec3 light_source_vector_world);
 
+    void init_material_raw_read(out Material material, vec2 uv) {
+        material.albedo = texture(gtexture, uv).rgb;
+
+        // normal map
+        vec4 normal_data = texture(normals, uv);
+        normal_data.xy = normal_data.xy * 2.0 - 1.0;
+        material.normal = vec3(normal_data.xy, sqrt(1.0 - dot(normal_data.xy, normal_data.xy)));
+        material.ao = normal_data.b;
+        material.depth = normal_data.a;
+
+        // specular map
+        vec4 specular_data = texture(specular, uv);
+        material.roughness = pow2(1.0 - specular_data.r);
+        material.porosity = specular_data.b <= 64.0 / 255.0 ? (specular_data.b / 64.0) : 0.0;
+        material.sss = specular_data.b >= 65.0 / 255.0 ? (specular_data.b - 65.0) / 255.0 : 0.0;
+        material.emissiveness = fract(specular_data.a); // since 0 and 255 are no emission
+
+        // handle hcm
+        material.is_metal = (specular_data.g >= 230.0 / 255.0);
+        if (material.is_metal) {
+            const uint metal_id = clamp(uint(255.0 * specular_data.g) - 230, 0, 7); // TODO: treats all metal ids >= 238 and <= 250 as 237. change to accomodate for id 255 as well
+            material.f0 = compute_hcm_f0(metal_id);
+            material.metal_id = metal_id;
+        } else {
+            material.f0 = vec3(specular_data.g);
+            material.metal_id = 0;
+        }
+    }
+
     void init_material_unpacked_colortex_read(out Material material) {
         uint block_id;
         vec2 lightmap_uv;
