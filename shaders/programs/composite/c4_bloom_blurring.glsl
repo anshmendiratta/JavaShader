@@ -21,12 +21,12 @@
         // First downscale pass: extract bright pixels and downsample
         vec2 texel_size = 1.0 / vec2(viewWidth, viewHeight);
         vec3 color = bloom_downsample(colortex0, uv, texel_size);
-        
+
         // Extract only bright pixels above threshold
         float brightness = max(color.r, max(color.g, color.b));
         float threshold = 1.0; // Only pixels brighter than 1.0 will bloom
         vec3 bloom = max(color - threshold, 0.0);
-        
+
         bloom_downscale = vec4(bloom, 1.0);
     }
 #endif

@@ -15,7 +15,7 @@
 
     #define SHADOWS 1 // Enables/disables shadows. [0 1]
 
-    #define SHADOW_MAP_RESOLUTION 1024 // Shadow map resolution in pixels. [512 1024 2048 4096]
+    #define SHADOW_MAP_RESOLUTION 1024 // Shadow map resolution in pixels. [512 1024 2048 4096 8192]
     #define SHADOW_BIAS 1.0 // Bias used to mitigate shadow acne. [1.0 1.1 1.2 1.3 1.4 1.5]
     #define SHADOW_RADIUS 1 // Spacing of pixels used for shadow blur sampling. [1 2 3 4 5 6 7 8]
     #define SHADOW_RANGE 4 // `width/height / 2 - 1` of the box kernel used for shadow blurring. [1 2 3 4 5 6 7 8]
@@ -23,7 +23,7 @@
 
     // TODO: add a description for some of these
     #define RSM 1 // Enables/disables reflective shadow maps. [0 1]
-    #define RSM_SAMPLE_COUNT 4 // Number of values to use for RSM evaluation interpolation. Higher is worse performance. [2 3 4 5 6 7 8]
+    #define RSM_SAMPLE_COUNT 4 // Number of values to use for RSM evaluation interpolation. Higher is worse performance. [2 3 4 5 6 7 8 9 10 11 12 13 14 15 16]
     #define RSM_SAMPLE_RADIUS 2.0 // [1.0 1.5 2.0 2.5 3.0 3.5 4.0 4.5 5.0]
     #define RSM_BRIGHTNESS 5.0 // [1.0 1.5 2.0 2.5 3.0 3.5 4.0 4.5 5.0 5.5 6.0 6.5 7.0 7.5 8.0 8.5 9.0 9.5 10.0]
 
@@ -113,7 +113,7 @@
     #define SSR_STEPS 16 // Raymarching steps to use for screen-space reflections. Higher values result in more accurate reflections at the cost of performance. [2 4 6 8 10 12 14 16 18 20 22 24]
     #define SSR_QUALITY 10 // A factor into how small the raymarching steps for SSR are. Higher values result in better quality. [1 2 4 6 8 10]
     #define SSR_VISIBILITY 1.0 // How intensely reflections overwrite the material's color. [0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0]
-    #define SSR_ENERGY_THRESHOLD 0.95 // An arbitary number that determines all surfaces that can screen-space reflect. [0.05 0.1 0.15 0.2 0.25 0.3 0.35 0.4 0.45 0.5 0.55 0.6 0.65 0.7 0.75 0.8 0.85 0.9 0.95 1.0]
+    #define SSR_ENERGY_THRESHOLD 0.95 // An arbitary number that determines all surfaces that can screen-space reflect. [0.0 0.01 0.02 0.03 0.04 0.05 0.1 0.15 0.2 0.25 0.3 0.35 0.4 0.45 0.5 0.55 0.6 0.65 0.7 0.75 0.8 0.85 0.9 0.95 1.0]
 
     // ----------------------
     //     Smart Denoiser

@@ -29,7 +29,7 @@
         // biases
         // _xonk_gri_emin_shadow_fix(frag_world_position, normal_world, lightmap_sky); // seems useless with normal offsets
         shadow_clip_position = shadow_view_to_shadow_clip(feet_to_shadow_view(frag_world_position - cameraPosition));
-        // // eldeston's normal bias offset
+        // eldeston's normal bias offset
         float distortion_factor = _compute_distortion_factor(shadow_clip_position.xy);
         const float base_bias = (shadowDistance / shadowMapResolution) * 4.0;
         shadow_clip_position.xyz += mat3(shadowProjection) * (mat3(shadowModelView) * normal_world.xyz) * distortion_factor * base_bias;
@@ -82,7 +82,7 @@
         }
 
         float is_opaque_shadowed = step(shadow_screen_position.z, texture(shadowtex1, shadow_screen_position.xy).r);
-        // TODO: this might need to take into account hcm/metals that have wavelength-dependent f0s so that the shadowed area isnt grayscale and appears to have some kind of "GI" because of specular bounces
+        // TODO: this might need to take into account hcm/metals that have wavelength-dependent f0s so that the shadowed area isnt grayscale and appears to have some kind of "GI" because of specular bounces. might be solved with rsm
         if (is_opaque_shadowed == 0.0) {
             // The object is obstructed by something fully opaque since we sample from shadowtex1."
             return vec3(0.0); // Full shadow.

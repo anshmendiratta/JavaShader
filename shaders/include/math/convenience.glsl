@@ -69,6 +69,16 @@
     _define_max0_vec(4);
     #undef _define_max0_vec
 
+    float max1(float value) {
+        return max(1.0, value);
+    }
+
+    #define _define_max1_vec(dim) vec##dim max1(vec##dim value) { return max(vec##dim(1.0), value); }
+    _define_max1_vec(2);
+    _define_max1_vec(3);
+    _define_max1_vec(4);
+    #undef _define_max0_vec
+
     float min0(float value) {
         return min(0.0, value);
     }

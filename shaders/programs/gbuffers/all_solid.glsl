@@ -137,7 +137,7 @@
         bitpacked_data.r = packUnorm4x8(vec4(frag_normal_octahedral_encoded, normal_map_read.zw));
         bitpacked_data.g = packUnorm4x8(specular_map_read);
         bitpacked_data.b = packUnorm2x16(lightmap_uv);
-        bitpacked_data.a = uint(mcentity.x);
+        bitpacked_data.a = floatBitsToUint(mcentity.x);
 
         // FIX: for some reason particles need further gamma correction? maybe try and find a way to avoid this line
         if (renderStage == MC_RENDER_STAGE_PARTICLES) color.rgb = rgb_to_linear(color.rgb);

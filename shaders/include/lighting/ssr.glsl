@@ -20,9 +20,12 @@
 
     void _binary_search_intersection(inout vec3 raymarched_position_screen, in vec3 ray_step_screen);
 
-    vec2 raymarch_ssr(in Material material, in const vec3 fresnel, in vec2 uv, in vec3 frag_position_view, in vec3 reflected_ray_view /* _space */ ) {
+    bool raymarch_ssr(in Material material, in const vec3 fresnel, in vec2 uv, out vec2 reflected_uv, in vec3 frag_position_view, in vec3 reflected_ray_view /* _space */ ) {
         float specular_energy = avg_vec(fresnel * (1.0 - pow2(material.roughness))); // claude came up with this shit
-        if (material.block_id != ID_WATER && specular_energy < SSR_ENERGY_THRESHOLD) return uv; // e.g. 0.05
+        if (material.block_id != ID_WATER && specular_energy < SSR_ENERGY_THRESHOLD) {
+            reflected_uv = uv;
+            return true;
+        }
 
         // rough intersection determination
 
@@ -30,14 +33,18 @@
 
         vec3 raymarched_position_screen = view_to_screen(frag_position_view);
         vec3 reflected_ray_screen = view_to_screen(frag_position_view + reflected_ray_view) - raymarched_position_screen;
-        vec3 ray_step_screen = min_of((sign(reflected_ray_screen) - raymarched_position_screen) / reflected_ray_screen) * reflected_ray_screen * rcp(SSR_STEPS);
+        vec3 ray_step_screen = min_of((sign(reflected_ray_screen) - raymarched_position_screen) / reflected_ray_screen) * reflected_ray_screen * rcp(SSR_STEPS); // from belmu's gist. not sure why this is a good length
 
-        raymarched_position_screen += (0.1 + dither * 0.5) * ray_step_screen; // start position
+        raymarched_position_screen += (0.05 + 0.05 * dither) * ray_step_screen; // start position
 
         const float depth_tolerance = max(abs(ray_step_screen.z) * 3.0, 0.02 / pow2(frag_position_view.z)); // from DrDesten and SixthSurge
         bool hit_object = false;
-        for (uint march_step = 0; march_step < SSR_STEPS; raymarched_position_screen += ray_step_screen, march_step += 1) {
-            if (uv_out_of_bounds(raymarched_position_screen.xy)) return uv;
+        uint march_step;
+        for (march_step = 0; march_step < SSR_STEPS; raymarched_position_screen += ray_step_screen, march_step += 1) {
+            if (uv_out_of_bounds(raymarched_position_screen.xy)) {
+                reflected_uv = raymarched_position_screen.xy;
+                return false;
+            }
 
             float real_raymarched_depth = texture(depthtex0, raymarched_position_screen.xy).r;
             hit_object = raymarched_position_screen.z > real_raymarched_depth
@@ -46,12 +53,16 @@
             if (hit_object) break;
         }
 
-        if (!hit_object) return uv;
+        if (!hit_object) {
+            reflected_uv = raymarched_position_screen.xy;
+            return false;
+        }
 
         // focus in on intersection point using binary search
         _binary_search_intersection(raymarched_position_screen, ray_step_screen);
 
-        return raymarched_position_screen.xy;
+        reflected_uv = raymarched_position_screen.xy;
+        return true;
     }
 
     void _binary_search_intersection(inout vec3 raymarched_position_screen, in vec3 ray_step_screen) {

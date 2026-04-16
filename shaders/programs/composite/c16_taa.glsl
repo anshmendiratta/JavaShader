@@ -24,18 +24,18 @@
         vec4 current_color = texture(colortex0, uv);
 
         // Apply TAA using previous frame stored in colortex7 as history
-        vec3 taa_color = apply_taa_simple(
-                uv,
-                current_color.rgb,
-                colortex7, // history buffer
-                depthtex0 // depth texture
-            );
+        // vec3 taa_color = apply_taa_simple(
+        //         uv,
+        //         current_color.rgb,
+        //         colortex7, // history buffer
+        //         depthtex0 // depth texture
+        //     );
 
         // Output TAA result to main buffer
         // color = current_color;
-        color = vec4(taa_color, 1.0);
+        color = current_color;
 
         // Store this frame as history for next frame
-        history = vec4(taa_color, 1.0);
+        // history = vec4(taa_color, 1.0);
     }
 #endif

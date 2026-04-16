@@ -63,8 +63,6 @@
     }
 #endif
 
-// TODO: store sss and rsm info somewhere
-
 #ifdef STAGE_FRAGMENT
     #include "/include/settings.glsl"
     #include "/include/uniforms.glsl"
@@ -86,7 +84,7 @@
     //
     // |          R          G          B          |          A          |
     // |-------------------------------------------|---------------------|
-    // |               encoded normal              |      SSS depth      |
+    // |               encoded normal              |    blocker dist.    |
 
     void main() {
         color0 = texture(gtexture, uv) * glcolor;
@@ -96,8 +94,5 @@
 
         // for rsm
         encoded_information.rgb = normal_view_space * 0.5 + 0.5;
-
-        // store
-        // encoded_information.a =
     }
 #endif

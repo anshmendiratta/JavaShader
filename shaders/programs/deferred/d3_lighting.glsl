@@ -39,15 +39,15 @@
     #include "/include/lighting/subsurface_scattering.glsl"
 
     void main() {
-        Material material;
-        init_material_unpacked_colortex_read(material);
-
         color = texture(BUFFER_COLOR, uv);
         color.rgb = rgb_to_linear(color.rgb); // NOTE: SHADING IS ONLY IN LINEAR COLOR SPACE !!!!!!!!!!!!!!!!
         float depth = texture(depthtex0, uv).r;
         if (depth == 1.0) { // don't shade sky
             return;
         }
+
+        Material material;
+        init_material_unpacked_colortex_read(material);
 
         vec3 frag_normal_world = material.normal;
 
@@ -57,13 +57,19 @@
 
         // diffuse
         vec3 fragment_world_position = feet_to_world(fragment_feet_position);
-        vec3 light_source_world_position = feet_to_world(view_to_feet(shadowLightPosition));
+        vec3 light_source_world_position = view_to_world(shadowLightPosition);
         vec3 light_source_vector_world = normalize(light_source_world_position - fragment_world_position);
         vec3 n_dot_l = compute_diffuse(material, light_source_vector_world);
 
-        // specular
+        // fresnel
         vec3 frag_view_vector_world = normalize(cameraPosition - fragment_world_position);
-        vec3 specular = max0(compute_specular(material, light_source_vector_world, frag_view_vector_world));
+        vec3 halfway_vector_world = normalize(frag_view_vector_world + light_source_vector_world);
+        vec3 fresnel = material.is_metal ?
+            _fresnel_rescaled_schlick(material, dot(light_source_vector_world, halfway_vector_world)) :
+            _fresnel_schlick(material, dot(light_source_vector_world, halfway_vector_world)); // L.H
+
+        // specular
+        vec3 specular = compute_specular(material, fresnel, light_source_vector_world, frag_view_vector_world);
 
         vec3 blocklight = hsl_to_rgb(vec3(1., 1., BLOCKLIGHT_INTENSITY_MULTIPLIER) * rgb_to_hsl(material.lightmap_uv.x * BLOCKLIGHT_COLOR)); // x is blocklight
         vec3 skylight = hsl_to_rgb(vec3(1., 1., SKYLIGHT_INTENSITY_MULTIPLIER) * rgb_to_hsl(material.lightmap_uv.y * SKYLIGHT_COLOR));
@@ -73,8 +79,7 @@
 
         // shadows
         #if SHADOWS == 1
-            vec3 shadow_view_position = (shadowModelView * vec4(fragment_feet_position, 1.0)).xyz;
-            vec4 shadow_clip_position = shadowProjection * vec4(shadow_view_position, 1.0);
+            vec4 shadow_clip_position = shadow_view_to_shadow_clip(feet_to_shadow_view(fragment_feet_position));
             vec3 shadow = _get_soft_shadow(shadow_clip_position, frag_normal_world, material.lightmap_uv.y);
         #else
             vec3 shadow = vec3(1.0);
@@ -90,18 +95,17 @@
             float ao_factor = 1.0;
         #endif
 
-        // vec3 sss = vec3(_approximate_sss_depth(shadow_clip_position));
         vec3 sss = approximate_material_sss(material, fragment_world_position, light_source_vector_world, frag_view_vector_world);
 
         vec3 diffuse_light_factor = ao_factor * n_dot_l * sunlight; // ao added here so darkening is more visible
         // NOTE: the mix between diffuse and specular is physically correct, but some metals still feel pretty dark
-        vec3 direct_lighting = (material.fresnel * specular + int(!material.is_metal) * (1.0 - material.fresnel) * diffuse_light_factor) * shadow + blocklight;
+        vec3 direct_lighting = (fresnel * specular + int(!material.is_metal) * (1.0 - fresnel) * diffuse_light_factor) * shadow + blocklight;
         vec3 indirect_lighting = rsm_gi + skylight + sss;
         vec3 emission = EMISSION_STRENGTH * material.emissiveness * material.albedo; // bruh. i dont remember why i added this comment
 
         bool is_hand = fragment_is_hand(uv);
 
-        color.rgb *= int(!is_hand) * (direct_lighting + indirect_lighting + emission); // do nothing if hand. FIX: hand is fully black
-        // color.rgb = fresnel;
+        // color.rgb *= int(!is_hand) * (direct_lighting + indirect_lighting + emission); // do nothing if hand. FIX: hand is fully black
+        color.rgb = rsm_gi;
     }
 #endif

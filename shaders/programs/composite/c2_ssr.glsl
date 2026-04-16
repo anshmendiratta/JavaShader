@@ -15,37 +15,71 @@
 
     #include "/include/uniforms.glsl"
 
-    #include "/include/lighting/ssr.glsl"
-    #include "/include/lighting/specular.glsl"
-
     #include "/include/pbr/material.glsl"
 
-    #include "/include/utility/space_conversions.glsl"
+    #include "/include/sky/color.glsl"
 
     #include "/include/color/conversions.glsl"
+
+    #include "/include/lighting/ssr.glsl"
+
+    #include "/include/utility/space_conversions.glsl"
+    #include "/include/utility/depth_conversion.glsl"
+    #include "/include/utility/dither.glsl"
+
+    // TODO: implement a PBR sky with clouds so i can reflect them properly
 
     void main() {
         color = texture(colortex0, uv);
 
-        if (fragment_is_hand(uv) || texture(depthtex0, uv).r == 1.0)
-            return; // don't reflect hand
+        // if (fragment_is_hand(uv) || texture(depthtex0, uv).r == 1.0)
+        //     return; // don't reflect hand or sky
 
         Material material;
         init_material_unpacked_colortex_read(material);
 
+        // NOTE: cant use `screen_uv` here
         vec3 frag_position_screen = vec3(uv, texture(depthtex0, uv).r);
         vec3 frag_position_view = screen_to_view(frag_position_screen);
-        vec3 frag_view_vector_view = normalize(frag_position_view);
+        vec3 frag_position_world = view_to_world(frag_position_view);
 
+        vec3 frag_view_vector_view = -normalize(frag_position_view);
+        vec3 frag_view_vector_world = mat3(gbufferModelViewInverse) * frag_view_vector_view;
         vec3 frag_normal_view = normalize(mat3(gbufferModelView) * material.normal);
-        vec3 frag_reflected_ray_view = reflect(frag_view_vector_view, frag_normal_view);
+        vec3 frag_reflected_ray_view = reflect(-frag_view_vector_view, frag_normal_view); // TODO: why tf does this need a negative. the view vector already points out from the fragment?
 
-        vec3 specular = compute_specular(material, mat3(gbufferModelViewInverse) * sunDirVector, mat3(gbufferModelViewInverse) * frag_view_vector_view);
+        vec3 fresnel = vec3(1.0, 0.0, 0.0); // debug-able fallback if something fails
+        if (material.block_id == ID_WATER) {
+            fresnel = _fresnel_schlick(material, dot(frag_view_vector_world, material.normal));
+        } else {
+            vec3 light_source_vector_world = normalize(mat3(gbufferModelViewInverse) * sunDirVector);
+            vec3 halfway_vector_world = normalize(light_source_vector_world + frag_view_vector_world);
 
-        vec2 reflected_uv = raymarch_ssr(material, material.fresnel, uv, frag_position_view, frag_reflected_ray_view);
-        vec3 reflected_color = texture(colortex0, reflected_uv.xy).rgb;
+            fresnel = material.is_metal ?
+                _fresnel_rescaled_schlick(material, dot(halfway_vector_world, light_source_vector_world)) :
+                _fresnel_schlick(material, dot(halfway_vector_world, light_source_vector_world));
+        }
 
-        color.rgb = oklab_mix(color.rgb, reflected_color, SSR_VISIBILITY * material.fresnel);
-        // color.rgb = material.fresnel;
+        vec2 reflected_uv;
+        bool hit_ssr_object = raymarch_ssr(material, fresnel, uv, reflected_uv, frag_position_view, frag_reflected_ray_view);
+        vec3 reflected_uv_screen = vec3(reflected_uv, texture(depthtex0, reflected_uv).r);
+        vec3 reflected_uv_view = screen_to_view(reflected_uv_screen);
+        vec3 reflected_uv_world = mat3(gbufferModelViewInverse) * normalize(reflected_uv_view);
+
+        vec3 reflected_color = texture(colortex0, reflected_uv).rgb;
+        // sample sky if no hit and (probably) hit sky if it could
+        // if (!hit_ssr_object && (mat3(gbufferModelViewInverse) * frag_reflected_ray_view).y > 0.0) {
+        if (!hit_ssr_object) { // NOTE: removed the above secondary condition so that streaking is less common
+            reflected_color = get_sky_color(skyColor, fogColor, reflected_uv_world.y);
+        }
+        // TODO: figure out a better fadeoff for this
+        // float reflection_fadeoff = max(1.0 - rcp(0.5) * avg_vec(abs(reflected_uv - uv)), 0.0) /* based on distance between uv and reflected uv */ ;
+        // float reflection_fadeoff = clamp01(length(frag_position_world - reflected_uv_world) / far);
+
+        // TODO:  gold reflects blue
+        if (material.is_metal) reflected_color *= material.albedo;
+
+        // color.rgb = fresnel; // TODO: the glass panes in a glass block are completely see-through. bliss does not have this problem
+        color.rgb = oklab_mix(color.rgb, reflected_color, SSR_VISIBILITY * fresnel);
     }
 #endif

@@ -10,7 +10,7 @@ layout(location = 0) out vec4 color;
 #include "/include/uniforms.glsl"
 
 #include "/include/color/conversions.glsl"
-#include "/include/color/tonemaps/aces.glsl"
+#include "/include/color/tonemaps/tech.glsl"
 #include "/include/color/tonemaps/lottes.glsl"
 
 void main() {

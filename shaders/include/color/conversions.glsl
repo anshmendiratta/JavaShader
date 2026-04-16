@@ -120,11 +120,13 @@
     }
 
     vec3 oklab_mix(vec3 color1_rgb, vec3 color2_rgb, vec3 mix_factors) {
-        return vec3(
-            oklab_mix(color1_rgb, color2_rgb, mix_factors.x).x,
-            oklab_mix(color1_rgb, color2_rgb, mix_factors.y).y,
-            oklab_mix(color1_rgb, color2_rgb, mix_factors.z).z
-        );
+        vec3 color1_oklab = rgb_to_oklab(color1_rgb);
+        vec3 color2_oklab = rgb_to_oklab(color2_rgb);
+
+        vec3 oklab_mixed = mix(color1_oklab, color2_oklab, mix_factors);
+        vec3 rgb_mixed = oklab_to_rgb(oklab_mixed);
+
+        return rgb_mixed;
     }
 
     // ---------------------
