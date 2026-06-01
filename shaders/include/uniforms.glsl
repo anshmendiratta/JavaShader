@@ -10,7 +10,7 @@
     uniform vec3 fogColor;
 
     uniform vec3 shadowLightPosition;
-    uniform vec3 sunDirVector;
+    uniform vec3 worldLightVector;
 
     uniform vec3 cameraPosition;
     uniform vec3 previousCameraPosition;

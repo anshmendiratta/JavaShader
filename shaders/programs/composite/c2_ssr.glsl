@@ -23,6 +23,8 @@
 
     #include "/include/lighting/ssr.glsl"
 
+    #include "/include/shadows/compute.glsl"
+
     #include "/include/utility/space_conversions.glsl"
     #include "/include/utility/depth_conversion.glsl"
     #include "/include/utility/dither.glsl"
@@ -52,11 +54,12 @@
         if (material.block_id == ID_WATER) {
             fresnel = _fresnel_schlick(material, dot(frag_view_vector_world, material.normal));
         } else {
-            vec3 light_source_vector_world = normalize(mat3(gbufferModelViewInverse) * sunDirVector);
+            vec3 light_source_vector_world = normalize(mat3(gbufferModelViewInverse) * worldLightVector);
             vec3 halfway_vector_world = normalize(light_source_vector_world + frag_view_vector_world);
 
             fresnel = material.is_metal ?
-                _fresnel_rescaled_schlick(material, dot(halfway_vector_world, light_source_vector_world)) :
+                vec3(1.0) :
+            // _fresnel_rescaled_schlick(material, dot(halfway_vector_world, light_source_vector_world)) :
                 _fresnel_schlick(material, dot(halfway_vector_world, light_source_vector_world));
         }
 
@@ -76,8 +79,12 @@
         // float reflection_fadeoff = max(1.0 - rcp(0.5) * avg_vec(abs(reflected_uv - uv)), 0.0) /* based on distance between uv and reflected uv */ ;
         // float reflection_fadeoff = clamp01(length(frag_position_world - reflected_uv_world) / far);
 
-        // TODO:  gold reflects blue
+        // TODO: gold reflects blue
         if (material.is_metal) reflected_color *= material.albedo;
+
+        // dont reflect sky if shadowed
+        // vec3 frag_position_shadow_screen = shadow_clip_to_shadow_screen(shadow_view_to_shadow_clip(feet_to_shadow_view(view_to_feet(frag_position_view))));
+        // float is_shadowed = float(_frag_is_shadowed(frag_position_shadow_screen));
 
         // color.rgb = fresnel; // TODO: the glass panes in a glass block are completely see-through. bliss does not have this problem
         color.rgb = oklab_mix(color.rgb, reflected_color, SSR_VISIBILITY * fresnel);

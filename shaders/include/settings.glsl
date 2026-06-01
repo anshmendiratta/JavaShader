@@ -17,7 +17,7 @@
 
     #define SHADOW_MAP_RESOLUTION 1024 // Shadow map resolution in pixels. [512 1024 2048 4096 8192]
     #define SHADOW_BIAS 1.0 // Bias used to mitigate shadow acne. [1.0 1.1 1.2 1.3 1.4 1.5]
-    #define SHADOW_RADIUS 1 // Spacing of pixels used for shadow blur sampling. [1 2 3 4 5 6 7 8]
+    #define PCF_SHADOW_RADIUS 1 // Spacing of pixels used for shadow blur sampling. [1 2 3 4 5 6 7 8]
     #define SHADOW_RANGE 4 // `width/height / 2 - 1` of the box kernel used for shadow blurring. [1 2 3 4 5 6 7 8]
     #define SHADOW_DISTANCE_MULTIPLIER 2 // This multiplies the possible shadow distance (256 blocks). [1 2 3 4]
 
@@ -44,13 +44,13 @@
     // ------------------------
 
     #define AMBIENT_OCCLUSION 1 // Enables ambient occlusion. [0 1]
-    #define AMBIENT_INTENSITY 2.0 // How much AO is applied. Higher values increase AO.. [0.0 0.25 0.5 0.75 1.0 1.25 1.5 1.75 2.0 2.25 2.5 2.75 3.0]
+    #define AMBIENT_INTENSITY 1.0 // How much AO is applied. Higher values increase AO. [0.0 0.25 0.5 0.75 1.0 1.25 1.5 1.75 2.0 2.25 2.5 2.75 3.0]
 
     #define VANILLA_AO 1.0 // Determines how much of vanilla ambient occlusion is applied. [0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0]
 
     #define SSAO_SAMPLE_COUNT 16 // [16 32 64 128]
     #define SSAO_RADIUS 2.5 // [0.5 1.0 1.5 2.0 2.5 3.0 3.5 4.0 4.5 5.0 5.5 6.0 6.5 7.0 7.5]
-    #define SSAO_BIAS 0.01 // [0.01 0.015 0.02 0.025 0.03 0.035]
+    #define SSAO_BIAS 0.0 // [0.0 0.01 0.05 0.01 0.015 0.02 0.025 0.03 0.035]
 
     #define SSAO_BLUR_RADIUS 8 // Pixel radius used for blur. Higher is softer. [4 8 12 16 20 24 28 32 36]
 
@@ -98,7 +98,7 @@
 
     #define SSS_SAMPLE_COUNT 16 // The number of samples used for SSS. Higher is better with diminshing returns. [1 2 4 6 8 10 12 14 16 18 20 22 24 26 28 30 32]
     #define SSS_STRENGTH 15.0 // How bright subsurface scattering appears. [0.5 0.75 1.0 1.25 1.5 1.75 2.0 2.25 2.5 2.75 3.0 3.25 3.5 3.75 4.0 4.25 4.5 4.75 5.0 5.25 5.5 5.75 6.0 6.25 6.5 6.75 7.0 7.25 7.5 7.75 8.0 8.25 8.5 8.75 9.0 9.25 9.5 9.75 10.0 10.25 10.5 10.75 11.0 11.25 11.5 11.75 12.0 12.25 12.5 12.75 13.0 13.25 13.5  13.75 14.0 14.25 14.5 14.75 15.0]
-    #define OPTICAL_DENSITY_MULTIPLIER 2.0 // Scalar for how optically dense SSS materials are. Higher values localize the effect. [0.5 0.75 1.0 1.25 1.5 1.75 2.0 2.25 2.5]
+    #define OPTICAL_DENSITY_MULTIPLIER 2.0 // Scalar for how optically dense SSS materials are. Higher values localize the effect. [0.5 0.75 1.0 1.25 1.5 1.75 2.0 2.25 2.5 2.75 3.0 3.25 3.5 3.75 4.0]
 
     // ---------------------------
     //     Screen Space Passes

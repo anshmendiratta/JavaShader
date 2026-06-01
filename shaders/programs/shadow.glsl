@@ -5,7 +5,7 @@
 
     out vec2 uv;
     out vec4 glcolor;
-    out vec3 normal_view_space;
+    out vec3 normal_world;
 
     #include "/include/ids.glsl"
     #include "/include/settings.glsl"
@@ -21,7 +21,7 @@
         uv = (gl_TextureMatrix[0] * gl_MultiTexCoord0).xy;
         glcolor = gl_Color;
         gl_Position = ftransform();
-        normal_view_space = normalize(gl_NormalMatrix * gl_Normal);
+        normal_world = mat3(shadowModelViewInverse) * normalize(gl_NormalMatrix * gl_Normal);
 
         #if WAVING_FOLIAGE == 1
             // Waving foliage.
@@ -69,16 +69,14 @@
 
     #include "/include/shadows/distort.glsl"
 
-    // #include "/include/lighting/subsurface_scattering.glsl"
-
     in vec2 uv;
     in vec4 glcolor;
-    in vec3 normal_view_space;
+    in vec3 normal_world;
 
     // rendertargets are shadowcolorN (N = 0, 1)
     /* RENDERTARGETS: 0,1 */
     layout(location = 0) out vec4 color0;
-    layout(location = 1) out vec4 encoded_information;
+    layout(location = 1) out vec3 encoded_information;
 
     //               encoded_information
     //
@@ -93,6 +91,6 @@
         }
 
         // for rsm
-        encoded_information.rgb = normal_view_space * 0.5 + 0.5;
+        encoded_information.xyz = normal_world * 0.5 + 0.5;
     }
 #endif

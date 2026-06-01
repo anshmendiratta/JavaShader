@@ -33,7 +33,7 @@
 
         float cosine_to_horizon = abs(fragment_position_player_space.y);
         color.a = mix(0.0, color.a, sqrt(clamp01(cosine_to_horizon)));
-        vec3 sun_dir_vector_world_space = mat3(gbufferModelViewInverse) * sunDirVector;
+        vec3 sun_dir_vector_world_space = mat3(gbufferModelViewInverse) * worldLightVector;
         // FIX: this "volumetric" falloff near the sun/moon does not work
         // float cosine_to_sun = dot(sun_dir_vector_world_space, fragment_position_player_space);
         // color.rgb *= clamp01(1.0 - cosine_to_sun); // simulate some volumetric lighting by lightening the clouds closer to the sun

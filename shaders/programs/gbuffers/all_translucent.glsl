@@ -68,6 +68,7 @@
 
     #include "/include/uniforms.glsl"
     #include "/include/settings.glsl"
+    #include "/include/buffers.glsl"
 
     #include "/include/water/waves.glsl"
 
@@ -121,11 +122,11 @@
         #endif
 
         #if POM == 1
-            vec4 normal_map_read = texture(normals, pom_atlas_uv, 0);
-            vec4 specular_map_read = texture(specular, pom_atlas_uv, 0);
+            vec4 normal_map_read = texture(normals, pom_atlas_uv);
+            vec4 specular_map_read = texture(specular, pom_atlas_uv);
         #else
-            vec4 normal_map_read = texture(normals, uv, 0);
-            vec4 specular_map_read = texture(specular, uv, 0);
+            vec4 normal_map_read = texture(normals, uv);
+            vec4 specular_map_read = texture(specular, uv);
         #endif
 
         normal_map_read.xy = normal_map_read.xy * 2.0 - 1.0;

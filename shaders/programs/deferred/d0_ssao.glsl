@@ -51,8 +51,8 @@
         vec3 normal_view = normalize(mat3(gbufferModelView) * normal_world);
 
         float dither = compute_dither(gl_FragCoord.xy);
-        float epsilon_zero = sample_default_noise(screen_uv + vec2(dither)).r;
-        float epsilon_one = sample_default_noise(windowDimensions - screen_uv + vec2(dither)).r;
+        float epsilon_zero = compute_dither(screen_uv);
+        float epsilon_one = compute_dither(screen_uv);
         float phi = 2.0 * PI * epsilon_one;
         float theta = acos(sqrt(epsilon_zero));
         vec3 random_vector = vec3(
@@ -70,8 +70,8 @@
         for (int idx = 0; idx < SSAO_SAMPLE_COUNT; idx += 1) {
             float scale = float(idx) / float(SSAO_SAMPLE_COUNT);
             scale = smoothstep01(scale * scale); // quadratic density
-            float epsilon_zero = sample_default_noise(screen_uv + vec2(dither)).r;
-            float epsilon_one = sample_default_noise(windowDimensions - screen_uv + vec2(dither)).r;
+            float epsilon_zero = compute_dither(screen_uv);
+            float epsilon_one = compute_dither(windowDimensions - screen_uv);
             float phi = 2.0 * PI * epsilon_one;
             float theta = acos(sqrt(epsilon_zero));
             vec3 sample_offset_normal = scale * vec3(
@@ -96,6 +96,5 @@
 
         occlusion_factor /= float(SSAO_SAMPLE_COUNT);
         occlusion_factor = pow(1.0 - occlusion_factor, AMBIENT_INTENSITY);
-        if (occlusion_factor >= 0.5) occlusion_factor = 1.0; // NOTE: ASS
     }
 #endif

@@ -33,6 +33,7 @@
     #include "/include/utility/random.glsl"
     #include "/include/utility/space_conversions.glsl"
     #include "/include/utility/noise.glsl"
+    #include "/include/utility/dither.glsl"
 
     #include "/include/lighting/diffuse.glsl"
     #include "/include/lighting/specular.glsl"
@@ -65,7 +66,8 @@
         vec3 frag_view_vector_world = normalize(cameraPosition - fragment_world_position);
         vec3 halfway_vector_world = normalize(frag_view_vector_world + light_source_vector_world);
         vec3 fresnel = material.is_metal ?
-            _fresnel_rescaled_schlick(material, dot(light_source_vector_world, halfway_vector_world)) :
+        // vec3(1.0) :
+            _fresnel_rescaled_schlick(material, dot(frag_view_vector_world, halfway_vector_world)) :
             _fresnel_schlick(material, dot(light_source_vector_world, halfway_vector_world)); // L.H
 
         // specular
@@ -85,27 +87,31 @@
             vec3 shadow = vec3(1.0);
         #endif
         #if RSM == 1
-            vec3 rsm_gi = texture(BUFFER_RSM_GI, uv).rgb;
+            vec3 rsm_gi = texture(colortex3, uv).rgb;
         #else
             vec3 rsm_gi = vec3(0.0);
         #endif
         #if AMBIENT_OCCLUSION == 1
-            float ao_factor = texture(BUFFER_SSAO, uv).r;
+            float ao = texture(BUFFER_SSAO, uv).r;
         #else
-            float ao_factor = 1.0;
+            float ao = 1.0;
+        #endif
+        #if SSS == 1
+            vec3 sss = approximate_material_sss(material, fragment_world_position, light_source_vector_world, frag_view_vector_world);
+        #else
+            vec3 sss = vec3(0.0);
         #endif
 
-        vec3 sss = approximate_material_sss(material, fragment_world_position, light_source_vector_world, frag_view_vector_world);
-
-        vec3 diffuse_light_factor = ao_factor * n_dot_l * sunlight; // ao added here so darkening is more visible
-        // NOTE: the mix between diffuse and specular is physically correct, but some metals still feel pretty dark
-        vec3 direct_lighting = (fresnel * specular + int(!material.is_metal) * (1.0 - fresnel) * diffuse_light_factor) * shadow + blocklight;
+        vec3 diffuse_light = ao * n_dot_l * sunlight;
+        // TODO: the mix between diffuse and specular is physically correct, but some metals still feel pretty dark
+        vec3 direct_lighting = (int(!material.is_metal) * (1.0 - fresnel) * diffuse_light) + (fresnel * specular);
         vec3 indirect_lighting = rsm_gi + skylight + sss;
         vec3 emission = EMISSION_STRENGTH * material.emissiveness * material.albedo; // bruh. i dont remember why i added this comment
 
         bool is_hand = fragment_is_hand(uv);
 
-        // color.rgb *= int(!is_hand) * (direct_lighting + indirect_lighting + emission); // do nothing if hand. FIX: hand is fully black
-        color.rgb = rsm_gi;
+        color.rgb *= int(!is_hand) * (shadow * direct_lighting + indirect_lighting + emission + blocklight); // do nothing if hand. FIX: hand is fully black
+        // color.rgb *= ao;
+        // color.rgb = vec3(ao);
     }
 #endif

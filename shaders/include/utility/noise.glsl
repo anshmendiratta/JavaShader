@@ -22,7 +22,13 @@
 
     // --------------------
 
-    vec4 sample_default_noise(vec2 screen_uv) {
-        return texture(noisetex, screen_uv);
+    vec4 sample_default_noise(ivec2 screen_uv) {
+        return texelFetch(noisetex, screen_uv, 0);
     }
+
+    // https://www.shadertoy.com/view/Xt23Ry
+    float _shadertoy_rand(vec2 uv) {
+        return fract(sin(dot(uv.xy, vec2(12.9898, 78.233))) * 43758.5453);
+    }
+
 #endif

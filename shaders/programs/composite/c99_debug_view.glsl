@@ -163,11 +163,11 @@
 
         // vec3 sss = approximate_material_sss(material, fragment_world_position, light_source_vector_world, frag_view_vector_world);
 
-        vec3 rsm_gi = texture(BUFFER_RSM_GI, uv).rgb;
+        //     vec3 rsm_gi = texture(BUFFER_RSM_GI, uv).rgb;
 
-        beginText(ivec2(gl_FragCoord.xy), ivec2(viewWidth / 2, viewHeight / 2)); // top left is easiest cause text can go offscreen
-        printVec3(rsm_gi);
-        // printFloat(sss);
-        endText(color.rgb);
+        //     beginText(ivec2(gl_FragCoord.xy), ivec2(viewWidth / 2, viewHeight / 2)); // top left is easiest cause text can go offscreen
+        //     printVec3(rsm_gi);
+        //     // printFloat(sss);
+        //     endText(color.rgb);
     }
 #endif

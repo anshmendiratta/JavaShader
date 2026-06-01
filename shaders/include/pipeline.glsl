@@ -7,4 +7,4 @@ const bool shadowcolor0Nearest = true;
 
 const float ambientOcclusionLevel = VANILLA_AO;
 
-const float sunPathRotation = 20.0;
+const float sunPathRotation = 00.0;

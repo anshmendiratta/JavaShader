@@ -5,6 +5,7 @@ const int colortex2Format = RGB16F; // rsm
 const int colortex4Format = R32F; // ssao
 const int colortex6Format = RGBA32F; // bloom blur
 const int colortex31Format = R32UI; // mask for hand
+const int shadowcolor1Format = RGB16;
 
 colortex0ClearColor = vec4(0.0, 0.0, 0.0, 1.0); // for sky
 colortex2ClearColor = vec3(0.0, 0.0, 0.0); // stores gi from rsm
