@@ -10,12 +10,12 @@ layout(location = 0) out vec4 color;
 #include "/include/uniforms.glsl"
 
 #include "/include/color/conversions.glsl"
-#include "/include/color/tonemaps/aces.glsl"
+#include "/include/color/tonemaps/tech.glsl"
 #include "/include/color/tonemaps/lottes.glsl"
 
 void main() {
     color = texture(colortex0, uv);
-    color.rgb = tonemap_aces(color.rgb);
+    color.rgb = tonemap_lottes(color.rgb);
 
     color.rgb = linear_to_rgb(color.rgb);
 }
