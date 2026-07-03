@@ -37,12 +37,12 @@
         // shadow_clip_position.xyz += base_bias * mat3(shadowProjection) * (mat3(shadowModelView) * normal_world.xyz); // try unit normal offset
 
         // from steadfast: https://github.com/coderbot16/Steadfast/blob/816c8f5ea7f622df068744ae2f7d4c9b2a9a5a3c/shaders/program/world/lit.vsh#L185
-        float distance_factor = 1.5 * length(shadow_clip_position.xy);
-        float n_dot_l = dot(normal_world, mat3(gbufferModelViewInverse) * worldLightVector);
-        distance_factor += _compute_distortion_factor(shadow_clip_position.xy) * (1.0 - max0(n_dot_l));
-        vec3 shadow_bias = distance_factor * normal_world;
-        vec3 shadow_bias_shadow_clip_space = mat3(shadowProjection) * (mat3(shadowModelView) * shadow_bias);
-        shadow_clip_position.xyz += shadow_bias_shadow_clip_space;
+        // float distance_factor = 1.5 * length(shadow_clip_position.xy);
+        // float n_dot_l = dot(normal_world, mat3(gbufferModelViewInverse) * worldLightVector);
+        // distance_factor += _compute_distortion_factor(shadow_clip_position.xy) * (1.0 - max0(n_dot_l));
+        // vec3 shadow_bias = distance_factor * normal_world;
+        // vec3 shadow_bias_shadow_clip_space = mat3(shadowProjection) * (mat3(shadowModelView) * shadow_bias);
+        // shadow_clip_position.xyz += shadow_bias_shadow_clip_space;
 
         // PCSS
         float frag_position_shadow_depth = texture(shadowtex0, shadow_clip_position.xy).r;
@@ -52,19 +52,35 @@
 
         vec3 pcf_accumulator = vec3(0.0);
 
-        for (int idx = 0; idx < SHADOW_BLUR_SAMPLE_COUNT; idx += 1) {
-            vec2 vogel_sample = compute_vogel_disk_sample_uv(idx, SHADOW_BLUR_SAMPLE_COUNT);
-            vec2 rotated_sample = pcf_sample_radius * rotation_matrix * vogel_sample;
-            vec2 sample_uv_offset = rotated_sample * rcp(SHADOW_MAP_RESOLUTION * SHADOW_RANGE);
+        for (uint idx = 0; idx < SHADOW_BLUR_SAMPLE_COUNT; idx += 1) {
+            vec2 vogel_sample = compute_vogel_disk_sample_uv(idx, SHADOW_BLUR_SAMPLE_COUNT) / shadowMapResolution;
+            vec2 rotated_sample = rotation_matrix * vogel_sample;
+            vec2 sample_uv_offset = rotated_sample;
+
+            // biases
+            // _xonk_gri_emin_shadow_fix(frag_world_position, normal_world, lightmap_sky); // seems useless with normal offsets
+            // shadow_clip_position = shadow_view_to_shadow_clip(feet_to_shadow_view(frag_world_position - cameraPosition));
+
+            // float distance_factor = 1.5 * length(shadow_clip_position.xy);
+            // float n_dot_l = dot(normal_world, mat3(gbufferModelViewInverse) * worldLightVector);
+            // distance_factor += _compute_distortion_factor(shadow_clip_position.xy) * (1.0 - max0(n_dot_l));
+            // vec3 shadow_bias = distance_factor * normal_world;
+            // vec3 shadow_bias_shadow_clip_space = mat3(shadowProjection) * (mat3(shadowModelView) * shadow_bias);
+            // shadow_clip_position.xyz += shadow_bias_shadow_clip_space;
+
+            // float distortion_factor = _compute_distortion_factor(shadow_clip_position.xy);
+            // const float base_bias = (shadowDistance / shadowMapResolution) * 4.0;
+            // shadow_clip_position.xyz += base_bias * mat3(shadowProjection) * (mat3(shadowModelView) * normal_world.xyz); // try unit normal offset
+            shadow_clip_position.z -= 0.01;
 
             vec4 sample_uv = shadow_clip_position + vec4(sample_uv_offset, 0.0, 0.0);
-            sample_uv = distort_shadow_clip_position(sample_uv);
-
+            distort_shadow_clip_position(sample_uv.xy);
             vec3 sample_uv_shadow_screen = shadow_clip_to_shadow_screen(sample_uv);
 
             pcf_accumulator += _get_shadow(sample_uv_shadow_screen);
         }
 
+        // return _get_shadow(shadow_clip_to_shadow_screen(distort_shadow_clip_position(shadow_clip_position)));
         return pcf_accumulator / float(SHADOW_BLUR_SAMPLE_COUNT);
     }
 

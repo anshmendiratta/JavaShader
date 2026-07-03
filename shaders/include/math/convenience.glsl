@@ -127,6 +127,12 @@
         return smoothstep(0.0, 1.0, value);
     }
 
+    // from: https://en.wikipedia.org/wiki/Smoothstep#Variations
+    float smootherstep01(float value) {
+        float x = clamp(value, 0., 1.);
+        return x * x * x * (x * (6. * x - 15.) + 10.);
+    }
+
     #define _define_smoothstep01_vec(dim) vec##dim smoothstep01(vec##dim value) { return smoothstep(vec##dim(0.0), vec##dim(1.0), value); }
     _define_smoothstep01_vec(2);
     _define_smoothstep01_vec(3);

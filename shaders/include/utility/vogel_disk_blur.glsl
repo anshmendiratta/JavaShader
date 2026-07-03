@@ -3,8 +3,6 @@
 
     #include "/include/utility/dither.glsl"
 
-    // vogel disk blur mostly taken from https://www.shadertoy.com/view/XtXXDN.
-
     #define GOLDEN_ANGLE 2.39996322972865332 // Radians.
 
     float _compute_vogel_disk_radius(float idx, int sample_count);

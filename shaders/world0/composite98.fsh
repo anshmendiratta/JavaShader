@@ -1,3 +1,3 @@
 #version 430 compatibility
 
-#include "/programs/c98_denoising.glsl"
+#include "/programs/composite/c98_denoising.glsl"

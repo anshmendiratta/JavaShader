@@ -30,7 +30,7 @@
         vec4 fragment_position_shadow_clip = shadow_view_to_shadow_clip(fragment_position_shadow_view);
         vec3 fragment_position_shadow_screen = shadow_clip_to_shadow_screen(fragment_position_shadow_clip);
 
-        vec4 fragment_position_shadow_clip_distorted = distort_shadow_clip_position(fragment_position_shadow_clip);
+        distort_shadow_clip_position(fragment_position_shadow_clip.xy);
         vec3 fragment_position_shadow_view_distorted = shadow_clip_to_shadow_view(fragment_position_shadow_clip_distorted);
 
         vec3 fragment_normal_shadow_view = mat3(shadowModelView) * fragment_normal_world;
@@ -46,7 +46,7 @@
             vec3 sample_position_shadow_screen = vec3(sample_position_shadow_screen_uv, texture(shadowtex0, sample_position_shadow_screen_uv).r);
             vec3 sample_position_shadow_view = shadow_screen_to_shadow_view(sample_position_shadow_screen); // for distance func
             vec4 sample_position_shadow_clip = shadow_view_to_shadow_clip(sample_position_shadow_view);
-            vec4 sample_position_shadow_clip_distorted = distort_shadow_clip_position(sample_position_shadow_clip);
+            distort_shadow_clip_position(sample_position_shadow_clip.xy);
             vec3 sample_position_shadow_screen_distorted = shadow_clip_to_shadow_screen(sample_position_shadow_clip_distorted);
 
             vec3 sample_position_shadow_view_distorted = shadow_clip_to_shadow_view(sample_position_shadow_clip_distorted);

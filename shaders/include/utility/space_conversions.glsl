@@ -5,6 +5,8 @@
 
     #include "/include/utility/random.glsl"
 
+    #include "/include/shadows/distort.glsl"
+
     vec4 view_to_clip(vec3 view_position);
 
     // ---------------------------------------------------------------
@@ -105,6 +107,11 @@
 
     vec3 shadow_clip_to_shadow_screen(vec4 shadow_clip_position) {
         return shadow_clip_to_shadow_ndc(shadow_clip_position) * 0.5 + 0.5;
+    }
+
+    vec2 shadow_clip_to_shadow_screen(vec2 shadow_clip_position) {
+        distort_shadow_clip_position(shadow_clip_position);
+        return shadow_clip_position * 0.5 + 0.5;
     }
 
     // --------------------------------------------------------------

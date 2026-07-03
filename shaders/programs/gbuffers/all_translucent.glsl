@@ -1,7 +1,6 @@
 #ifdef STAGE_VERTEX
     in vec2 mc_Entity;
     in vec2 mc_midTexCoord;
-    in vec4 at_tangent;
 
     out vec2 uv;
     out vec2 lightmap_uv;
@@ -35,7 +34,7 @@
         single_tex_size = half_size * 2.0;
 
         frag_normal_view = normalize(gl_NormalMatrix * gl_Normal); // macro normal
-        frag_tangent_view = normalize(at_tangent.w * (gl_NormalMatrix * at_tangent.xyz));
+        frag_tangent_view = at_tangent.w * normalize(gl_NormalMatrix * at_tangent.xyz);
 
         #if WAVING_WATER == 1
             if (mc_Entity.x == ID_WATER) {

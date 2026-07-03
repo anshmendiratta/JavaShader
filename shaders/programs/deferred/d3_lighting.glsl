@@ -87,9 +87,9 @@
             vec3 shadow = vec3(1.0);
         #endif
         #if RSM == 1
-            vec3 rsm_gi = texture(colortex3, uv).rgb;
+            vec3 gi = texture(colortex3, uv).rgb;
         #else
-            vec3 rsm_gi = vec3(0.0);
+            vec3 gi = vec3(0.0);
         #endif
         #if AMBIENT_OCCLUSION == 1
             float ao = texture(BUFFER_SSAO, uv).r;
@@ -102,16 +102,17 @@
             vec3 sss = vec3(0.0);
         #endif
 
-        vec3 diffuse_light = ao * n_dot_l * sunlight;
+        vec3 diffuse = sunlight * n_dot_l;
         // TODO: the mix between diffuse and specular is physically correct, but some metals still feel pretty dark
-        vec3 direct_lighting = (int(!material.is_metal) * (1.0 - fresnel) * diffuse_light) + (fresnel * specular);
-        vec3 indirect_lighting = rsm_gi + skylight + sss;
-        vec3 emission = EMISSION_STRENGTH * material.emissiveness * material.albedo; // bruh. i dont remember why i added this comment
+        vec3 direct = material.is_metal ? fresnel * specular : mix(diffuse, specular, fresnel);
+        vec3 indirect = ao * skylight + sss + gi;
+        vec3 emission = EMISSION_STRENGTH * material.emissiveness * material.albedo;
 
-        bool is_hand = fragment_is_hand(uv);
-
-        color.rgb *= int(!is_hand) * (shadow * direct_lighting + indirect_lighting + emission + blocklight); // do nothing if hand. FIX: hand is fully black
-        // color.rgb *= ao;
-        // color.rgb = vec3(ao);
+        if (fragment_is_hand(uv)) {
+            // color.rgb *= n_dot_l; // FIX: no lighting applied to hand
+        } else {
+            color.rgb *= shadow * direct + indirect + emission;
+            // color.rgb = vec3(sss);
+        }
     }
 #endif

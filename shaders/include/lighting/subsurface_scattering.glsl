@@ -3,6 +3,7 @@
 
     #include "/include/settings.glsl"
     #include "/include/uniforms.glsl"
+    #include "/include/pipeline.glsl"
 
     #include "/include/shadows/distort.glsl"
 
@@ -40,23 +41,22 @@
 
     // courtesy of @belmu from the shaderLABS discord
     float _approximate_sss_depth(in vec4 frag_position_shadow_clip) {
-        vec4 frag_position_shadow_clip_distorted = distort_shadow_clip_position(frag_position_shadow_clip);
-        vec3 frag_position_shadow_screen_distorted = shadow_clip_to_shadow_screen(frag_position_shadow_clip_distorted);
-        float frag_position_depth = frag_position_shadow_screen_distorted.z;
-
-        float dither = compute_dither(gl_FragCoord.xy);
+        // distort_shadow_clip_position(frag_position_shadow_clip.xy);
+        // vec3 frag_position_shadow_screen_distorted = shadow_clip_to_shadow_screen(frag_position_shadow_clip);
 
         float sss_depth = 0.0;
         for (int idx = 0; idx < SSS_SAMPLE_COUNT; idx += 1) {
-            vec2 sample_position_offset = compute_vogel_disk_sample_uv(idx, SSS_SAMPLE_COUNT) * texelSize; // in screen space
-            vec3 sample_position_screen = frag_position_shadow_screen_distorted + vec3(sample_position_offset, 0.0);
+            vec2 sample_position_offset = compute_vogel_disk_sample_uv(idx, SSS_SAMPLE_COUNT) / shadowMapResolution; // in screen space
+            vec4 sample_pos_clip_uv = frag_position_shadow_clip + vec4(sample_position_offset, 0., 0.);
+            distort_shadow_clip_position(sample_pos_clip_uv.xy);
+            vec3 sample_uv = shadow_clip_to_shadow_screen(sample_pos_clip_uv);
 
-            float sample_position_depth = texture(shadowtex0, sample_position_screen.xy).r;
+            float sample_position_depth = texture(shadowtex0, sample_uv.xy).r;
 
-            sss_depth += max0(sample_position_screen.z - sample_position_depth); // max0 instead of abs disallows sss materials hidden behind other blocks from being lit from sss
+            sss_depth += step(sample_position_depth, sample_uv.z); // max0 instead of abs disallows sss materials hidden behind other blocks from being lit from sss
         }
 
         return -shadowProjectionInverse[2].z /* according to belmu helps convert depth to a "meters" scale. is equal to (shadow) `far - near` */
-            * sss_depth / (SHADOW_DISTANCE_MULTIPLIER * SSS_SAMPLE_COUNT);
+            * sss_depth / SSS_SAMPLE_COUNT;
     }
 #endif

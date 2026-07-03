@@ -34,8 +34,8 @@
     void main() {
         color = texture(colortex0, uv);
 
-        // if (fragment_is_hand(uv) || texture(depthtex0, uv).r == 1.0)
-        //     return; // don't reflect hand or sky
+        if (fragment_is_hand(uv) || texture(depthtex0, uv).r == 1.0)
+            return; // don't reflect hand or sky
 
         Material material;
         init_material_unpacked_colortex_read(material);
@@ -73,7 +73,8 @@
         // sample sky if no hit and (probably) hit sky if it could
         // if (!hit_ssr_object && (mat3(gbufferModelViewInverse) * frag_reflected_ray_view).y > 0.0) {
         if (!hit_ssr_object) { // NOTE: removed the above secondary condition so that streaking is less common
-            reflected_color = get_sky_color(skyColor, fogColor, reflected_uv_world.y);
+            vec3 skydome_position_view = frag_position_view + 10000. * normalize(frag_reflected_ray_view); // TODO: not sure if this is ideal.
+            reflected_color = get_pbr_sky_color(skydome_position_view);
         }
         // TODO: figure out a better fadeoff for this
         // float reflection_fadeoff = max(1.0 - rcp(0.5) * avg_vec(abs(reflected_uv - uv)), 0.0) /* based on distance between uv and reflected uv */ ;

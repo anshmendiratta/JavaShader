@@ -1,7 +1,6 @@
 #ifdef STAGE_VERTEX
     in vec2 mc_midTexCoord;
     in vec2 mc_Entity;
-    in vec4 at_tangent;
 
     out vec2 uv;
     out vec2 lightmap_uv;

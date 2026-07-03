@@ -5,6 +5,9 @@
 
     uniform float alphaTestRef = 0.1;
 
+    // in
+    in vec4 at_tangent;
+
     // Uniforms
     uniform vec3 skyColor;
     uniform vec3 fogColor;
@@ -21,7 +24,8 @@
     uniform vec2 windowDimensions;
 
     uniform vec2 viewSize;
-    uniform vec2 texelSize;
+    uniform vec2 playerTexelSize;
+    uniform vec2 shadowTexelSize;
     uniform ivec2 atlasSize;
 
     uniform int worldTime;

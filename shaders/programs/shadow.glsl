@@ -48,9 +48,9 @@
                         );
             }
             #if WAVING_WATER == 1
-                else if (mc_Entity.x == ID_WATER) {
-                    vertex_offset_world_space = compute_water_displacement(vertex_world_space_position);
-                }
+                //     else if (mc_Entity.x == ID_WATER) {
+                //         vertex_offset_world_space = compute_water_displacement(vertex_world_space_position);
+                //     }
             #endif
 
             // Apply offset(s).
@@ -59,7 +59,7 @@
             gl_Position = shadowProjection * vec4(vertex_shadow_view_space_position, 1.0);
         #endif
 
-        gl_Position = distort_shadow_clip_position(gl_Position);
+        distort_shadow_clip_position(gl_Position.xy);
     }
 #endif
 

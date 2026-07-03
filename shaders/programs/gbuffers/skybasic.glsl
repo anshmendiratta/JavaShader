@@ -37,11 +37,19 @@
         vec2 screen_uv = gl_FragCoord.xy / windowDimensions;
         vec3 fragment_position_ndc_space = vec3(screen_uv, /* depth */ 1.0) * 2.0 - 1.0;
         vec3 fragment_position_view_space = ndc_to_view(fragment_position_ndc_space);
-        vec3 fragment_vector_world_space = mat3(gbufferModelViewInverse) * normalize(fragment_position_view_space); // treat as vector
+        vec3 v = mat3(gbufferModelViewInverse) * normalize(fragment_position_view_space);
 
-        float up_factor = max0(fragment_vector_world_space.y); // frag_player dot {0, 1, 0}
-
-        color.rgb = get_sky_color(skyColor, fogColor, up_factor);
-        color.a = 1.0;
+        #if PBR_SKY == 1.0
+            color.rgb = get_pbr_sky_color(fragment_position_view_space);
+            if (v.y < 0.0) {
+                v.y *= -1;
+                fragment_position_view_space = mat3(gbufferModelView) * v;
+                color.rgb = get_pbr_sky_color(fragment_position_view_space);
+            }
+        #else
+            vec3 fragment_vector_world_space = mat3(gbufferModelViewInverse) * normalize(fragment_position_view_space); // treat as vector
+            float up_factor = max0(fragment_vector_world_space.y); // frag_player dot {0, 1, 0}
+            color.rgb = get_sky_color(skyColor, fogColor, up_factor);
+        #endif
     }
 #endif
