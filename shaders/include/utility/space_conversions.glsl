@@ -97,6 +97,10 @@ vec4 shadow_view_to_shadow_clip(vec3 shadow_view_position) {
     return shadowProjection * vec4(shadow_view_position, 1.0);
 }
 
+vec4 feet_to_shadow_clip(vec3 feet_position) {
+    return shadow_view_to_shadow_clip(feet_to_shadow_view(feet_position));
+}
+
 vec3 shadow_view_to_shadow_ndc(vec3 shadow_view_position) {
     return _project_and_divide(shadowProjection, shadow_view_position);
 }

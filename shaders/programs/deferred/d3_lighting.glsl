@@ -82,7 +82,8 @@ void main() {
     // shadows
     #if SHADOWS == 1
     vec4 shadow_clip_position = shadow_view_to_shadow_clip(feet_to_shadow_view(fragment_feet_position));
-    vec3 shadow = _get_soft_shadow(shadow_clip_position, frag_normal_world, material.lightmap_uv.y);
+    vec3 vertex_normal = texture(colortex3, uv).xyz * 2. - 1.;
+    vec3 shadow = _get_soft_shadow(shadow_clip_position, vertex_normal, material.lightmap_uv.y);
     #else
     vec3 shadow = vec3(1.0);
     #endif
