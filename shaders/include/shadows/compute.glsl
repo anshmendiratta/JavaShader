@@ -40,27 +40,39 @@
         frag_world_position += _emin_comp_reimagined_bias(frag_world_position, normal_world, n_dot_l, lightmap_sky);
         shadow_clip_position = feet_to_shadow_clip(frag_world_position - cameraPosition);
 
-        // TODO: actual pcss
-        vec3 pcf_accumulator = vec3(0.0);
-        float blocker_dist = texture(shadowcolor1, uv).w;
-        float pcss_avg_distance = 0.;
-        if (blocker_dist > 0.) pcss_avg_distance = blocker_dist;
+        // NOTE: none of the pcss is physically accurate
+        // pcss search
+        float pcss_acumulator = 0.; // in depth
+        uint blockers_used = 0;
+        for (uint idx = 0; idx < PCSS_SAMPLES; idx += 1) { // just adjacent pixels
+            vec2 vogel_sample = PCSS_SEARCH_RADIUS * compute_vogel_disk_sample_uv(idx, SHADOW_BLUR_SAMPLES) / shadowMapResolution;
+            vec4 sample_uv_sclip = shadow_clip_position + vec4(vogel_sample, 0., 0.);
+            distort_shadow_clip_position(sample_uv_sclip.xyz);
+            vec3 sample_uv = shadow_clip_to_shadow_screen(sample_uv_sclip);
 
-        const float MIN_BLUR_RADIUS = 1.0;
-        const float MAX_BLUR_RADIUS = 8.0;
-        // float blur_radius = mix(MIN_BLUR_RADIUS, MAX_BLUR_RADIUS, pcss_avg_distance);
-        float blur_radius = 1.;
+            float sample_depth = texture(shadowtex0, sample_uv.xy).r;
+            float blocker_dist = max0(sample_uv.z - sample_depth);
 
+            pcss_acumulator += blocker_dist;
+            blockers_used += blocker_dist > 0. ? 1 : 0;
+        }
+
+        const float MIN_BLUR_RADIUS = 0.3;
+        const float MAX_BLUR_RADIUS = 32.;
+        float pcss_avg_dist = blockers_used > 0 ? pcss_acumulator / float(blockers_used) : 0.;
+        float blur_radius = mix(MIN_BLUR_RADIUS, MAX_BLUR_RADIUS, pcss_avg_dist); // sqrt so the effect is more apparent.
+
+        vec3 pcf_accumulator = vec3(0.);
         for (uint idx = 0; idx < SHADOW_BLUR_SAMPLES; idx += 1) {
-            vec2 vogel_sample = 1. * compute_vogel_disk_sample_uv(idx, SHADOW_BLUR_SAMPLES) / shadowMapResolution;
+            vec2 vogel_sample = blur_radius * compute_vogel_disk_sample_uv(idx, SHADOW_BLUR_SAMPLES) / shadowMapResolution;
             vec2 rotated_sample = rotation_matrix * vogel_sample;
             vec2 sample_uv_offset = rotated_sample;
 
-            vec4 sample_uv = shadow_clip_position + vec4(sample_uv_offset, 0.0, 0.0);
-            distort_shadow_clip_position(sample_uv.xyz);
-            vec3 sample_uv_shadow_screen = shadow_clip_to_shadow_screen(sample_uv);
+            vec4 sample_uv_sclip = shadow_clip_position + vec4(sample_uv_offset, 0.0, 0.0);
+            distort_shadow_clip_position(sample_uv_sclip.xyz);
+            vec3 sample_uv_sscreen = shadow_clip_to_shadow_screen(sample_uv_sclip);
 
-            pcf_accumulator += _get_shadow(sample_uv_shadow_screen);
+            pcf_accumulator += _get_shadow(sample_uv_sscreen);
         }
 
         return pcf_accumulator / float(SHADOW_BLUR_SAMPLES);
@@ -112,7 +124,7 @@
 
         float is_opaque_shadowed = step(shadow_screen_position.z, texture(shadowtex1, shadow_screen_position.xy).r);
         // TODO: this might need to take into account hcm/metals that have wavelength-dependent f0s so that the shadowed area isnt grayscale and appears to have some kind of "GI" because of specular bounces. might be solved with rsm
-        if (is_opaque_shadowed == 0.0) return vec3(0.0);
+        if (is_opaque_shadowed == 0.0) return vec3(0.5);
 
         // shadowed but by transparent objects. tint shadow
         vec4 shadow_color = texture(shadowcolor0, shadow_screen_position.xy);
@@ -120,5 +132,4 @@
 
         return shadow_color.rgb * light_passthrough_proportion;
     }
-
 #endif

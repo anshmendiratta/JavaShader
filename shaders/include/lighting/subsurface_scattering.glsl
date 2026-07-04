@@ -45,18 +45,22 @@
         // vec3 frag_position_shadow_screen_distorted = shadow_clip_to_shadow_screen(frag_position_shadow_clip);
 
         float sss_depth = 0.0;
+        uint count = 0;
         for (int idx = 0; idx < SSS_SAMPLES; idx += 1) {
-            vec2 sample_position_offset = compute_vogel_disk_sample_uv(idx, SSS_SAMPLES) / shadowMapResolution; // in screen space
+            vec2 sample_position_offset = 2.0 * compute_vogel_disk_sample_uv(idx, SSS_SAMPLES) / shadowMapResolution; // in screen space
             vec4 sample_pos_clip_uv = frag_position_shadow_clip + vec4(sample_position_offset, 0., 0.);
             distort_shadow_clip_position(sample_pos_clip_uv.xyz);
             vec3 sample_uv = shadow_clip_to_shadow_screen(sample_pos_clip_uv);
 
             float sample_position_depth = texture(shadowtex0, sample_uv.xy).r;
+            float blocker_dist = max0(sample_uv.z - sample_position_depth);
 
-            sss_depth += step(sample_position_depth, sample_uv.z); // max0 instead of abs disallows sss materials hidden behind other blocks from being lit from sss
+            sss_depth += blocker_dist;
+            count += (blocker_dist > 0.) ?
+                1 : 0;
         }
 
         return -shadowProjectionInverse[2].z /* according to belmu helps convert depth to a "meters" scale. is equal to (shadow) `far - near` */
-            * sss_depth / SSS_SAMPLES;
+            * sss_depth / float(count);
     }
 #endif

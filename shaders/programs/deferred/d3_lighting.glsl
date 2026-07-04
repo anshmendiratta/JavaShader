@@ -108,12 +108,9 @@
         vec3 indirect = ao * skylight + sss + gi;
         vec3 emission = EMISSION_STRENGTH * material.emissiveness * material.albedo;
 
-        if (fragment_is_hand(uv)) {
-            // color.rgb *= n_dot_l; // FIX: no lighting applied to hand
-        } else {
-            color.rgb *= shadow * direct + indirect + emission;
-            // color.rgb = vec3(sss);
-            // color.rgb = vec3(ao);
-        }
+        color.rgb *= fragment_is_hand(uv) ?
+            vec3(1.) :
+            shadow * direct + indirect + emission;
+        // vec3(sss);
     }
 #endif

@@ -5,7 +5,8 @@
     //     Atmosphere
     // ------------------
 
-    #define FOG 1 // Enables fog. [0 1]
+    #define FOG 0 // Enables fog. [0 1]
+
     #define FOG_DENSITY 6.0 // How quickly the fog starts in your render distance. Lower is faster. [1.0 2.0 3.0 4.0 5.0 6.0 7.0 8.0 9.0 10.0]
 
     // ---------------
@@ -15,11 +16,20 @@
     #define SHADOWS 1 // Enables/disables shadows. [0 1]
 
     #define SHADOW_MAP_RESOLUTION 1024 // Shadow map resolution in pixels. [512 1024 2048 4096 8192]
-    #define SHADOW_BLUR_SAMPLES 8
+
+    #define PCSS_SAMPLES 8
+    #define PCSS_SEARCH_RADIUS 4.0
+
+    #define SHADOW_BLUR_SAMPLES 16
     #define SHADOW_DISTANCE_MULTIPLIER 2 // This multiplies the possible shadow distance (256 blocks). [1 2 3 4]
     #define SHADOW_DISTORTION 0.85
 
+    // ----------
+    //     GI
+    // ----------
+
     #define RSM 0 // Enables/disables reflective shadow maps. [0 1]
+
     #define RSM_SAMPLES 4 // Number of values to use for RSM evaluation interpolation. Higher is worse performance. [2 3 4 5 6 7 8 9 10 11 12 13 14 15 16]
     #define RSM_SAMPLE_RADIUS 2.0 // [1.0 1.5 2.0 2.5 3.0 3.5 4.0 4.5 5.0]
     #define RSM_BRIGHTNESS 5.0 // [1.0 1.5 2.0 2.5 3.0 3.5 4.0 4.5 5.0 5.5 6.0 6.5 7.0 7.5 8.0 8.5 9.0 9.5 10.0]
@@ -29,26 +39,23 @@
     // ----------------------
 
     #define WAVING_FOLIAGE 1 // Enables the waving motion in plants/foliage. [0 1]
+    #define WAVING_WATER 0 // Enables waves on the water. [0 1]
 
     #define FOLIAGE_WAVE_OFFSET 2 / 7
     #define FOLIAGE_WAVE_SPEED 0.5
     #define FOLIAGE_WAVE_AMPLITUDE 0.09
-
-    #define WAVING_WATER 0 // Enables waves on the water. [0 1]
 
     // ------------------------
     //     Indirect lighting
     // ------------------------
 
     #define AMBIENT_OCCLUSION 1 // Enables ambient occlusion. [0 1]
-    #define AMBIENT_INTENSITY 1.0 // How much AO is applied. Higher values increase AO. [0.0 0.25 0.5 0.75 1.0 1.25 1.5 1.75 2.0 2.25 2.5 2.75 3.0 3.25 3.5 3.75 4.0 5.0 10.0]
 
     #define VANILLA_AO 0.0 // Determines how much of vanilla ambient occlusion is applied. [0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0]
 
     #define SSAO_SAMPLES 16 // [16 32 64 128]
-    #define SSAO_RADIUS 2.5 // [0.5 1.0 1.5 2.0 2.5 3.0 3.5 4.0 4.5 5.0 5.5 6.0 6.5 7.0 7.5 8.0 8.5 9.0 9.5 10.0]
     #define SSAO_BIAS 0.000001
-
+    #define SSAO_RADIUS 2.5 // [0.5 1.0 1.5 2.0 2.5 3.0 3.5 4.0 4.5 5.0 5.5 6.0 6.5 7.0 7.5 8.0 8.5 9.0 9.5 10.0]
     #define SSAO_BLUR_RADIUS 8 // Pixel radius used for blur. Higher is softer. [4 8 12 16 20 24 28 32 36]
 
     // -----------
@@ -73,7 +80,7 @@
     #define BLOCKLIGHT_G 0.2 // Blocklight color green content. [0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0 1.1 1.2 1.3 1.4 1.5]
     #define BLOCKLIGHT_B 0.1 // Blocklight color blue content. [0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0 1.1 1.2 1.3 1.4 1.5]
 
-    #define SUNLIGHT_INTENSITY 1.8 // Sun brightness. []
+    #define SUNLIGHT_INTENSITY 2.0 // Sun brightness. []
     #define MOONLIGHT_INTENSITY 0.040 // Moon brightness. []
     #define SKYLIGHT_INTENSITY_MULTIPLIER 0.4 // Sun brightness. [0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0 1.1 1.2 1.3 1.4 1.5]
 
@@ -103,9 +110,9 @@
     #define POM_LAYERS 8 // Number of layers used for POM. Higher gives more detail. [8 16 32 64 128]
     #define POM_DEPTH_WRITE 1 // Enables whether or not the parallax mapping can allow shadowing. [0 1]
 
-    #define SSS_SAMPLES 16 // The number of samples used for SSS. Higher is better with diminshing returns. [1 2 4 6 8 10 12 14 16 18 20 22 24 26 28 30 32]
+    #define SSS_SAMPLES 8 // The number of samples used for SSS. Higher is better with diminshing returns. [1 2 4 6 8 10 12 14 16 18 20 22 24 26 28 30 32]
     #define SSS_STRENGTH 15.0 // How bright subsurface scattering appears. [0.5 0.75 1.0 1.25 1.5 1.75 2.0 2.25 2.5 2.75 3.0 3.25 3.5 3.75 4.0 4.25 4.5 4.75 5.0 5.25 5.5 5.75 6.0 6.25 6.5 6.75 7.0 7.25 7.5 7.75 8.0 8.25 8.5 8.75 9.0 9.25 9.5 9.75 10.0 10.25 10.5 10.75 11.0 11.25 11.5 11.75 12.0 12.25 12.5 12.75 13.0 13.25 13.5  13.75 14.0 14.25 14.5 14.75 15.0]
-    #define OPTICAL_DENSITY_MULTIPLIER 2.0 // Scalar for how optically dense SSS materials are. Higher values localize the effect. [0.5 0.75 1.0 1.25 1.5 1.75 2.0 2.25 2.5 2.75 3.0 3.25 3.5 3.75 4.0]
+    #define OPTICAL_DENSITY_MULTIPLIER 2.5 // Scalar for how optically dense SSS materials are. Higher values localize the effect.
 
     // ---------------------------
     //     Screen Space Passes

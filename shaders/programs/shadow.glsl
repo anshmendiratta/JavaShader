@@ -75,14 +75,7 @@
             discard;
         }
 
-        vec3 frag_screen_pos = vec3(uv, texture(depthtex0, uv).r);
-        vec3 frag_feet_pos = view_to_feet(screen_to_view(frag_screen_pos));
-        vec4 frag_sclip_pos = feet_to_shadow_clip(frag_feet_pos);
-        distort_shadow_clip_position(frag_sclip_pos.xyz);
-        vec3 frag_sscreen_pos = shadow_clip_to_shadow_screen(frag_sclip_pos);
-        float frag_shadow_depth = texture(shadowtex0, frag_sscreen_pos.xy).r;
-
         encoded_data.xyz = normal_world * 0.5 + 0.5; // rsm
-        encoded_data.w = max0(frag_sscreen_pos.z - frag_shadow_depth); // pcss
+        encoded_data.w = 0.; // previously pcss
     }
 #endif

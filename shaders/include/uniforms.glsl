@@ -24,8 +24,6 @@
     uniform vec2 windowDimensions;
 
     uniform vec2 viewSize;
-    uniform vec2 playerTexelSize;
-    uniform vec2 shadowTexelSize;
     uniform ivec2 atlasSize;
 
     uniform int worldTime;
