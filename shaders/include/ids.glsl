@@ -36,8 +36,8 @@
     _construct_vec(20);
     #undef _construct_vec
 
-    const uint SSR_MATERIAL_COUNT = 6;
-    const float[SSR_MATERIAL_COUNT] ID_SSR = {
+    const uint SSR_MATERIALS = 6;
+    const float[SSR_MATERIALS] ID_SSR = {
             11000.0,
             11001.0,
             11002.0,
@@ -47,8 +47,8 @@
     };
 
     // bool should_get_ssr(float id) {
-    //     float[SSR_MATERIAL_COUNT] _ids;
-    //     _construct_vec(SSR_MATERIAL_COUNT, id, _ids);
+    //     float[SSR_MATERIALS] _ids;
+    //     _construct_vec(SSR_MATERIALS, id, _ids);
     //     return any(equal(_ids, ID_SSR));
     // }
 #endif

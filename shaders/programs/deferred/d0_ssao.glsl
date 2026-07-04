@@ -44,17 +44,17 @@
         init_material_unpacked_colortex_read(material);
 
         vec2 screen_uv = gl_FragCoord.xy / windowDimensions;
-        vec3 fragment_position_screen = vec3(screen_uv, texture(depthtex0, screen_uv).r);
+        vec3 fragment_position_screen = vec3(screen_uv, texture(depthtex2, screen_uv).r);
         vec3 fragment_position_view = ndc_to_view(screen_to_ndc(fragment_position_screen));
-        vec3 normal_world = -material.normal;
+        vec3 normal_world = material.normal;
         vec3 normal_view = normalize(mat3(gbufferModelView) * normal_world);
 
         mat3 TBN_matrix = get_tbn_matrix(normal_view);
 
         // Obtain depth samples for occlusion check.
         occlusion_factor = 0.;
-        for (uint idx = 0; idx < SSAO_SAMPLE_COUNT; idx += 1) {
-            float scale = float(idx + 1) / float(SSAO_SAMPLE_COUNT);
+        for (uint idx = 0; idx < SSAO_SAMPLES; idx += 1) {
+            float scale = float(idx + 1) / float(SSAO_SAMPLES);
             float epsilon_zero = compute_dither(screen_uv);
             float phi = 2.0 * PI * epsilon_zero;
             float theta = acos(sqrt(epsilon_zero));
@@ -71,13 +71,13 @@
             float sample_object_depth = texture(depthtex2, sample_position_screen.xy).r;
             vec3 sample_object_position_screen = vec3(sample_position_screen.xy, sample_object_depth);
 
-            float is_occluded = float(sample_object_depth <= sample_position_screen.z + SSAO_BIAS);
+            float is_occluded = float(sample_position_screen.z + SSAO_BIAS >= sample_object_depth);
             float close_in_depth = smootherstep01(SSAO_RADIUS / abs(fragment_position_screen.z - sample_object_depth));
 
             occlusion_factor += is_occluded * close_in_depth;
         }
 
-        occlusion_factor /= float(SSAO_SAMPLE_COUNT);
-        occlusion_factor = pow(1. - occlusion_factor, AMBIENT_INTENSITY);
+        occlusion_factor /= float(SSAO_SAMPLES);
+        occlusion_factor = pow(1. - occlusion_factor, 1.);
     }
 #endif

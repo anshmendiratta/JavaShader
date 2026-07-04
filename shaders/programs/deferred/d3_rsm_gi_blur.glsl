@@ -22,7 +22,7 @@
     #include "/include/utility/dither.glsl"
     #include "/include/utility/depth_conversion.glsl"
 
-    #define RSM_BLUR_SAMPLE_COUNT 16
+    #define RSM_BLUR_SAMPLES 16
     #define DEPTH_SENSITIVITY 500.0
     #define RSM_BLUR_RADIUS 10.0
 
@@ -48,8 +48,8 @@
 
         // Bilateral blur with edge-aware filtering
         float dither = compute_dither(gl_FragCoord.xy);
-        for (int idx = 0; idx < RSM_BLUR_SAMPLE_COUNT; idx += 1) {
-            vec2 offset_uv = compute_vogel_disk_sample_uv(idx, RSM_BLUR_SAMPLE_COUNT);
+        for (int idx = 0; idx < RSM_BLUR_SAMPLES; idx += 1) {
+            vec2 offset_uv = compute_vogel_disk_sample_uv(idx, RSM_BLUR_SAMPLES);
             vec2 sample_offset = RSM_BLUR_RADIUS * texel_size * offset_uv;
             vec2 sample_uv = uv + sample_offset;
 

@@ -7,15 +7,15 @@
     #include "/include/math/convenience.glsl"
 
     // gerstner waves from https://en.wikipedia.org/wiki/Trochoidal_wave
-    // free variables: amplitude_m, k_m, phi_m with m \in [1, WAVE_COMPONENT_COUNT]
+    // free variables: amplitude_m, k_m, phi_m with m \in [1, WAVE_COMPONENTS]
 
-    #define WAVE_COMPONENT_COUNT 10
+    #define WAVE_COMPONENTS 10
     #define MEAN_WATER_DEPTH 0.0
     #define GRAVITY 9.81
 
-    float phi_m[WAVE_COMPONENT_COUNT];
-    float omega_m[WAVE_COMPONENT_COUNT];
-    float theta_m[WAVE_COMPONENT_COUNT];
+    float phi_m[WAVE_COMPONENTS];
+    float omega_m[WAVE_COMPONENTS];
+    float theta_m[WAVE_COMPONENTS];
 
     const float _k_mx = 3.0;
     const float _k_mz = 5.0;
@@ -30,7 +30,7 @@
         float t = frameTimeCounter * 1e-2;
 
         // populate phi, omega, and theta tables
-        for (uint component = 0; component < WAVE_COMPONENT_COUNT; component += 1) {
+        for (uint component = 0; component < WAVE_COMPONENTS; component += 1) {
             phi_m[component] = sqrt(2.0 * PI * rcp(float(component + 1)));
             omega_m[component] = sqrt(GRAVITY * length(k_m)); // tanh(k_m h) = 0.0. if we include it, waves are static
             theta_m[component] = _compute_theta_m(alpha, beta, t, component);
@@ -59,7 +59,7 @@
 
     float _compute_y() {
         float sum = 0.0;
-        for (uint component = 0; component < WAVE_COMPONENT_COUNT; component += 1) {
+        for (uint component = 0; component < WAVE_COMPONENTS; component += 1) {
             float component_amplitude = pow2(rcp(float(component + 1)));
 
             sum += component_amplitude * cos(theta_m[component]);

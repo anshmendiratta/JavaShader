@@ -22,7 +22,7 @@
     #include "/include/utility/dither.glsl"
     #include "/include/utility/depth_conversion.glsl"
 
-    #define SSAO_BLUR_SAMPLE_COUNT 64
+    #define SSAO_BLUR_SAMPLES 64
     #define DEPTH_SENSITIVITY 300.0 // Higher = sharper edges
 
     void main() {
@@ -48,8 +48,8 @@
         float weighted_sum = center_ssao;
 
         // Very aggressive bilateral blur to completely eliminate noise
-        for (int idx = 0; idx < SSAO_BLUR_SAMPLE_COUNT; idx += 1) {
-            vec2 offset_uv = compute_vogel_disk_sample_uv(idx, SSAO_BLUR_SAMPLE_COUNT);
+        for (int idx = 0; idx < SSAO_BLUR_SAMPLES; idx += 1) {
+            vec2 offset_uv = compute_vogel_disk_sample_uv(idx, SSAO_BLUR_SAMPLES);
             vec2 sample_offset = SSAO_BLUR_RADIUS * texel_size * offset_uv;
             vec2 sample_uv = uv + sample_offset;
 
