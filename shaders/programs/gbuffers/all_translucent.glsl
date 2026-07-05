@@ -41,10 +41,13 @@ void main() {
         vec3 view_space_position = (gbufferProjectionInverse * gl_Position).xyz;
         vec3 world_space_position = view_to_world(view_space_position);
         frag_water_displacement = compute_water_displacement(world_space_position);
-        world_space_position += frag_water_displacement;
+        // world_space_position += frag_water_displacement;
         vec4 clip_space_position = view_to_clip(world_to_view(world_space_position));
 
         gl_Position = clip_space_position;
+
+        vec3 frag_pos_world = view_to_world(clip_to_view(gl_Position));
+        frag_normal_view = mat3(gbufferModelView) * compute_water_normal(frag_pos_world, frag_water_displacement);
     }
     #endif
 }
@@ -181,10 +184,10 @@ void main() {
     vec3 diffuse_light_factor = ao_factor * n_dot_l * sunlight; // ao added here so darkening is more visible
     vec3 specular_light_factor = compute_specular(material, fresnel, light_source_vector_world, frag_view_vector_world);
 
-    vec3 direct_lighting = mix(diffuse_light_factor, specular_light_factor, fresnel) * shadow + blocklight;
+    vec3 direct_lighting = mix(diffuse_light_factor, specular_light_factor, fresnel) + blocklight;
     vec3 indirect_lighting = skylight;
     vec3 emission = EMISSION_STRENGTH * material.emissiveness * material.albedo; // bruh. i dont remember why i added this comment
 
-    color.rgb *= direct_lighting + indirect_lighting + emission;
+    color.rgb *= shadow * direct_lighting + indirect_lighting + emission;
 }
 #endif
