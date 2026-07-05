@@ -57,8 +57,8 @@
             blockers_used += blocker_dist > 0. ? 1 : 0;
         }
 
-        const float MIN_BLUR_RADIUS = 0.3;
-        const float MAX_BLUR_RADIUS = 32.;
+        const float MIN_BLUR_RADIUS = 0.2;
+        const float MAX_BLUR_RADIUS = 64.;
         float pcss_avg_dist = blockers_used > 0 ? pcss_acumulator / float(blockers_used) : 0.;
         float blur_radius = mix(MIN_BLUR_RADIUS, MAX_BLUR_RADIUS, pcss_avg_dist); // sqrt so the effect is more apparent.
 
@@ -124,7 +124,7 @@
 
         float is_opaque_shadowed = step(shadow_screen_position.z, texture(shadowtex1, shadow_screen_position.xy).r);
         // TODO: this might need to take into account hcm/metals that have wavelength-dependent f0s so that the shadowed area isnt grayscale and appears to have some kind of "GI" because of specular bounces. might be solved with rsm
-        if (is_opaque_shadowed == 0.0) return vec3(0.5);
+        if (is_opaque_shadowed == 0.0) return vec3(0.1);
 
         // shadowed but by transparent objects. tint shadow
         vec4 shadow_color = texture(shadowcolor0, shadow_screen_position.xy);
