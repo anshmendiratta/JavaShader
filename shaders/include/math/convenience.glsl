@@ -4,6 +4,7 @@
     // General constants.
     #define PI 3.1415926535897
     #define TAU 2.0 * PI
+    #define SQRT_TWO 1.414213562373095048801688724209
 
     // Smart denoise constants.
     #define INV_PI 0.31830988618

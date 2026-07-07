@@ -43,7 +43,7 @@
         Material material;
         init_material_unpacked_colortex_read(material);
 
-        vec2 screen_uv = gl_FragCoord.xy / windowDimensions;
+        vec2 screen_uv = uv;
         vec3 fragment_position_screen = vec3(screen_uv, texture(depthtex2, screen_uv).r);
         vec3 fragment_position_view = ndc_to_view(screen_to_ndc(fragment_position_screen));
         vec3 normal_world = material.normal;

@@ -13,7 +13,7 @@
 
     #include "/include/shadows/distort.glsl"
 
-    #include "/include/water/waves.glsl"
+    // #include "/include/water/waves.glsl"
 
     #include "/include/utility/noise.glsl"
     #include "/include/utility/space_conversions.glsl"

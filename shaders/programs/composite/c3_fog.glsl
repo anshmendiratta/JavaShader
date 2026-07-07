@@ -48,7 +48,7 @@
         fragment_view_space_position = world_to_view(fragment_world_space_position);
         vec3 sky_color_at_horizon = get_pbr_sky_color(fragment_view_space_position);
 
-        // color.rgb = oklab_mix(color.rgb, sky_color_at_horizon, clamp01(fog_factor));
+        color.rgb = oklab_mix(color.rgb, rgb_to_linear(fogColor), clamp01(fog_factor));
         // color.rgb = sky_color_at_horizon;
         // color.rgb = vec3(1., 0., 0.);
     }

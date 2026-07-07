@@ -25,32 +25,36 @@
 
     #include "/include/shadows/compute.glsl"
 
+    #include "/include/water/waves.glsl"
+
+    #include "/include/utility/dither.glsl"
     #include "/include/utility/space_conversions.glsl"
     #include "/include/utility/depth_conversion.glsl"
-    #include "/include/utility/dither.glsl"
 
     // TODO: implement a PBR sky with clouds so i can reflect them properly
 
     void main() {
         color = texture(colortex0, uv);
 
-        if (fragment_is_hand(uv) || texture(depthtex0, uv).r == 1.0)
-            return; // don't reflect hand or sky
+        if (fragment_is_hand(uv) || texture(depthtex0, uv).r == 1.0) return; // don't reflect hand or sky
 
         Material material;
         init_material_unpacked_colortex_read(material);
 
-        // NOTE: cant use `screen_uv` here
         vec3 frag_position_screen = vec3(uv, texture(depthtex0, uv).r);
         vec3 frag_position_view = screen_to_view(frag_position_screen);
         vec3 frag_position_world = view_to_world(frag_position_view);
 
+        if (material.block_id == ID_WATER) material.normal = compute_water_normal(frag_position_world);
+        // color.rgb = material.normal;
+        // return;
+
         vec3 frag_view_vector_view = -normalize(frag_position_view);
         vec3 frag_view_vector_world = mat3(gbufferModelViewInverse) * frag_view_vector_view;
-        vec3 frag_normal_view = normalize(mat3(gbufferModelView) * material.normal);
+        vec3 frag_normal_view = mat3(gbufferModelView) * material.normal;
         vec3 frag_reflected_ray_view = reflect(-frag_view_vector_view, frag_normal_view); // TODO: why tf does this need a negative. the view vector already points out from the fragment?
 
-        vec3 fresnel = vec3(1.0, 0.0, 0.0); // debug-able fallback if something fails
+        vec3 fresnel = vec3(1.0, 0.0, 0.0); // debug-able fallback
         if (material.block_id == ID_WATER) {
             fresnel = _fresnel_schlick(material, dot(frag_view_vector_world, material.normal));
         } else {
