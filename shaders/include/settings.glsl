@@ -31,7 +31,7 @@
     #define RSM 0 // Enables/disables reflective shadow maps. [0 1]
 
     #define RSM_SAMPLES 4 // Number of values to use for RSM evaluation interpolation. Higher is worse performance. [2 3 4 5 6 7 8 9 10 11 12 13 14 15 16]
-    #define RSM_SAMPLE_RADIUS 2.0 // [1.0 1.5 2.0 2.5 3.0 3.5 4.0 4.5 5.0]
+    #define RSM_RADIUS 2.5 // [0.1 0.5 1.0 1.5 2.0 2.5 3.0 3.5 4.0 4.5 5.0]
     #define RSM_BRIGHTNESS 5.0 // [1.0 1.5 2.0 2.5 3.0 3.5 4.0 4.5 5.0 5.5 6.0 6.5 7.0 7.5 8.0 8.5 9.0 9.5 10.0]
 
     // ----------------------
@@ -41,9 +41,9 @@
     #define WAVING_FOLIAGE 1 // Enables the waving motion in plants/foliage. [0 1]
     #define WAVING_WATER 0 // Enables waves on the water. [0 1]
 
-    #define FOLIAGE_WAVE_OFFSET 2 / 7
-    #define FOLIAGE_WAVE_SPEED 0.5
-    #define FOLIAGE_WAVE_AMPLITUDE 0.09
+    #define FOLIAGE_WAVE_OFFSET 2 // 7
+    #define FOLIAGE_WAVE_SPEED 0.5 // [0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0]
+    #define FOLIAGE_WAVE_AMPLITUDE 0.09 // [0.03 0.05 0.07 0.09 0.11 0.13 0.15 0.17 0.19]
 
     // ------------------------
     //     Indirect lighting
@@ -52,11 +52,12 @@
     #define AMBIENT_OCCLUSION 1 // Enables ambient occlusion. [0 1]
 
     #define VANILLA_AO 0.0 // Determines how much of vanilla ambient occlusion is applied. [0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0]
+    #define AO_STRENGTH 1.0 // [0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0 1.1 1.2 1.3 1.4 1.5 1.6 1.7 1.8 1.9 2.0]
 
-    #define SSAO_SAMPLES 16 // [16 32 64 128]
-    #define SSAO_BIAS 0.000001
+    #define SSAO_SAMPLES 8 // [8 16 32 64 128]
+    #define SSAO_BIAS 0.
     #define SSAO_RADIUS 2.5 // [0.5 1.0 1.5 2.0 2.5 3.0 3.5 4.0 4.5 5.0 5.5 6.0 6.5 7.0 7.5 8.0 8.5 9.0 9.5 10.0]
-    #define SSAO_BLUR_RADIUS 8 // Pixel radius used for blur. Higher is softer. [4 8 12 16 20 24 28 32 36]
+    #define SSAO_BLUR_RADIUS 0 // Pixel radius used for blur. Higher is softer. [4 8 12 16 20 24 28 32 36]
 
     // -----------
     //     Sky
@@ -80,7 +81,7 @@
     #define BLOCKLIGHT_G 0.2 // Blocklight color green content. [0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0 1.1 1.2 1.3 1.4 1.5]
     #define BLOCKLIGHT_B 0.1 // Blocklight color blue content. [0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0 1.1 1.2 1.3 1.4 1.5]
 
-    #define SUNLIGHT_INTENSITY 2.0 // Sun brightness. []
+    #define SUNLIGHT_INTENSITY 3.0 // Sun brightness. []
     #define MOONLIGHT_INTENSITY 0.040 // Moon brightness. []
     #define SKYLIGHT_INTENSITY_MULTIPLIER 0.4 // Sun brightness. [0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0 1.1 1.2 1.3 1.4 1.5]
 
@@ -104,7 +105,7 @@
     #define POM 0 // Enables LabPBR parallax occlusion mapping. [0 1]
     #define SSS 1 // Enables subsurface scattering. [0 1]
 
-    #define EMISSION_STRENGTH 1.0 // Determines how bright emissive objects appear. [0.5 0.75 1.0 1.25 1.5 1.75 2.0 2.25 2.5]
+    #define EMISSION_STRENGTH 1500.0 // Determines how bright emissive objects appear. [0.5 0.75 1.0 1.25 1.5 1.75 2.0 2.25 2.5]
 
     #define POM_HEIGHT_SCALE 0.06 // Changes the depth perceived in POM textures. [0.02 0.04 0.06 0.08 0.10 0.12 0.14 0.16 0.18 0.20 0.25 0.5 0.75 1.0]
     #define POM_LAYERS 8 // Number of layers used for POM. Higher gives more detail. [8 16 32 64 128]
@@ -121,7 +122,7 @@
     #define BLOOM 1 // Enables a halo around bright objects. [0 1]
 
     #define BLOOM_RADIUS 1 // Determines the distance of samples used for blurring. Higher increases blue but introduces more banding. [1 2 3 4 5 6 7 8 9 10]
-    #define BLOOM_INTENSITY 0.25 // Percentage bias towards the bloom HDR buffer. Higher values increase the bloom effect. [0.05 0.1 0.15 0.2 0.25 0.3 0.35 0.4 0.45 0.5 0.55 0.6 0.65 0.7 0.75 0.8]
+    #define BLOOM_STRENGTH 0.08 // Percentage bias towards the bloom HDR buffer. Higher values increase the bloom effect. [0.02 0.04 0.06 0.08 0.10 0.12 0.14 0.16 0.18 0.20]
 
     #define SSR 1 // Enables/disables screen-space reflections. [0 1]
     #define SSR_STEPS 16 // Raymarching steps to use for screen-space reflections. Higher values result in more accurate reflections at the cost of performance. [2 4 6 8 10 12 14 16 18 20 22 24]
@@ -144,6 +145,7 @@
     // -----------
 
     #define DEBUG_VIEW 0 // Enables/disables the debug view for buffers. [0 1]
-    #define DEBUG_BUFFER 0 // colortex0-15, depthtex0, shadowtex0-1, shadowcolor0. [0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19]
+    #define DEBUG_BUFFER 0 // colortex0-31, depthtex0, shadowtex0-1, shadowcolor0-1. [0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36]
     #define DEBUG_COVER_SCREEN 0 // Toggles between the debug output rendering to a fourth of the screen and the entire screen. [0 1]
+    #define WHITEWORLD 0 // Enables/disables colors. [0 1]
 #endif

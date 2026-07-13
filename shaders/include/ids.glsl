@@ -45,10 +45,9 @@
             11004.0,
             11005.0
     };
-
     // bool should_get_ssr(float id) {
-    //     float[SSR_MATERIALS] _ids;
-    //     _construct_vec(SSR_MATERIALS, id, _ids);
-    //     return any(equal(_ids, ID_SSR));
-    // }
-#endif
+        // float[SSR_MATERIALS] _ids;
+        // _construct_vec(SSR_MATERIALS, id, _ids);
+        // return any(equal(_ids, ID_SSR));
+        // }
+    #endif

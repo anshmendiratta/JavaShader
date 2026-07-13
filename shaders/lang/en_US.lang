@@ -1,4 +1,4 @@
-# Labels.
+a0 Labels.
 value.DEBUG_BUFFER.0 = colortex0
 value.DEBUG_BUFFER.1 = colortex1
 value.DEBUG_BUFFER.2 = colortex2
@@ -15,6 +15,23 @@ value.DEBUG_BUFFER.12 = colortex12
 value.DEBUG_BUFFER.13 = colortex13
 value.DEBUG_BUFFER.14 = colortex14
 value.DEBUG_BUFFER.15 = colortex15
+value.DEBUG_BUFFER.16 = colortex16
+value.DEBUG_BUFFER.17 = colortex17
+value.DEBUG_BUFFER.18 = colortex18
+value.DEBUG_BUFFER.19 = colortex19
+value.DEBUG_BUFFER.20 = colortex20
+value.DEBUG_BUFFER.21 = colortex21
+value.DEBUG_BUFFER.22 = colortex22
+value.DEBUG_BUFFER.23 = colortex23
+value.DEBUG_BUFFER.24 = colortex24
+value.DEBUG_BUFFER.25 = colortex25
+value.DEBUG_BUFFER.26 = colortex26
+value.DEBUG_BUFFER.27 = colortex27
+value.DEBUG_BUFFER.28 = colortex28
+value.DEBUG_BUFFER.29 = colortex29
+value.DEBUG_BUFFER.30 = colortex30
+value.DEBUG_BUFFER.31 = colortex31
+
 value.DEBUG_BUFFER.16 = depthtex0
 value.DEBUG_BUFFER.17 = shadowtex0
 value.DEBUG_BUFFER.18 = shadowtex1

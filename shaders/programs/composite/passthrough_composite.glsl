@@ -18,6 +18,6 @@
     #include "/include/uniforms.glsl"
 
     void main() {
-        color = texture(BUFFER_COLOR, uv);
+        color = texture(colortex0, uv);
     }
 #endif

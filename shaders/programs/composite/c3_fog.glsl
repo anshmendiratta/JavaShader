@@ -28,8 +28,7 @@
 
     void main() {
         color = texture(colortex0, uv);
-
-        // ignore sky/dh
+        // ignore sky / dh
         float depth = texture(depthtex0, uv).r;
         if (depth == 1.0) {
             // FIX: clouds are still being ignored. try using cloudDistance for clouds specifically instead of the far plane
@@ -49,7 +48,7 @@
         vec3 sky_color_at_horizon = get_pbr_sky_color(fragment_view_space_position);
 
         color.rgb = oklab_mix(color.rgb, rgb_to_linear(fogColor), clamp01(fog_factor));
-        // color.rgb = sky_color_at_horizon;
-        // color.rgb = vec3(1., 0., 0.);
+        // color . rgb = sky_color_at_horizon;
+        // color . rgb = vec3(1., 0., 0.);
     }
 #endif

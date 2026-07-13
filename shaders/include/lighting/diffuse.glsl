@@ -7,12 +7,15 @@
     vec3 _diffuse_silly_lambertian(Material material, vec3 light_source_vector_world);
     vec3 _diffuse_oren_nayar(Material material, vec3 light_source_vector_world);
 
-    vec3 compute_diffuse(Material material, vec3 light_source_vector_world) {
-        // return _diffuse_silly_lambertian(material, light_source_vector_world);
+    vec3 compute_diffuse(Material material, in vec3 vertex_normal, in vec3 light_source_vector_world) {
+        // return _diffuse_silly_lambertian(material, vertex_normal, light_source_vector_world);
         return _diffuse_lambertian(material, light_source_vector_world);
         // return _diffuse_oren_nayar(material, light_source_vector_world);
     }
 
+    // -----------------------
+    //     Diffuse models
+    // -----------------------
     // of the below models, N.L is technically the only "correct" one, but the others look nice
 
     vec3 _diffuse_lambertian(Material material, vec3 light_source_vector_world) {
@@ -23,7 +26,7 @@
 
     // https://lisyarus.github.io/blog/posts/a-silly-diffuse-shading-model.html
     vec3 _diffuse_silly_lambertian(Material material, vec3 light_source_vector_world) {
-        float silly_lambertian = pow2((1.0 + dot(light_source_vector_world, material.normal)) / 2.0);
+        float silly_lambertian = pow2(0.5 + 0.5 * dot(light_source_vector_world, material.normal));
 
         return vec3(silly_lambertian);
     }

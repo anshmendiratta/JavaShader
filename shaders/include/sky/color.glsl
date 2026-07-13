@@ -37,7 +37,7 @@
 
     vec3 out_scattering(in vec3 scattering_sample_view_space) {
         vec3 scattering_sample_world_space = view_to_world(scattering_sample_view_space);
-        return vec3(4.0 * PI * ATMOSPHERE_HEIGHT * (exp(-scattering_sample_world_space.y / ATMOSPHERE_HEIGHT) - exp(-1))); // last term is the integral if the sun is incident on the sky dome.
+        return vec3(4.0 * PI * ATMOSPHERE_HEIGHT * (exp(-scattering_sample_world_space.y / ATMOSPHERE_HEIGHT) - exp(-1))); // last term is the integral if the sun is incident on the sky dome .
     }
 
     vec3 in_scattering(in vec3 scattering_sample_view_space) {

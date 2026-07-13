@@ -13,11 +13,11 @@ vec4 smart_de_noise(vec2 atlas_uv) {
     float radius = round(K_SIGMA * SIGMA);
     float radQ = radius * radius;
 
-    float invSigmaQx2 = 0.5 / SIGMA * SIGMA; // 1.0 / (sigma^2 * 2.0)
-    float invSigmaQx2PI = INV_PI * invSigmaQx2; // 1.0 / (sqrt(PI) * SIGMA
+    float invSigmaQx2 = 0.5 / SIGMA * SIGMA; / 1.0 / (sigma^2 * 2.0)
+    float invSigmaQx2PI = INV_PI * invSigmaQx2; / 1.0 / (sqrt(PI) * SIGMA
 
-    float invThresholdSqx2 = 0.5 / THRESHOLD * THRESHOLD; // 1.0 / (sigma^2 * 2.0)
-    float invThresholdSqrt2PI = INV_SQRT_OF_2PI / THRESHOLD; // 1.0 / (sqrt(2*PI) * SIGMA
+    float invThresholdSqx2 = 0.5 / THRESHOLD * THRESHOLD; / 1.0 / (sigma^2 * 2.0)
+    float invThresholdSqrt2PI = INV_SQRT_OF_2PI / THRESHOLD; / 1.0 / (sqrt(2*PI) * SIGMA
 
     vec4 centrPx = texture(colortex0, atlas_uv);
 

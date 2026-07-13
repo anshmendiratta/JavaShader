@@ -1,7 +1,11 @@
 #if !defined INCLUDE_TURBO_COLORMAP
     #define INCLUDE_TURBO_COLORMAP
 
+    #include "/include/uniforms.glsl"
+
     #include "/include/math/convenience.glsl"
+
+    #include "/include/utility/depth_conversion.glsl"
 
     const vec3 turboCurve[] = vec3[](
     vec3(0.18995, 0.07176, 0.23217),
@@ -263,7 +267,8 @@
     );
 
     vec3 interpolate_turbo(float x) {
-        x = pow2(clamp(x, 0.0, 1.0)) * 255.0;
+        float linear_depth = z_to_depth(depth_to_z(x)/(far - near));
+        x = clamp01(linear_depth) * 255.0;
 
         return turboCurve[int(x)] + (turboCurve[min(255, int(x) + 1)] - turboCurve[int(x)]) * fract(x);
     }

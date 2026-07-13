@@ -11,6 +11,7 @@
     in vec2 uv;
 
     /* RENDERTARGETS: 2 */
+
     layout(location = 0) out vec3 rsm_gi; // reflective shadow map global illumuination
 
     #include "/include/uniforms.glsl"
@@ -21,9 +22,14 @@
     #include "/include/shadows/rsm.glsl"
 
     void main() {
-        Material material;
-        init_material_unpacked_colortex_read(material);
+        // Material material;
+        // init_material_unpacked_colortex_read(material);
 
-        rsm_gi = compute_rsm_gi(material.normal);
+        vec3 frag_pos_screen = vec3(uv, texture(depthtex0, uv).r);
+        vec3 frag_pos_world = view_to_world(screen_to_view(frag_pos_screen));
+
+        vec3 frag_vert_normal = texture(colortex3, uv).xyz * 2. - 1.;
+
+        rsm_gi = compute_rsm_gi(frag_pos_world, frag_vert_normal);
     }
 #endif

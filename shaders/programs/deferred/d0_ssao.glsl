@@ -27,15 +27,8 @@
     #include "/include/pbr/textures.glsl"
 
     void main() {
-        // skip ssao for hand geometry
-        bool is_hand = fragment_is_hand(uv);
-        if (is_hand) {
-            occlusion_factor = 1.0;
-            return;
-        }
-        // skip for the sky
-        float fragment_depth = texture(depthtex2, uv).r;
-        if (fragment_depth == 1.0) {
+        // skip ssao for hand geometry and the sky
+        if (fragment_is_hand(uv) || texture(depthtex2, uv).r == 1.) {
             occlusion_factor = 1.0;
             return;
         }
@@ -50,8 +43,7 @@
         vec3 normal_view = normalize(mat3(gbufferModelView) * normal_world);
 
         mat3 TBN_matrix = get_tbn_matrix(normal_view);
-
-        // Obtain depth samples for occlusion check.
+        // Obtain depth samples for occlusion check .
         occlusion_factor = 0.;
         for (uint idx = 0; idx < SSAO_SAMPLES; idx += 1) {
             float scale = float(idx + 1) / float(SSAO_SAMPLES);
@@ -78,6 +70,6 @@
         }
 
         occlusion_factor /= float(SSAO_SAMPLES);
-        occlusion_factor = pow(1. - occlusion_factor, 1.);
+        occlusion_factor = AO_STRENGTH * pow(1. - occlusion_factor, 6.);
     }
 #endif

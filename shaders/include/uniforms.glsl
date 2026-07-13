@@ -12,6 +12,8 @@
     uniform vec3 skyColor;
     uniform vec3 fogColor;
 
+    uniform vec3 light_dir;
+
     uniform vec3 shadowLightPosition;
     uniform vec3 worldLightVector;
 

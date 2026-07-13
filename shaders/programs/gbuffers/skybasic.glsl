@@ -1,12 +1,12 @@
 #ifdef STAGE_VERTEX
     out vec2 uv;
-    out vec4 starData; //rgb = star color, a = flag for weather or not this pixel is a star.
+    out vec4 starData; // rgb = star color, a = flag for weather or not this pixel is a star .
     out vec4 glcolor;
 
     void main() {
         gl_Position = ftransform();
         uv = (gl_TextureMatrix[0] * gl_MultiTexCoord0).xy;
-        starData = vec4(gl_Color.rgb, float(gl_Color.r == gl_Color.g && gl_Color.g == gl_Color.b && gl_Color.r > 0.0)); // Check if white.
+        starData = vec4(gl_Color.rgb, float(gl_Color.r == gl_Color.g && gl_Color.g == gl_Color.b && gl_Color.r > 0.0)); // Check if white .
         glcolor = gl_Color;
     }
 #endif
@@ -48,7 +48,7 @@
             }
         #else
             vec3 fragment_vector_world_space = mat3(gbufferModelViewInverse) * normalize(fragment_position_view_space); // treat as vector
-            float up_factor = max0(fragment_vector_world_space.y); // frag_player dot {0, 1, 0}
+            float up_factor = max0(fragment_vector_world_space.y); // frag_player dot { 0, 1, 0 }
             color.rgb = get_sky_color(skyColor, fogColor, up_factor);
         #endif
     }

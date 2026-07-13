@@ -24,6 +24,10 @@
         return false;
     }
 
+    bool fragment_is_translucent(vec2 uv) {
+        return texture(depthtex0, uv).r != texture(depthtex1, uv).r;
+    }
+
     bool uv_out_of_bounds(vec2 uv) {
         return clamp01(uv) != uv;
     }

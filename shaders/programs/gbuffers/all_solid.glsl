@@ -30,13 +30,13 @@
         single_tex_size = half_size * 2.0;
 
         lightmap_uv = (gl_TextureMatrix[1] * gl_MultiTexCoord1).xy;
-        lightmap_uv = lightmap_uv / (30.0 / 32.0) - (1.0 / 32.0); // Conversion from [0.033, 0.97] to [0.0, 1.0].
+        lightmap_uv = lightmap_uv / (30.0 / 32.0) - (1.0 / 32.0); // Conversion from[0.033 , 0.97 ] to[0.0 , 1.0 ] .
 
         frag_normal_view = mc_Entity.x == 10000.0 ? gl_NormalMatrix * vec3(0.0, 1.0, 0.0) : normalize(gl_NormalMatrix * gl_Normal);
         frag_tangent_view = normalize(at_tangent.w * (gl_NormalMatrix * at_tangent.xyz));
 
         #if WAVING_FOLIAGE == 1
-            // Waving foliage.
+            // Waving foliage .
             // TODO: foliage "jitters" when the camera does.
             vec3 vertex_view_position = (gbufferProjectionInverse * gl_Position).xyz;
             vec3 vertex_player_position = (gbufferModelViewInverse * vec4(vertex_view_position, 1.0)).xyz;
@@ -44,8 +44,8 @@
             vec3 vertex_offset_world = vec3(0.0, 0.0, 0.0);
 
             // TODO: Make look nicer.
-            if (mc_Entity.x == ID_ROOTED_FOLIAGE) { // Rooted foliage.
-                // TOOD: Figure out why this check doesn't just move one half of the block.
+            if (mc_Entity.x == ID_ROOTED_FOLIAGE) { // Rooted foliage .
+                // TOOD : Figure out why this check doesn ' t just move one half of the block .
                 if (uv.y < mc_midTexCoord.y) {
                     vertex_offset_world = 5.0 * FOLIAGE_WAVE_AMPLITUDE * vec3(
                                 sample_desmos_noise(vec2(frameTimeCounter * FOLIAGE_WAVE_SPEED) + vertex_world_position.xy / 3.0),
@@ -53,7 +53,7 @@
                                 sample_desmos_noise(vec2(frameTimeCounter * FOLIAGE_WAVE_SPEED) + vertex_world_position.zx / 3.0)
                             );
                 }
-            } else if (mc_Entity.x == ID_FREE_FOLIAGE) { // Leaves.
+            } else if (mc_Entity.x == ID_FREE_FOLIAGE) { // Leaves .
                 vertex_offset_world = FOLIAGE_WAVE_AMPLITUDE * vec3(
                             sample_desmos_noise(vec2(frameTimeCounter * FOLIAGE_WAVE_SPEED) + vertex_world_position.xy),
                             sample_desmos_noise(vec2(frameTimeCounter * FOLIAGE_WAVE_SPEED) + vertex_world_position.yz),
@@ -80,7 +80,7 @@
 
     /* RENDERTARGETS: 0,1,3 */
     layout(location = 0) out vec4 color;
-    layout(location = 1) out uvec4 bitpacked_data; // normal map (4x u8 / 2x u16), specular map (4x u8), lightmap uv (2x half), uv (2x half)
+    layout(location = 1) out uvec4 bitpacked_data; // normal map( 4x u8 / 2x u16 ), specular map( 4x u8 ), lightmap uv( 2x half ), uv(2xhalf)
     layout(location = 2) out vec3 vertex_normal;
 
     #include "/include/settings.glsl"
@@ -98,10 +98,13 @@
     #endif
 
     void main() {
+        vertex_normal = normalize(mat3(gbufferModelViewInverse) * frag_normal_view) * 0.5 + 0.5;
         color = texture(gtexture, uv) * glcolor;
         if (color.a < alphaTestRef) discard;
 
-        vertex_normal = (mat3(gbufferModelViewInverse) * frag_normal_view) * 0.5 + 0.5;
+        #if WHITEWORLD == 1
+            color.rgb = vec3(0.5);
+        #endif
 
         mat3 TBN_matrix = get_tbn_matrix(frag_normal_view);
 
@@ -117,7 +120,9 @@
             color = texture(gtexture, pom_atlas_uv) * glcolor;
         #endif
 
-        // packing
+        // -------------
+        //    Packing
+        // -------------
 
         #if POM == 1
             vec4 normal_map_read = texture(normals, pom_atlas_uv, 0);
@@ -131,12 +136,15 @@
         vec3 frag_normal_normal = vec3(normal_map_read.xy, sqrt(1.0 - dot(normal_map_read.xy, normal_map_read.xy)));
         vec3 frag_normal_view = TBN_matrix * frag_normal_normal;
         vec3 frag_normal_world = normalize(mat3(gbufferModelViewInverse) * frag_normal_view);
-        vec2 frag_normal_octahedral_encoded = vector_encode_octahedral(frag_normal_world) * 0.5 + 0.5; // in [0, 1]^2
+        vec2 frag_normal_octahedral_encoded = vector_encode_octahedral(frag_normal_world) * 0.5 + 0.5; // in [ 0, 1 ] ^ 2
 
         bitpacked_data.r = packUnorm4x8(vec4(frag_normal_octahedral_encoded, normal_map_read.zw));
         bitpacked_data.g = packUnorm4x8(specular_map_read);
         bitpacked_data.b = packUnorm2x16(lightmap_uv);
         bitpacked_data.a = floatBitsToUint(mcentity.x);
+
+        // preemmptively apply material ao
+        color.rgb *= normal_map_read.b * 0.5 + 0.5; // NOTE: additional math from bliss. no clue why
 
         // FIX: for some reason particles need further gamma correction? maybe try and find a way to avoid this line
         if (renderStage == MC_RENDER_STAGE_PARTICLES) color.rgb = rgb_to_linear(color.rgb);

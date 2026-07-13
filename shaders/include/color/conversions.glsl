@@ -1,8 +1,10 @@
 #if !defined INCLUDE_COLOR_CONVERSIONS
     #define INCLUDE_COLOR_CONVERSIONS
 
-    // The below two functions are taken from shrimple v2.
-    // (https://github.com/search?q=repo%3ANull-MC%2FShrimple%20_RGBToLinear&type=code)
+    // ---------------------------
+    //     General conversions
+    // ---------------------------
+
     vec3 rgb_to_linear(vec3 rgb) {
         return pow(rgb, vec3(2.2));
     }
@@ -16,7 +18,7 @@
     }
 
     // ---------------
-    //     RGB/HSL
+    //     RGB/HSV
     // ---------------
 
     // Taken from https://gist.github.com/983/e170a24ae8eba2cd174f.
@@ -85,9 +87,9 @@
         return hsl.z + hsl.y * (rgb - 0.5) * (1.0 - abs(2.0 * hsl.z - 1.0));
     }
 
-    /// -----------------
-    ///     RGB/OKLAB
-    /// -----------------
+    // -----------------
+    //     RGB/OKLAB
+    // -----------------
 
     const mat3 RGB_TO_OKLAB_MAP = mat3(
     0.4121656120, 0.2118591070, 0.0883097947,
@@ -127,28 +129,5 @@
         vec3 rgb_mixed = oklab_to_rgb(oklab_mixed);
 
         return rgb_mixed;
-    }
-
-    // ---------------------
-    //     Color grading
-    // ---------------------
-
-    struct ColorGrading {
-        float saturation;
-        float brightness;
-    };
-
-    vec3 saturate_rgb(vec3 rgb, float saturation) {
-        vec3 grayscale = vec3(rgb_to_luminance(rgb));
-        return mix(grayscale, rgb, saturation);
-    }
-
-    // TODO: complete.
-    vec3 brighten_rgb(vec3 rgb, float brightness) {
-        return vec3(0.0);
-    }
-
-    vec3 color_grade(vec3 rgb, ColorGrading cg) {
-        return vec3(0.0);
     }
 #endif

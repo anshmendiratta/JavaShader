@@ -37,8 +37,12 @@
         // bias
         vec3 frag_world_position = (shadowModelViewInverse * vec4((shadowProjectionInverse * shadow_clip_position).xyz, 1.0)).xyz + cameraPosition;
         float n_dot_l = dot(mat3(gbufferModelViewInverse) * worldLightVector, normal_world);
-        frag_world_position += _emin_comp_reimagined_bias(frag_world_position, normal_world, n_dot_l, lightmap_sky);
+        frag_world_position += _emin_comp_reimagined_bias(frag_world_position, normal_world, n_dot_l, lightmap_sky); // FIX: fix. apparently too much in some cases. leaves some normals lit
         shadow_clip_position = feet_to_shadow_clip(frag_world_position - cameraPosition);
+
+        float distortFactor = _get_distortion_factor(shadow_clip_position.xy);
+        const float bias_size = (shadowDistance / shadowMapResolution) * 4.0;
+        shadow_clip_position.xyz += mat3(shadowProjection) * (mat3(shadowModelView) * normal_world.xyz) * distortFactor * bias_size;
 
         // NOTE: none of the pcss is physically accurate
         // pcss search
@@ -88,7 +92,7 @@
         return 0.25 * normal * clamp01(0.12 * 0.01 * length(position)) * (2. - clamp01(n_dot_l));
     }
 
-    void _xonk_gri_emin_shadow_fix(inout vec3 frag_world_position, in vec3 frag_world_normal, in float lightmap_sky) {
+    void _xonk_gri_emin_shadow_fix(inout vec3 frag_world_position, in vec3 frag_world_normal, in float skylight) {
         float minimum_value = 0.05;
         // give a tiny boost to the distance mulitplier when shadowmap resolution is below 2048.0
         float shadow_map_res_multiplier = 1.0 + (shadowDistance / 8.0) * (1.0 - min(shadowMapResolution, 2048) / 2048.0) * 0.3;
@@ -98,7 +102,7 @@
 
         vec2 scale = vec2(0.5, 0.25); // stop lightleaking by zooming up, centered on blocks
         vec3 zoom_shadow = scale.y - scale.x * fract(frag_world_position + cameraPosition + bias * scale.y);
-        if (lightmap_sky < 0.1) bias = zoom_shadow;
+        if (skylight < 0.1) bias = zoom_shadow;
 
         frag_world_position += bias;
     }
@@ -124,7 +128,7 @@
 
         float is_opaque_shadowed = step(shadow_screen_position.z, texture(shadowtex1, shadow_screen_position.xy).r);
         // TODO: this might need to take into account hcm/metals that have wavelength-dependent f0s so that the shadowed area isnt grayscale and appears to have some kind of "GI" because of specular bounces. might be solved with rsm
-        if (is_opaque_shadowed == 0.0) return vec3(0.1);
+        if (is_opaque_shadowed == 0.0) return vec3(0.00);
 
         // shadowed but by transparent objects. tint shadow
         vec4 shadow_color = texture(shadowcolor0, shadow_screen_position.xy);

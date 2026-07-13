@@ -37,17 +37,17 @@
         vec2 lightmap_uv;
     };
 
-    /// ------------------
-    ///     Prototypes
-    /// ------------------
+    // ------------------
+    //     Prototypes
+    // ------------------
 
     vec3 _fresnel_phong(in const Material material, in const vec3 view_vector_world, in const vec3 light_source_vector_world);
     vec3 _fresnel_schlick(in const Material material, in const float dot_prod);
     vec3 _fresnel_rescaled_schlick(in const Material material, in const float dot_prod);
 
-    /// --------------------
-    ///     Texture reads
-    /// --------------------
+    // --------------------
+    //     Texture reads
+    // --------------------
 
     // NOTE: lightmap_uv and block_id need to be filled in manually before using this function
     void init_material_raw_read(inout Material material, in const vec2 uv, in const mat3 TBN) {
@@ -105,7 +105,9 @@
         float block_id;
         vec2 lightmap_uv;
         vec4 normal_map_read, specular_map_read;
-        unpack_colortex1_read(texture(colortex1, uv), normal_map_read, specular_map_read, lightmap_uv, block_id);
+        uvec4 colortex_read = texture(colortex1, uv);
+
+        unpack_colortex1_read(colortex_read, normal_map_read, specular_map_read, lightmap_uv, block_id);
 
         material.albedo = texture(gtexture, uv).rgb;
         material.block_id = block_id;
