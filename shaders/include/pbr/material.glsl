@@ -17,24 +17,23 @@
     // ------------------
 
     struct Material {
-        // pbr
+        bool is_metal; // default: false
+
         float ao;
         float depth;
         float roughness;
         float porosity;
-        float sss; // subsurface scattering
+        float sss;
         float emissiveness;
+
+        uint block_id;
+        uint metal_id;
+
+        vec2 lightmap_uv;
+
         vec3 albedo;
         vec3 normal; // world space
-        vec3 f0; // reflectance.
-
-        // flags. some taken from photon
-        bool is_metal; // default: false
-
-        // general
-        float block_id;
-        uint metal_id;
-        vec2 lightmap_uv;
+        vec3 f0;
     };
 
     // ------------------
@@ -48,6 +47,11 @@
     // --------------------
     //     Texture reads
     // --------------------
+
+    // Material store_material(vec4 normal_map_read, vec4 specular_map_read, vec3 albedo, uint block_id) {
+    //     // normal: 2x 8 bits = 16 bits
+    //     // rest of normal map read: 2x 16 bits = 32 bits
+    // }
 
     // NOTE: lightmap_uv and block_id need to be filled in manually before using this function
     void init_material_raw_read(inout Material material, in const vec2 uv, in const mat3 TBN) {
@@ -71,11 +75,9 @@
             material.is_metal = false;
             material.metal_id = 0u;
 
-            // normal
-            vec3 frag_pos_screen = vec3(gl_FragCoord.xy / windowDimensions, gl_FragCoord.z);
-            vec3 frag_pos_view = screen_to_view(frag_pos_screen);
-            vec3 frag_pos_world = view_to_world(frag_pos_view);
-            material.normal = compute_water_normal(frag_pos_world);
+            // normal_data.xy = normal_data.xy * 2. - 1.;
+            // material.normal = vec3(normal_data.xy, sqrt(1. - dot(normal_data.xy, normal_data.xy))); // normal space
+            // material.normal = mat3(gbufferModelViewInverse) * (TBN * material.normal); // world space
 
             return;
         }
@@ -102,12 +104,24 @@
     }
 
     void init_material_unpacked_colortex_read(out Material material) {
-        float block_id;
+        uint block_id;
         vec2 lightmap_uv;
         vec4 normal_map_read, specular_map_read;
         uvec4 colortex_read = texture(colortex1, uv);
 
         unpack_colortex1_read(colortex_read, normal_map_read, specular_map_read, lightmap_uv, block_id);
+
+        vec2 octahedral_encoded_normal = normal_map_read.xy * 2. - 1.;
+        vec3 normal_world = vector_decode_octahedral(octahedral_encoded_normal);
+        material.normal = normal_world;
+
+        if (material.block_id == ID_WATER) {
+            material.roughness = rcp(255.);
+            material.f0 = vec3(0.02); // value from axolotan
+            material.is_metal = false;
+            material.metal_id = 0u;
+            return;
+        }
 
         material.albedo = texture(gtexture, uv).rgb;
         material.block_id = block_id;
@@ -120,26 +134,8 @@
         material.sss = (specular_map_read.b >= 65. / 255.) ? (specular_map_read.b - 65. / 255.) / (1. - 64. / 255.) : 0.;
         material.emissiveness = fract(specular_map_read.a);
 
-        // hardcode water
-        if (material.block_id == ID_WATER) {
-            material.roughness = rcp(255.);
-            material.f0 = vec3(0.02); // value from axolotan
-            material.is_metal = false;
-            material.metal_id = 0u;
-
-            vec3 frag_pos_screen = vec3(gl_FragCoord.xy, gl_FragCoord.z);
-            vec3 frag_pos_view = screen_to_view(frag_pos_screen);
-            vec3 frag_pos_world = view_to_world(frag_pos_view);
-            material.normal = compute_water_normal(frag_pos_world);
-
-            return;
-        }
-
-        vec2 octahedral_encoded_normal = normal_map_read.xy * 2. - 1.;
-        vec3 normal_world = vector_decode_octahedral(octahedral_encoded_normal);
-        material.normal = normal_world;
-
         material.is_metal = (specular_map_read.g >= 230. / 255.);
+
         if (material.is_metal) {
             // treat everything as a vanilla metal. even modded ones
             const uint metal_id = clamp(uint(255. * specular_map_read.g) - 230, 0, 7);

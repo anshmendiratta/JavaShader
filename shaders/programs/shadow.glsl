@@ -1,4 +1,3 @@
-
 #ifdef STAGE_VERTEX
     in vec2 mc_midTexCoord;
     in vec2 mc_Entity;
@@ -12,8 +11,6 @@
     #include "/include/uniforms.glsl"
 
     #include "/include/shadows/distort.glsl"
-
-    // #include "/include/water/waves.glsl"
 
     #include "/include/utility/noise.glsl"
     #include "/include/utility/space_conversions.glsl"

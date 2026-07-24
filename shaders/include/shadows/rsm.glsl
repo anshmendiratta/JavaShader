@@ -28,17 +28,19 @@
         vec4 fragment_pos_sclip = feet_to_shadow_clip(fragment_pos_feet);
         vec3 fragment_pos_sscreen = shadow_clip_to_shadow_screen(fragment_pos_sclip);
 
-        // float dither = _interleaved_gradient_noise(gl_FragCoord.xy);
-        float dither = compute_dither(gl_FragCoord.xy);
+        float dither = _interleaved_gradient_noise(gl_FragCoord.xy);
+        // float dither = compute_dither(gl_FragCoord.xy);
 
         vec3 total_irradiance = vec3(0.);
         uint useful_samples = 0;
 
         const float RADIUS_SCALAR = SHADOW_DISTANCE_MULTIPLIER * RSM_RADIUS / shadowDistance;
 
+        vec2 dSDepth = (dFdx(fragment_pos_sscreen.xy) + dFdy(fragment_pos_sscreen.xy));
+
         for (uint idx = 0; idx < RSM_SAMPLES; idx += 1) {
             vec2 texel_offset = dither * RADIUS_SCALAR * compute_vogel_disk_sample_uv(idx + 1, RSM_SAMPLES);
-            vec3 sample_pos_sscreen = fragment_pos_sscreen + vec3(texel_offset, -0e-1);
+            vec3 sample_pos_sscreen = fragment_pos_sscreen + vec3(texel_offset, dot(texel_offset, dSDepth));
             vec4 sample_pos_sclip = shadow_screen_to_shadow_clip(sample_pos_sscreen);
             distort_shadow_clip_position(sample_pos_sclip.xyz);
             sample_pos_sscreen = shadow_clip_to_shadow_screen(sample_pos_sclip);
@@ -49,25 +51,24 @@
             vec4 sample_color = texture(shadowcolor0, sample_pos_sscreen.xy);
             vec3 radiant_flux = rgb_to_linear(sample_color.rgb * sample_color.a);
 
-            vec3 sample_normal_world = texture(shadowcolor1, sample_pos_sscreen.xy).rgb * 2. - 1.;
+            vec3 sample_normal_world = texture(shadowcolor1, sample_pos_sscreen.xy).xyz * 2. - 1.;
 
             undistort_shadow_clip_position(sample_pos_sclip.xyz);
             vec3 sample_pos_world = feet_to_world(shadow_view_to_feet(shadow_clip_to_shadow_view(sample_pos_sclip)));
-            vec3 direction = -(fragment_pos_world - sample_pos_world);
+            vec3 direction = (sample_pos_world - fragment_pos_world);
 
-            float dist = max(distance(sample_pos_world, fragment_pos_world), 1e-2);
+            float dist = max(distance(sample_pos_world, fragment_pos_world), 1e-3);
 
-            float weight = length(texel_offset / RADIUS_SCALAR);
+            float distortion_factor = _get_distortion_factor(sample_pos_sclip.xy);
 
             total_irradiance += radiant_flux
                     * max0(dot(fragment_normal_world, direction))
                     * max0(dot(sample_normal_world, -direction))
-                    // pow4(dist);
+                    / pow4(dist)
+                    * tanh(distortion_factor);
         }
 
         if (useful_samples == 0) return vec3(0.);
-
-        // const float BRIGHTNESS_NORMALIZER = PI * pow2(RADIUS_SCALAR / shadowMapResolution);
 
         total_irradiance *= 1e2 * RSM_BRIGHTNESS / float(useful_samples);
 

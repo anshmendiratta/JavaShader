@@ -122,4 +122,10 @@
     uniform sampler2D normals;
     uniform sampler2D specular;
     uniform sampler2D lightmap;
+
+    // Images
+
+    uniform sampler2D transmittance_lut;
+    uniform sampler2D multiscattering_lut;
+    uniform sampler2D skyview_lut;
 #endif

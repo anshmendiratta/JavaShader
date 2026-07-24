@@ -10,7 +10,7 @@
     vec2 compute_vogel_disk_sample_uv(uint idx, int sample_count) {
         float dither = compute_dither(gl_FragCoord.xy);
         float radius = _compute_vogel_disk_radius(idx, sample_count);
-        float theta = float(idx + 1.0) * GOLDEN_ANGLE;
+        float theta = float(idx) * GOLDEN_ANGLE;
 
         return radius * vec2(cos(theta), sin(theta));
     }

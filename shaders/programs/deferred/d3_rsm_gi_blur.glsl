@@ -19,7 +19,7 @@
 
     #include "/include/utility/depth_conversion.glsl"
 
-    #define ATROUS_STEP_WIDTH 2.0
+    #define ATROUS_STEP_WIDTH 5.0
     #define DEPTH_PHI 300.0
     #define NORMAL_PHI 32.0
     #define GI_PHI 8.0

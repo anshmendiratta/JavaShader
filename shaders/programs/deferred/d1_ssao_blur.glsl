@@ -26,14 +26,12 @@
     #define DEPTH_SENSITIVITY 300.0 // Higher = sharper edges
 
     void main() {
-        // skip ssao for hand geometry
-        bool is_hand = fragment_is_hand(uv);
-        if (is_hand) return;
-
         vec2 texel_size = 1.0 / textureSize(colortex4, 0);
 
         // Get center depth for edge-aware filtering
         float center_depth = texture(depthtex2, uv).r;
+
+        if (frag_is_hand(center_depth)) return;
 
         // Early exit for sky
         if (center_depth == 1.0) {

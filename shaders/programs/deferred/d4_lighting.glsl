@@ -79,9 +79,9 @@
         // specular
         vec3 specular = compute_specular(material, fresnel, light_source_vector_world, frag_view_vector_world);
 
-        vec3 blocklight = hsl_to_rgb(vec3(1., 1., BLOCKLIGHT_INTENSITY_MULTIPLIER) * rgb_to_hsl(material.lightmap_uv.x * BLOCKLIGHT_COLOR)); // x is blocklight
-        vec3 skylight = hsl_to_rgb(vec3(1., 1., SKYLIGHT_INTENSITY_MULTIPLIER) * rgb_to_hsl(material.lightmap_uv.y * SKYLIGHT_COLOR));
-        vec3 sunlight = compute_skylight_intensity_scalar(dayProgress) * material.lightmap_uv.y * SUNLIGHT_COLOR; // lightmap_uv.y fixes some light leaks
+        vec3 blocklight = hsl_to_rgb(vec3(1., 1., BLOCKLIGHT_INTENSITY) * rgb_to_hsl(material.lightmap_uv.x * BLOCKLIGHT_COLOR)); // x is blocklight
+        vec3 skylight = hsl_to_rgb(vec3(1., 1., SKYLIGHT_INTENSITY) * rgb_to_hsl(material.lightmap_uv.y * SKYLIGHT_COLOR));
+        vec3 sunlight = compute_sunlight_intensity_scalar(dayProgress) * material.lightmap_uv.y * SUNLIGHT_COLOR; // lightmap_uv.y fixes some light leaks
 
         vec2 screen_uv = gl_FragCoord.xy / windowDimensions;
 
@@ -91,9 +91,20 @@
         //     Applications
         // --------------------
 
+        fix_hand_depth(depth);
+
         #if SHADOWS == 1
-            vec4 shadow_clip_position = shadow_view_to_shadow_clip(feet_to_shadow_view(fragment_feet_position));
-            vec3 shadow = _get_soft_shadow(shadow_clip_position, vertex_normal, material.lightmap_uv.y);
+            vec3 shadow = vec3(1.);
+            if (dot(light_source_vector_world, vertex_normal) <= 0.) {
+                shadow = vec3(0.);
+            } else {
+                #if CONTACT_SHADOWS == 1
+                    shadow *= compute_contact_shadow(vec3(screen_uv, depth));
+                #endif
+
+                vec4 shadow_clip_position = shadow_view_to_shadow_clip(feet_to_shadow_view(fragment_feet_position));
+                shadow *= compute_shadow(shadow_clip_position, vertex_normal, material.lightmap_uv.y);
+            }
         #else
             vec3 shadow = vec3(1.);
         #endif
@@ -121,15 +132,14 @@
             vec3 sss = vec3(0.);
         #endif
 
-        vec3 diffuse = sunlight * n_dot_l;
-        // TODO: the mix between diffuse and specular is physically correct, but some metals still feel pretty dark
-        vec3 direct = material.is_metal ? shadow * fresnel * specular : mix(diffuse, specular, fresnel);
-        vec3 indirect = ao * skylight + sss + gi + blocklight;
-        vec3 emission = EMISSION_STRENGTH * material.emissiveness * material.albedo;
+        material.albedo = rgb_to_linear(material.albedo);
 
-        color.rgb *= fragment_is_hand(uv) ?
-            vec3(1.) :
-            shadow * direct + indirect + emission;
-        // gi;
+        vec3 diffuse = material.albedo * sunlight * n_dot_l;
+        // TODO: the mix between diffuse and specular is physically correct, but some metals still feel pretty dark
+        vec3 direct = material.is_metal ? fresnel * specular : mix(diffuse, specular, fresnel);
+        vec3 indirect = material.albedo * (material.ao * ao * (skylight + blocklight) + sss) + gi;
+        vec3 emission = material.albedo * EMISSION_STRENGTH * material.emissiveness;
+
+        color.rgb = shadow * direct + indirect + emission;
     }
 #endif

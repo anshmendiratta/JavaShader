@@ -17,7 +17,7 @@
 
     #include "/include/pbr/material.glsl"
 
-    #include "/include/sky/color.glsl"
+    #include "/include/pbr/atmosphere.glsl"
 
     #include "/include/color/conversions.glsl"
 
@@ -35,8 +35,9 @@
 
     void main() {
         color = texture(colortex0, uv);
+        float depth = texture(depthtex0, uv).x;
 
-        if (fragment_is_hand(uv) || texture(depthtex0, uv).r == 1.0) return; // don't reflect hand or sky
+        if (frag_is_hand(depth) || depth == 1.0) return; // don't reflect hand or sky
 
         Material material;
         init_material_unpacked_colortex_read(material);
@@ -44,8 +45,6 @@
         vec3 frag_position_screen = vec3(uv, texture(depthtex0, uv).r);
         vec3 frag_position_view = screen_to_view(frag_position_screen);
         vec3 frag_position_world = view_to_world(frag_position_view);
-
-        if (material.block_id == ID_WATER) material.normal = compute_water_normal(frag_position_world);
 
         vec3 frag_view_vector_view = -normalize(frag_position_view);
         vec3 frag_view_vector_world = mat3(gbufferModelViewInverse) * frag_view_vector_view;
@@ -61,8 +60,8 @@
 
             fresnel = material.is_metal ?
                 vec3(1.0) :
-            // _fresnel_rescaled_schlick(material, dot(halfway_vector_world, light_source_vector_world)):
-                _fresnel_schlick(material, dot(halfway_vector_world, light_source_vector_world));
+                _fresnel_rescaled_schlick(material, dot(halfway_vector_world, light_source_vector_world));
+            // _fresnel_schlick(material, dot(halfway_vector_world, light_source_vector_world));
         }
 
         vec2 reflected_uv;
@@ -80,8 +79,8 @@
             // return;
         }
         // TODO : figure out a better fadeoff for this
-        float reflection_fadeoff = max(1.0 - rcp(0.5) * avg_vec(abs(reflected_uv - uv)), 0.0) /* based on distance between uv and reflected uv */ ;
-        // float reflection_fadeoff = clamp01(length(frag_position_world - reflected_uv_world) / far);
+        // float reflection_fadeoff = max(1.0 - rcp(0.5) * avg_vec(abs(reflected_uv - uv - vec2(1e-1))), 0.0) /* based on distance between uv and reflected uv */ ;
+        float reflection_fadeoff = clamp01(length(frag_position_world - reflected_uv_world) / far);
         // TODO : gold reflects blue
         if (material.is_metal) reflected_color *= material.albedo;
         // dont reflect sky if shadowed

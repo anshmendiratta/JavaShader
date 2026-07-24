@@ -18,17 +18,30 @@
         return homogenous_position.xyz / homogenous_position.w; // Perspective division.
     }
 
-    bool fragment_is_hand(vec2 uv) {
-        if (texture(colortex31, uv).r == 1) return true;
-
-        return false;
-    }
-
     bool fragment_is_translucent(vec2 uv) {
         return texture(depthtex0, uv).r != texture(depthtex1, uv).r;
     }
 
     bool uv_out_of_bounds(vec2 uv) {
         return clamp01(uv) != uv;
+    }
+
+    const float hand_depth = MC_HAND_DEPTH * 0.5 + 0.5;
+
+    // --------------------
+    //     Hand fuckery
+    // --------------------
+    // from photon: https://github.com/sixthsurge/photon/blob/eaf04bfa7b1cf3682818aaca4a91ce0995ca5639/shaders/include/global.glsl
+
+    bool frag_is_hand(float depth) {
+        return depth < hand_depth;
+    }
+
+    void fix_hand_depth(inout float depth) {
+        if (!frag_is_hand(depth)) return;
+
+        depth = depth * 2.0 - 1.0;
+        depth *= rcp(MC_HAND_DEPTH);
+        depth = depth * 0.5 + 0.5;
     }
 #endif

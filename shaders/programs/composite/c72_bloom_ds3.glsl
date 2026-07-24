@@ -28,6 +28,6 @@
     #include "/include/post/bloom.glsl"
 
     void main() {
-        bloom_ds = bloom_downsample(colortex30, map_uv_to_tile(uv, 2u));
+        bloom_ds = bloom_downsample(colortex30, map_uv_to_tile(uv, 2u), 2u);
     }
 #endif

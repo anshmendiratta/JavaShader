@@ -23,17 +23,12 @@
 
     vec3 _get_shadow(in vec3 shadow_screen_position);
     bool _frag_is_shadowed(in vec3 shadow_screen_position);
-    vec3 _get_soft_shadow(in vec4 shadow_clip_position, in vec3 normal_world, in float lightmap_sky);
 
     // --------------------------
     //     Shadow computation
     // --------------------------
 
-    vec3 _get_soft_shadow(in vec4 shadow_clip_position, vec3 normal_world, float lightmap_sky) {
-        float dither = compute_dither(gl_FragCoord.xy);
-        float rotation_angle = dither * TAU;
-        mat2 rotation_matrix = mat2(cos(rotation_angle), -sin(rotation_angle), sin(rotation_angle), cos(rotation_angle));
-
+    vec3 compute_shadow(in vec4 shadow_clip_position, vec3 normal_world, float lightmap_sky) {
         // bias
         vec3 frag_world_position = (shadowModelViewInverse * vec4((shadowProjectionInverse * shadow_clip_position).xyz, 1.0)).xyz + cameraPosition;
         float n_dot_l = dot(mat3(gbufferModelViewInverse) * worldLightVector, normal_world);
@@ -44,12 +39,16 @@
         const float bias_size = (shadowDistance / shadowMapResolution) * 4.0;
         shadow_clip_position.xyz += mat3(shadowProjection) * (mat3(shadowModelView) * normal_world.xyz) * distortFactor * bias_size;
 
+        float dither = compute_dither(gl_FragCoord.xy);
+        float rotation_angle = dither * TAU;
+        mat2 rotation_matrix = mat2(cos(rotation_angle), -sin(rotation_angle), sin(rotation_angle), cos(rotation_angle));
+
         // NOTE: none of the pcss is physically accurate
         // pcss search
         float pcss_acumulator = 0.; // in depth
         uint blockers_used = 0;
         for (uint idx = 0; idx < PCSS_SAMPLES; idx += 1) { // just adjacent pixels
-            vec2 vogel_sample = PCSS_SEARCH_RADIUS * compute_vogel_disk_sample_uv(idx, SHADOW_BLUR_SAMPLES) / shadowMapResolution;
+            vec2 vogel_sample = rotation_matrix * PCSS_SEARCH_RADIUS * compute_vogel_disk_sample_uv(idx, SHADOW_BLUR_SAMPLES) / shadowMapResolution;
             vec4 sample_uv_sclip = shadow_clip_position + vec4(vogel_sample, 0., 0.);
             distort_shadow_clip_position(sample_uv_sclip.xyz);
             vec3 sample_uv = shadow_clip_to_shadow_screen(sample_uv_sclip);
@@ -62,7 +61,7 @@
         }
 
         const float MIN_BLUR_RADIUS = 0.2;
-        const float MAX_BLUR_RADIUS = 64.;
+        const float MAX_BLUR_RADIUS = 32.;
         float pcss_avg_dist = blockers_used > 0 ? pcss_acumulator / float(blockers_used) : 0.;
         float blur_radius = mix(MIN_BLUR_RADIUS, MAX_BLUR_RADIUS, pcss_avg_dist); // sqrt so the effect is more apparent.
 
@@ -80,6 +79,42 @@
         }
 
         return pcf_accumulator / float(SHADOW_BLUR_SAMPLES);
+    }
+
+    vec3 compute_contact_shadow(in vec3 frag_pos_screen) {
+        vec3 frag_pos_view = screen_to_view(frag_pos_screen);
+
+        vec3 raymarch_dir_screen = normalize(view_to_screen(shadowLightPosition) - frag_pos_screen);
+        raymarch_dir_screen /= max_of(raymarch_dir_screen);
+        raymarch_dir_screen *= CONTACT_SHADOW_STEP_SIZE;
+        raymarch_dir_screen.xy /= windowDimensions;
+
+        bool intersection = true;
+        vec3 raymarched_pos_screen = frag_pos_screen + raymarch_dir_screen;
+
+        for (uint idx = 0; idx < CONTACT_SHADOW_STEPS; idx += 1) {
+            float depth = texelFetch(depthtex0, ivec2(windowDimensions * raymarched_pos_screen.xy), 0).r;
+            float linear_depth = depth_to_z(depth);
+            float linear_raymarched_depth = depth_to_z(raymarched_pos_screen.z);
+
+            float proportional_gap = abs(linear_depth - linear_raymarched_depth) / linear_raymarched_depth;
+            return vec3(proportional_gap);
+
+            if (proportional_gap <= 1e6) {
+                float min_linear_depth = linear_raymarched_depth - depth_to_z(raymarch_dir_screen.z);
+                float max_linear_depth = linear_raymarched_depth + depth_to_z(raymarch_dir_screen.z);
+                // float min_linear_depth = near;
+                // float max_linear_depth = far * 4.;
+
+                if (linear_depth <= max_linear_depth && linear_depth >= min_linear_depth && !frag_is_hand(depth)) {
+                    return vec3(0.);
+                }
+            }
+
+            raymarched_pos_screen += raymarch_dir_screen;
+        }
+
+        return vec3(1.);
     }
 
     // ---------------------
@@ -128,7 +163,7 @@
 
         float is_opaque_shadowed = step(shadow_screen_position.z, texture(shadowtex1, shadow_screen_position.xy).r);
         // TODO: this might need to take into account hcm/metals that have wavelength-dependent f0s so that the shadowed area isnt grayscale and appears to have some kind of "GI" because of specular bounces. might be solved with rsm
-        if (is_opaque_shadowed == 0.0) return vec3(0.00);
+        if (is_opaque_shadowed == 0.0) return vec3(0.);
 
         // shadowed but by transparent objects. tint shadow
         vec4 shadow_color = texture(shadowcolor0, shadow_screen_position.xy);

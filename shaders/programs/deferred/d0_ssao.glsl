@@ -27,23 +27,25 @@
     #include "/include/pbr/textures.glsl"
 
     void main() {
-        // skip ssao for hand geometry and the sky
-        if (fragment_is_hand(uv) || texture(depthtex2, uv).r == 1.) {
-            occlusion_factor = 1.0;
-            return;
-        }
+        float depth = texture(depthtex0, uv).x;
+        // if (depth == 1. || frag_is_hand(depth)) {
+        //     // occlusion_factor = 1.0;
+        //     fix_hand_depth(depth);
+        //     // return;
+        // }
 
         Material material;
         init_material_unpacked_colortex_read(material);
 
         vec2 screen_uv = uv;
-        vec3 fragment_position_screen = vec3(screen_uv, texture(depthtex2, screen_uv).r);
-        vec3 fragment_position_view = ndc_to_view(screen_to_ndc(fragment_position_screen));
+        vec3 fragment_position_screen = vec3(screen_uv, depth);
+        vec3 fragment_position_view = screen_to_view(fragment_position_screen);
+        // vec3 normal_world = texture(colortex3, uv).xyz * 2. - 1.;
         vec3 normal_world = material.normal;
         vec3 normal_view = normalize(mat3(gbufferModelView) * normal_world);
 
         mat3 TBN_matrix = get_tbn_matrix(normal_view);
-        // Obtain depth samples for occlusion check .
+        // Obtain depth samples for occlusion check.
         occlusion_factor = 0.;
         for (uint idx = 0; idx < SSAO_SAMPLES; idx += 1) {
             float scale = float(idx + 1) / float(SSAO_SAMPLES);
@@ -60,16 +62,15 @@
             vec3 sample_position_view = fragment_position_view + sample_offset_view;
             vec3 sample_position_screen = view_to_screen(sample_position_view);
 
-            float sample_object_depth = texture(depthtex2, sample_position_screen.xy).r;
+            float sample_object_depth = texture(depthtex0, sample_position_screen.xy).r;
             vec3 sample_object_position_screen = vec3(sample_position_screen.xy, sample_object_depth);
 
-            float is_occluded = float(sample_position_screen.z + SSAO_BIAS >= sample_object_depth);
-            float close_in_depth = smootherstep01(SSAO_RADIUS / abs(fragment_position_screen.z - sample_object_depth));
+            float is_occluded = float(sample_position_screen.z >= sample_object_depth);
+            float close_in_depth = smoothstep01(SSAO_RADIUS / abs(fragment_position_screen.z - sample_object_depth));
 
             occlusion_factor += is_occluded * close_in_depth;
         }
 
-        occlusion_factor /= float(SSAO_SAMPLES);
-        occlusion_factor = AO_STRENGTH * pow(1. - occlusion_factor, 6.);
+        occlusion_factor = 1. - clamp01(AO_STRENGTH * occlusion_factor / SSAO_SAMPLES);
     }
 #endif

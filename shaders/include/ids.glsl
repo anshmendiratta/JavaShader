@@ -5,10 +5,10 @@
     //     Aliases for mc_Entity.x
     // -------------------------------
 
-    #define ID_ROOTED_FOLIAGE 10000.0
-    #define ID_FREE_FOLIAGE 10001.0
+    #define ID_ROOTED_FOLIAGE 10000u
+    #define ID_FREE_FOLIAGE 10001u
 
-    #define ID_WATER 10002.0
+    #define ID_WATER 10002u
 
     // ------------------------------
     //     Ranges for mc_Entity.x
@@ -46,8 +46,8 @@
             11005.0
     };
     // bool should_get_ssr(float id) {
-        // float[SSR_MATERIALS] _ids;
-        // _construct_vec(SSR_MATERIALS, id, _ids);
-        // return any(equal(_ids, ID_SSR));
-        // }
-    #endif
+    // float[SSR_MATERIALS] _ids;
+    // _construct_vec(SSR_MATERIALS, id, _ids);
+    // return any(equal(_ids, ID_SSR));
+    // }
+#endif

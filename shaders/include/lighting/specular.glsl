@@ -16,8 +16,6 @@
     // - https://en.wikipedia.org/wiki/Specular_highlight#Cook%E2%80%93Torrance_model
     // - https://graphicscompendium.com/theory/07-cook-torrance
     vec3 compute_specular(const in Material material, const in vec3 fresnel, const in vec3 light_source_vector_world, const in vec3 view_vector_world) {
-        // if (material.block_id == ID_WATER) material.normal = compute_water_normal()
-
         vec3 halfway_vector_world = normalize(view_vector_world + light_source_vector_world);
 
         float first_attenuation_term = 2.0 * rcp(dot(view_vector_world, halfway_vector_world)) * dot(halfway_vector_world, material.normal) * dot(view_vector_world, material.normal); // 2(H.N)(V.N)/V.H

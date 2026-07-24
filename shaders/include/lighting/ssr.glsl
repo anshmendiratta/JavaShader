@@ -39,8 +39,7 @@
 
         const float depth_tolerance = max(abs(ray_step_screen.z) * 3.0, 0.02 / pow2(frag_position_view.z)); // from DrDesten and SixthSurge
         bool hit_object = false;
-        uint march_step;
-        for (march_step = 0; march_step < SSR_STEPS; raymarched_position_screen += ray_step_screen, march_step += 1) {
+        for (uint march_step = 0; march_step < SSR_STEPS; raymarched_position_screen += ray_step_screen, march_step += 1) {
             if (uv_out_of_bounds(raymarched_position_screen.xy)) {
                 reflected_uv = raymarched_position_screen.xy;
                 return false;

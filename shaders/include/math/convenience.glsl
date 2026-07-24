@@ -112,6 +112,18 @@
         return min(value.w, min_of(value.xyz));
     }
 
+    float max_of(vec2 value) {
+        return max(value.x, value.y);
+    }
+
+    float max_of(vec3 value) {
+        return max(value.z, max_of(value.xy));
+    }
+
+    float max_of(vec4 value) {
+        return max(value.w, max_of(value.xyz));
+    }
+
     float avg_vec(vec2 value) {
         return dot(vec2(rcp(2.0)), value);
     }

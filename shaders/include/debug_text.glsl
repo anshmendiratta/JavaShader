@@ -137,7 +137,7 @@
     const int charWidth = 5; // default: 5
     const int charHeight = 6; // default: 6
     const int charSpacing = 1;
-    const int lineSpacing = 1;
+    const int lineSpacing = 2;
 
     const ivec2 charSize = ivec2(charWidth, charHeight);
     const ivec2 spaceSize = charSize + ivec2(charSpacing, lineSpacing);
@@ -205,9 +205,9 @@
     }
 
     #define printString(string) {                                               \
-                                                	uint[] characters = uint[] string;                                     \
-                                                	for (int i = 0; i < characters.length(); ++i) printChar(characters[i]); \
-                                                }
+                                                                	uint[] characters = uint[] string;                                     \
+                                                                	for (int i = 0; i < characters.length(); ++i) printChar(characters[i]); \
+                                                                }
 
     void printUnsignedInt(uint value, int len) {
         const uint[36] digits = uint[](

@@ -24,16 +24,17 @@
         return 3. * rcp(16. * PI) * (1. + pow2(cos_theta));
     }
 
-    float _phase_mie(float anisotropy_factor, float cos_theta) {
-        const float C = 0.5;
-        return C * pow2(anisotropy_factor * rcp(1. + anisotropy_factor - cos_theta));
-    }
+    // float _phase_mie(float anisotropy_factor, float cos_theta) {
+    //     float g = anisotropy_factor; // ~0.76
+    //     float mu = cos_theta;
+    // return 3. * (1. - pow2(g)) * (1. + pow2(mu)) * rcp(8. * PI * (2. + pow2(g) * pow(1. + pow2(g) - 2. * g * mu), 1.5));
+    // }
 
     // from: https://developer.nvidia.com/gpugems/gpugems2/part-ii-shading-lighting-and-shadows/chapter-16-accurate-atmospheric-scattering
     //
     // "For Mie aerosol scattering, g is usually set between -0.75 and -0.999"
-    float _phase_modified_henyey_greenstein(float cos_theta, float anisotropy_factor) {
-        float g = anisotropy_factor;
-        return 3.0 / 2.0 * (1 - pow2(g)) / (2 + pow2(g)) * (1 + pow2(cos_theta)) / pow(1 + pow2(g) - 2 * g * cos_theta, 1.5);
-    }
+    // float _phase_modified_henyey_greenstein(float cos_theta, float anisotropy_factor) {
+    //     float g = anisotropy_factor;
+    //     return 3.0 / 2.0 * (1 - pow2(g)) / (2 + pow2(g)) * (1 + pow2(cos_theta)) / pow(1 + pow2(g) - 2 * g * cos_theta, 1.5);
+    // }
 #endif

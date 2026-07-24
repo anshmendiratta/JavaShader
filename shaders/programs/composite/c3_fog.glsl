@@ -22,7 +22,7 @@
 
     #include "/include/math/convenience.glsl"
 
-    #include "/include/sky/color.glsl"
+    #include "/include/pbr/atmosphere.glsl"
 
     #include "/include/color/conversions.glsl"
 

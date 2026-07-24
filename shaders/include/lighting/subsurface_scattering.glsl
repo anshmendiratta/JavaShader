@@ -41,11 +41,9 @@
 
     // courtesy of @belmu from the shaderLABS discord
     float _approximate_sss_depth(in vec4 frag_position_shadow_clip) {
-        // distort_shadow_clip_position(frag_position_shadow_clip.xy);
-        // vec3 frag_position_shadow_screen_distorted = shadow_clip_to_shadow_screen(frag_position_shadow_clip);
-
         float sss_depth = 0.0;
         uint count = 0;
+
         for (int idx = 0; idx < SSS_SAMPLES; idx += 1) {
             vec2 sample_position_offset = 2.0 * compute_vogel_disk_sample_uv(idx, SSS_SAMPLES) / shadowMapResolution; // in screen space
             vec4 sample_pos_clip_uv = frag_position_shadow_clip + vec4(sample_position_offset, 0., 0.);

@@ -14,7 +14,11 @@
     // ---------------------------------------------------------------
 
     vec3 screen_to_ndc(vec3 screen_position) {
-        return screen_position * 2.0 - 1.0;
+        if (frag_is_hand(screen_position.z)) {
+            return (screen_position * 2.0 - 1.0) / MC_HAND_DEPTH;
+        } else {
+            return screen_position * 2.0 - 1.0;
+        }
     }
 
     vec3 ndc_to_view(vec3 ndc_position) {

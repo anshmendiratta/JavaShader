@@ -9,5 +9,5 @@
 
     const float ambientOcclusionLevel = VANILLA_AO;
 
-    const float sunPathRotation = -35.0;
+    const float sunPathRotation = -30.0;
 #endif

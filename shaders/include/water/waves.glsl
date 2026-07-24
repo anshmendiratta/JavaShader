@@ -4,12 +4,14 @@
     #include "/include/settings.glsl"
     #include "/include/uniforms.glsl"
 
+    #include "/include/utility/dither.glsl"
+
     #include "/include/math/convenience.glsl"
     #include "/include/math/arcane.glsl"
 
     #define GRAVITY 9.81f
 
-    #define WAVE_COMPONENTS 8u
+    #define WAVE_COMPONENTS 16u
 
     vec3 k_m[WAVE_COMPONENTS]; // wavenumbers
     float a_m[WAVE_COMPONENTS]; // amplitudes
@@ -33,7 +35,7 @@
     //
     // assumes a mean water depth of 1.
 
-    vec3 compute_water_displacement(vec3 frag_position_world) {
+    vec3 _compute_water_displacement(vec3 frag_position_world) {
         float y = 0.;
 
         for (uint component = 0; component < WAVE_COMPONENTS; component += 1) {
@@ -51,8 +53,9 @@
 
         for (uint component = 0; component < WAVE_COMPONENTS; component += 1) {
             _populate_gerstner_parameters(frag_position_world, component);
-            dh_dx += -k_m[component].x * a_m[component] * sin(theta_m[component]);
-            dh_dz += -k_m[component].z * a_m[component] * sin(theta_m[component]);
+            float frequency = 2e-1 * pow(0.6, component);
+            dh_dx += -k_m[component].x * a_m[component] * sin(frequency * theta_m[component]);
+            dh_dz += -k_m[component].z * a_m[component] * sin(frequency * theta_m[component]);
         }
 
         return normalize(vec3(-dh_dx, 1., -dh_dz));
@@ -69,16 +72,15 @@
     void _populate_gerstner_parameters(in vec3 frag_position_world, in uint component) {
         float alpha = frag_position_world.x;
         float beta = frag_position_world.z;
-        float t = frameTimeCounter * 0.5;
+        float t = frameTimeCounter * 5.;
 
-        float theta_i = TAU * smootherstep01(float(component + 1) / float(WAVE_COMPONENTS));
-        float lambda_i = pow(1.7, float(component));
+        float theta_i = radians(15.) * float(component);
+        float lambda_i = 3e-1 * pow(1.6, -float(component));
         k_m[component] = 2. * PI / lambda_i * vec3(cos(theta_i), 0., sin(theta_i));
 
-        a_m[component] = WATER_WAVE_AMPLITUDE * pow(0.15, -sqrt(float(component))); // decreasing amplitudes if base >= 1.0. increasing otherwise
+        a_m[component] = WATER_WAVE_AMPLITUDE * pow(0.8, component);
         phi_m[component] = sqrt(2. * PI * rcp(float(component + 1)));
         omega_m[component] = sqrt(GRAVITY * length(k_m[component]) * tanh(length(k_m[component]) * /* calculate for 1m below sea level*/ 1.0));
         theta_m[component] = _compute_theta_m(alpha, beta, t, component);
     }
-
 #endif

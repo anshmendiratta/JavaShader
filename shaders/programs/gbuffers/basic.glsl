@@ -20,6 +20,7 @@
 
     void main() {
         color = texture(gtexture, uv) * glcolor;
+        // color = vec3(1.);
 
         if (color.a < alphaTestRef) discard;
     }

@@ -2,11 +2,11 @@
     in vec2 mc_midTexCoord;
     in vec2 mc_Entity;
 
+    flat out uint block_id;
     out vec2 uv;
     out vec2 lightmap_uv;
     out vec2 texture_bottom_left; // vec2(x_min, y_min).
     out vec2 single_tex_size; // vec2(x_range, y_range).
-    out vec2 mcentity;
     out vec3 frag_normal_view;
     out vec3 frag_tangent_view;
     out vec4 glcolor;
@@ -22,7 +22,7 @@
     void main() {
         gl_Position = ftransform();
         glcolor = gl_Color;
-        mcentity = mc_Entity;
+        block_id = uint(mc_Entity.x);
 
         uv = (gl_TextureMatrix[0] * gl_MultiTexCoord0).xy;
         vec2 half_size = abs(uv - mc_midTexCoord);
@@ -69,18 +69,19 @@
 #endif
 
 #ifdef STAGE_FRAGMENT
+    flat in uint block_id;
     in vec2 lightmap_uv;
     in vec2 uv;
     in vec2 texture_bottom_left; // vec2(x_min, y_min).
     in vec2 single_tex_size; // vec2(x_range, y_range).
-    in vec2 mcentity;
     in vec3 frag_tangent_view;
     in vec3 frag_normal_view;
     in vec4 glcolor;
 
     /* RENDERTARGETS: 0,1,3 */
+
     layout(location = 0) out vec4 color;
-    layout(location = 1) out uvec4 bitpacked_data; // normal map( 4x u8 / 2x u16 ), specular map( 4x u8 ), lightmap uv( 2x half ), uv(2xhalf)
+    layout(location = 1) out uvec4 bitpacked_data; // normal map(4x u8 / 2x u16), specular map(4x u8), lightmap uv(2x half), uv(2x half)
     layout(location = 2) out vec3 vertex_normal;
 
     #include "/include/settings.glsl"
@@ -136,12 +137,12 @@
         vec3 frag_normal_normal = vec3(normal_map_read.xy, sqrt(1.0 - dot(normal_map_read.xy, normal_map_read.xy)));
         vec3 frag_normal_view = TBN_matrix * frag_normal_normal;
         vec3 frag_normal_world = normalize(mat3(gbufferModelViewInverse) * frag_normal_view);
-        vec2 frag_normal_octahedral_encoded = vector_encode_octahedral(frag_normal_world) * 0.5 + 0.5; // in [ 0, 1 ] ^ 2
+        vec2 frag_normal_octahedral_encoded = vector_encode_octahedral(frag_normal_world) * 0.5 + 0.5; // in [0, 1] ^2
 
         bitpacked_data.r = packUnorm4x8(vec4(frag_normal_octahedral_encoded, normal_map_read.zw));
         bitpacked_data.g = packUnorm4x8(specular_map_read);
         bitpacked_data.b = packUnorm2x16(lightmap_uv);
-        bitpacked_data.a = floatBitsToUint(mcentity.x);
+        bitpacked_data.a = block_id;
 
         // preemmptively apply material ao
         color.rgb *= normal_map_read.b * 0.5 + 0.5; // NOTE: additional math from bliss. no clue why

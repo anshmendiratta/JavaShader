@@ -10,7 +10,7 @@
     // - 1.0: dawn
     //
     // follows sin(theta) where theta is the solar altitude
-    float compute_skylight_intensity_scalar(float daycycle_progress) {
+    float compute_sunlight_intensity_scalar(float daycycle_progress) {
         daycycle_progress *= 2.;
         float theta = 2. * PI * daycycle_progress;
         if (daycycle_progress < 1.) {

@@ -29,6 +29,6 @@
     #include "/include/post/bloom.glsl"
 
     void main() {
-        bloom_ds = max(vec3(1e-4), bloom_downsample(colortex0, map_uv_to_tile(uv, 0u)));
+        bloom_ds = max(vec3(1e-4), bloom_downsample(colortex0, map_uv_to_tile(uv, 0u), 0u));
     }
 #endif

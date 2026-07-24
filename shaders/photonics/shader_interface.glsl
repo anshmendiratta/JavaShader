@@ -31,7 +31,7 @@
         bool is_metal; // default: false
 
         // general
-        float block_id;
+        uint block_id;
         uint metal_id;
         vec2 lightmap_uv;
     };
