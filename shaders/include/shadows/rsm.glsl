@@ -49,7 +49,7 @@
             useful_samples += 1;
 
             vec4 sample_color = texture(shadowcolor0, sample_pos_sscreen.xy);
-            vec3 radiant_flux = rgb_to_linear(sample_color.rgb * sample_color.a);
+            vec3 radiant_flux = (sample_color.rgb * sample_color.a);
 
             vec3 sample_normal_world = texture(shadowcolor1, sample_pos_sscreen.xy).xyz * 2. - 1.;
 

@@ -35,7 +35,7 @@
         // }
 
         Material material;
-        init_material_unpacked_colortex_read(material);
+        init_material_unpacked_colortex_read(material, uv);
 
         vec2 screen_uv = uv;
         vec3 fragment_position_screen = vec3(screen_uv, depth);

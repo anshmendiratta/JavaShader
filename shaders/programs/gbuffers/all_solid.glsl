@@ -1,7 +1,4 @@
 #ifdef STAGE_VERTEX
-    in vec2 mc_midTexCoord;
-    in vec2 mc_Entity;
-
     flat out uint block_id;
     out vec2 uv;
     out vec2 lightmap_uv;
@@ -145,7 +142,7 @@
         bitpacked_data.a = block_id;
 
         // preemmptively apply material ao
-        color.rgb *= normal_map_read.b * 0.5 + 0.5; // NOTE: additional math from bliss. no clue why
+        // color.rgb *= normal_map_read.b; // NOTE: additional math from bliss. no clue why
 
         // FIX: for some reason particles need further gamma correction? maybe try and find a way to avoid this line
         if (renderStage == MC_RENDER_STAGE_PARTICLES) color.rgb = rgb_to_linear(color.rgb);

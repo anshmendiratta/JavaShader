@@ -40,7 +40,7 @@
         if (frag_is_hand(depth) || depth == 1.0) return; // don't reflect hand or sky
 
         Material material;
-        init_material_unpacked_colortex_read(material);
+        init_material_unpacked_colortex_read(material, uv);
 
         vec3 frag_position_screen = vec3(uv, texture(depthtex0, uv).r);
         vec3 frag_position_view = screen_to_view(frag_position_screen);

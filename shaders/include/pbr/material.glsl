@@ -103,7 +103,7 @@
         }
     }
 
-    void init_material_unpacked_colortex_read(out Material material) {
+    void init_material_unpacked_colortex_read(out Material material, in vec2 uv) {
         uint block_id;
         vec2 lightmap_uv;
         vec4 normal_map_read, specular_map_read;

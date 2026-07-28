@@ -100,7 +100,7 @@
     vec4 sample_colortex() {
         #if DEBUG_BUFFER == 1 // bitpacked data. currently display normals
             Material material;
-            init_material_unpacked_colortex_read(material);
+            init_material_unpacked_colortex_read(material, uv);
             return vec4(material.normal, 1.0);
         #elif DEBUG_BUFFER == 2
             return texture(colortex2, new_uv);

@@ -1,6 +1,4 @@
 #ifdef STAGE_VERTEX
-    in vec2 mc_Entity;
-
     flat out uint block_id;
     out vec2 uv;
     out vec2 lightmap_uv;

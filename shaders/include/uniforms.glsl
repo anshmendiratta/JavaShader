@@ -5,8 +5,13 @@
 
     uniform float alphaTestRef = 0.1;
 
-    // in
+    #ifdef STAGE_VERTEX
+        in vec2 mc_midTexCoord;
+        in vec2 mc_Entity;
+    #endif
+
     in vec4 at_tangent;
+    in vec4 at_midBlock;
 
     // Uniforms
     uniform vec3 skyColor;

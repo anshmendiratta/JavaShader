@@ -60,8 +60,8 @@
             blockers_used += blocker_dist > 0. ? 1 : 0;
         }
 
-        const float MIN_BLUR_RADIUS = 0.2;
-        const float MAX_BLUR_RADIUS = 32.;
+        const float MIN_BLUR_RADIUS = 0.1;
+        const float MAX_BLUR_RADIUS = 128.;
         float pcss_avg_dist = blockers_used > 0 ? pcss_acumulator / float(blockers_used) : 0.;
         float blur_radius = mix(MIN_BLUR_RADIUS, MAX_BLUR_RADIUS, pcss_avg_dist); // sqrt so the effect is more apparent.
 
@@ -84,7 +84,7 @@
     vec3 compute_contact_shadow(in vec3 frag_pos_screen) {
         vec3 frag_pos_view = screen_to_view(frag_pos_screen);
 
-        vec3 raymarch_dir_screen = normalize(view_to_screen(shadowLightPosition) - frag_pos_screen);
+        vec3 raymarch_dir_screen = view_to_screen(shadowLightPosition) - frag_pos_screen;
         raymarch_dir_screen /= max_of(raymarch_dir_screen);
         raymarch_dir_screen *= CONTACT_SHADOW_STEP_SIZE;
         raymarch_dir_screen.xy /= windowDimensions;
@@ -93,18 +93,15 @@
         vec3 raymarched_pos_screen = frag_pos_screen + raymarch_dir_screen;
 
         for (uint idx = 0; idx < CONTACT_SHADOW_STEPS; idx += 1) {
-            float depth = texelFetch(depthtex0, ivec2(windowDimensions * raymarched_pos_screen.xy), 0).r;
+            float depth = texelFetch(depthtex0, ivec2(windowDimensions * raymarched_pos_screen.xy), 0).x;
             float linear_depth = depth_to_z(depth);
             float linear_raymarched_depth = depth_to_z(raymarched_pos_screen.z);
 
-            float proportional_gap = abs(linear_depth - linear_raymarched_depth) / linear_raymarched_depth;
-            return vec3(proportional_gap);
+            float proportional_gap = abs(linear_depth - linear_raymarched_depth) / abs(depth_to_z(far) - depth_to_z(near));
 
-            if (proportional_gap <= 1e6) {
-                float min_linear_depth = linear_raymarched_depth - depth_to_z(raymarch_dir_screen.z);
-                float max_linear_depth = linear_raymarched_depth + depth_to_z(raymarch_dir_screen.z);
-                // float min_linear_depth = near;
-                // float max_linear_depth = far * 4.;
+            if (proportional_gap <= 1e-1) {
+                float min_linear_depth = linear_raymarched_depth - 1e-2 * depth_to_z(raymarch_dir_screen.z);
+                float max_linear_depth = linear_raymarched_depth + 1e-2 * depth_to_z(raymarch_dir_screen.z);
 
                 if (linear_depth <= max_linear_depth && linear_depth >= min_linear_depth && !frag_is_hand(depth)) {
                     return vec3(0.);

@@ -1,7 +1,4 @@
 #ifdef STAGE_VERTEX
-    in vec2 mc_Entity;
-    in vec2 mc_midTexCoord;
-
     flat out uint block_id;
 
     out vec2 uv;
@@ -153,16 +150,11 @@
         //    Forward rendering
         // -----------------------
 
-        gl_FragDepth = gl_FragCoord.z;
-        fix_hand_depth(gl_FragDepth);
-
         Material material;
         material.lightmap_uv = lightmap_uv;
         material.block_id = block_id;
         material.normal = frag_normal_world;
         init_material_raw_read(material, uv, TBN_matrix);
-
-        color.rgb *= material.ao * 0.5 + 0.5;
 
         vec3 light_source_position_world = view_to_world(shadowLightPosition);
         vec3 light_source_vector_world = normalize(light_source_position_world - frag_pos_world);
