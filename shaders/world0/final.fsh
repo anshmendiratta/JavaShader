@@ -13,6 +13,7 @@ layout(location = 0) out vec4 color;
 
 #include "/include/math/convenience.glsl"
 
+#include "/include/color/grading.glsl"
 #include "/include/color/conversions.glsl"
 #include "/include/color/tonemaps/aces.glsl"
 #include "/include/color/tonemaps/lottes.glsl"
@@ -26,8 +27,13 @@ void main() {
         color.rgb = mix(color.rgb, bloom, BLOOM_STRENGTH);
     #endif
 
-    color.rgb = tonemap_agx(color.rgb);
-    color.rgb = linear_to_rgb(color.rgb);
+    // ----------------
+    //     Purkinje
+    // ----------------
+
+    #if PURKINJE_SHIFT == 1
+        apply_purkinje(color.rgb, rgb_to_luminance(color.rgb));
+    #endif
 
     // -----------
     //     LUT
@@ -41,4 +47,11 @@ void main() {
     vec2 lut_uv = (vec2(blue_tile, 0.) + blue_tile_uv * blue_tile_extent);
 
     // color.rgb = texture(colortex29, lut_uv).rgb;
+
+    // -------------------
+    //     Tonemapping
+    // -------------------
+
+    color.rgb = tonemap_agx(color.rgb);
+    color.rgb = linear_to_rgb(color.rgb);
 }

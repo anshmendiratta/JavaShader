@@ -5,6 +5,7 @@
 
     void main() {
         gl_Position = ftransform();
+
         uv = (gl_TextureMatrix[0] * gl_MultiTexCoord0).xy;
     }
 #endif
@@ -50,7 +51,7 @@
     vec4 sample_shadowcolor();
 
     void main() {
-        color = texture(colortex0, uv);
+        color.rgb = texture(colortex0, uv).rgb;
 
         #if DEBUG_COVER_SCREEN == 1
             #if DEBUG_VIEW == 1
@@ -89,8 +90,6 @@
                 #endif
             }
         #endif
-
-        // sixthsurge's text renderer
     }
 
     // -----------------------
@@ -160,7 +159,7 @@
         #elif DEBUG_BUFFER == 29
             return texture(colortex29, new_uv);
         #elif DEBUG_BUFFER == 30
-            return texture(colortex30, new_uv);
+            return texture(colortex29, new_uv);
         #elif DEBUG_BUFFER == 31
             return texture(colortex31, new_uv);
         #else

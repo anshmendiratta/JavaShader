@@ -4,6 +4,7 @@ struct Interface {
 
 #ifdef STAGE_VERTEX
     out Interface v;
+    out vec2 uv;
     flat out ivec3 voxel_pos;
 
     #include "/include/utility/space_conversions.glsl"
@@ -12,6 +13,7 @@ struct Interface {
         gl_Position = ftransform();
 
         v.uv = (gl_TextureMatrix[0] * gl_MultiTexCoord0).xy;
+        uv = v.uv;
 
         vec3 vert_pos_shadow_view = (gl_ModelViewMatrix * gl_Vertex).xyz;
         vec3 vert_pos_feet = shadow_view_to_feet(vert_pos_shadow_view);
@@ -30,6 +32,7 @@ struct Interface {
 
     #include "/include/sky/intensity.glsl"
 
+    #include "/include/color/grading.glsl"
     #include "/include/color/conversions.glsl"
 
     #include "/include/pbr/material.glsl"
@@ -48,11 +51,12 @@ struct Interface {
     #include "/include/utility/dither.glsl"
 
     #if defined PHOTONICS
-        #include "/photonics/photonics.glsl"
+        // #include "/photonics/photonics.glsl"
 
         uniform sampler2D radiosity_indirect;
     #endif
 
+    in vec2 uv;
     in Interface v;
     flat in ivec3 voxel_pos;
 
@@ -90,9 +94,13 @@ struct Interface {
             _fresnel_rescaled_schlick(material, dot(frag_view_vector_world, halfway_vector_world)) :
             _fresnel_schlick(material, dot(light_source_vector_world, halfway_vector_world)); // L.H
 
-        vec3 blocklight = hsl_to_rgb(vec3(1., 1., BLOCKLIGHT_INTENSITY) * rgb_to_hsl(material.lightmap_uv.x * BLOCKLIGHT_COLOR)); // x is blocklight
-        vec3 skylight = hsl_to_rgb(vec3(1., 1., SKYLIGHT_INTENSITY) * rgb_to_hsl(material.lightmap_uv.y * SKYLIGHT_COLOR));
-        vec3 sunlight = compute_sunlight_intensity_scalar(dayProgress) * material.lightmap_uv.y * SUNLIGHT_COLOR; // lightmap_uv.y fixes some light leaks
+        float sun_moon_intensity = compute_direct_light_scalar(dayProgress);
+
+        vec3 blocklight = material.lightmap_uv.x * BLOCKLIGHT_COLOR; // x is blocklight
+        vec3 skylight = sun_moon_intensity * material.lightmap_uv.y * SKYLIGHT_COLOR;
+        vec3 sunlight = sun_moon_intensity * SUNLIGHT_COLOR; // lightmap_uv.y fixes some light leaks
+
+        brighten_rgb(blocklight, BLOCKLIGHT_INTENSITY);
 
         fix_hand_depth(depth);
 
@@ -116,28 +124,27 @@ struct Interface {
             texture(colortex2, v.uv).rgb :
             vec3(0.);
         vec3 sss = SSS == 1 ?
-            approximate_material_sss(material, frag_world_pos, light_source_vector_world, frag_view_vector_world) :
+            sun_moon_intensity * approximate_material_sss(material, frag_world_pos, light_source_vector_world, frag_view_vector_world) :
             vec3(0.);
 
-        #if defined PHOTONICS
-            skylight = texture(radiosity_indirect, v.uv).rgb;
-            blocklight = sample_photonics_direct(v.uv);
-        #endif
-
-        color = vec4(blocklight, 1.);
-        return;
+        // #if defined PHOTONICS
+            //     skylight = texture(radiosity_indirect, v.uv).rgb;
+            //     blocklight = sample_photonics_direct(v.uv);
+        // #endif
 
         vec3 diffuse = material.albedo * sunlight * n_dot_l;
         vec3 specular = compute_specular(material, fresnel, light_source_vector_world, frag_view_vector_world);
         vec3 direct = material.is_metal ? fresnel * specular : mix(diffuse, specular, fresnel); // TODO: the mix between diffuse and specular is physically correct, but some metals still feel pretty dark
-        vec3 indirect = material.albedo * (material.ao * ao * (skylight + blocklight) + sss) + gi;
-        vec3 emission = material.albedo * EMISSION_STRENGTH * material.emissiveness;
+        vec3 indirect = material.albedo * material.ao * ao * (skylight + blocklight + sss) + gi;
+        vec3 emission = material.albedo * material.emissiveness;
+
+        brighten_rgb(emission, EMISSION_STRENGTH);
 
         color.rgb = shadow * direct + indirect + emission;
 
         // if (clamp(voxel_pos, 0, VOXEL_RADIUS) == voxel_pos) {
         //     vec4 voxel_data = unpackUnorm4x8(texture(voxel_map, voxel_pos / vec3(VOXEL_AREA)).x);
-        // color.rgb = voxel_data.www;
+        //     color.rgb = voxel_data.rgb;
         // }
     }
 #endif

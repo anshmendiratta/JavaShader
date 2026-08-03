@@ -20,8 +20,7 @@
     // ---------------
     //     RGB/HSV
     // ---------------
-
-    // Taken from https://gist.github.com/983/e170a24ae8eba2cd174f.
+    // from: https://gist.github.com/983/e170a24ae8eba2cd174f.
 
     vec3 rgb_to_hsv(vec3 rgb) {
         vec4 K = vec4(0.0, -1.0 / 3.0, 2.0 / 3.0, -1.0);
@@ -43,8 +42,7 @@
     // ---------------
     //     RGB/HSL
     // ---------------
-
-    // taken from https://www.shadertoy.com/view/XljGzV
+    // from: https://www.shadertoy.com/view/XljGzV
 
     vec3 rgb_to_hsl(vec3 rgb) {
         float h = 0.0;

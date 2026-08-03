@@ -27,6 +27,7 @@
 
         // NOTE: 4 is the physically correct divisor, not PI. error in the original paper
         vec3 specular_highlight = rcp(4.0 * dot(material.normal, light_source_vector_world) * dot(material.normal, view_vector_world)) * fresnel * intensity_distribution * geometric_attenuation;
+
         if (material.is_metal) {
             specular_highlight *= material.albedo;
         }

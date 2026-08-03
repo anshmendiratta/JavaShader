@@ -72,7 +72,7 @@
     void _populate_gerstner_parameters(in vec3 frag_position_world, in uint component) {
         float alpha = frag_position_world.x;
         float beta = frag_position_world.z;
-        float t = frameTimeCounter * 5.;
+        float t = frameTimeCounter * 10.;
 
         float theta_i = radians(15.) * float(component);
         float lambda_i = 3e-1 * pow(1.6, -float(component));

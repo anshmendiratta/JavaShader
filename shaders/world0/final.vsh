@@ -1,5 +1,7 @@
 #version 430 compatibility
 
+#include "/include/post/taa.glsl"
+
 out vec2 uv;
 
 void main() {

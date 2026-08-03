@@ -68,16 +68,11 @@
         material.sss = (specular_data.b >= 65. / 255.) ? (specular_data.b - 65. / 255.) / (1. - 64. / 255.) : 0.;
         material.emissiveness = fract(specular_data.a); // since 0 and 255 are no emission
 
-        // hardcode water
         if (material.block_id == ID_WATER) {
+            material.roughness = 0.;
             material.f0 = vec3(0.02); // value from axolotan
-            material.roughness = rcp(255.);
             material.is_metal = false;
             material.metal_id = 0u;
-
-            // normal_data.xy = normal_data.xy * 2. - 1.;
-            // material.normal = vec3(normal_data.xy, sqrt(1. - dot(normal_data.xy, normal_data.xy))); // normal space
-            // material.normal = mat3(gbufferModelViewInverse) * (TBN * material.normal); // world space
 
             return;
         }
@@ -116,7 +111,7 @@
         material.normal = normal_world;
 
         if (material.block_id == ID_WATER) {
-            material.roughness = rcp(255.);
+            material.roughness = 0.;
             material.f0 = vec3(0.02); // value from axolotan
             material.is_metal = false;
             material.metal_id = 0u;

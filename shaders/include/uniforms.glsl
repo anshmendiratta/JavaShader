@@ -112,7 +112,7 @@
     uniform sampler2D colortex27;
     uniform sampler2D colortex28;
     uniform sampler2D colortex29;
-    uniform sampler2D colortex30;
+    uniform usampler2D colortex30;
     uniform usampler2D colortex31;
 
     uniform sampler2D depthtex0;

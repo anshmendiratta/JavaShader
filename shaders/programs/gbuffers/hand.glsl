@@ -5,8 +5,11 @@
     out vec3 frag_normal_view;
     out vec4 glcolor;
 
+    #include "/include/post/taa.glsl"
+
     void main() {
         gl_Position = ftransform();
+
         uv = (gl_TextureMatrix[0] * gl_MultiTexCoord0).xy;
         lightmap_uv = (gl_TextureMatrix[1] * gl_MultiTexCoord1).xy;
         lightmap_uv = lightmap_uv / (30.0 / 32.0) - (1.0 / 32.0); // Conversion from[0.033 , 0.97 ] to[0.0 , 1.0 ] .

@@ -13,11 +13,18 @@
     #include "/include/uniforms.glsl"
     #include "/include/ids.glsl"
 
+    #include "/include/post/taa.glsl"
+
     #include "/include/utility/random.glsl"
     #include "/include/utility/noise.glsl"
+    #include "/include/utility/space_conversions.glsl"
 
     void main() {
         gl_Position = ftransform();
+        #if TAA == 1
+            gl_Position.xy += 2. * taa_jitter * gl_Position.w;
+        #endif
+
         glcolor = gl_Color;
         block_id = uint(mc_Entity.x);
 
@@ -35,7 +42,7 @@
         #if WAVING_FOLIAGE == 1
             // Waving foliage .
             // TODO: foliage "jitters" when the camera does.
-            vec3 vertex_view_position = (gbufferProjectionInverse * gl_Position).xyz;
+            vec3 vertex_view_position = ((JITTER_OFFSET_MATRIX_INV * gbufferProjectionInverse) * gl_Position).xyz;
             vec3 vertex_player_position = (gbufferModelViewInverse * vec4(vertex_view_position, 1.0)).xyz;
             vec3 vertex_world_position = vertex_player_position + cameraPosition;
             vec3 vertex_offset_world = vec3(0.0, 0.0, 0.0);
@@ -60,7 +67,7 @@
 
             vec3 vertex_offset_view = mat3(gbufferModelView) * vertex_offset_world;
             vertex_view_position += vertex_offset_view;
-            gl_Position = gbufferProjection * vec4(vertex_view_position, 1.0);
+            gl_Position = view_to_clip(vertex_view_position);
         #endif
     }
 #endif

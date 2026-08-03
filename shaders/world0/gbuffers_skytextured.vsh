@@ -3,6 +3,8 @@
 #include "/include/uniforms.glsl"
 #include "/include/settings.glsl"
 
+#include "/include/post/taa.glsl"
+
 #include "/include/utility/space_conversions.glsl"
 
 #include "/include/math/vectors.glsl"
@@ -20,7 +22,7 @@ void main() {
     vertex_to_center_clip_space *= SUN_MOON_SIZE_SCALAR;
 
     // rotate light source
-    vec3 player_to_sun_vector_clip_space = mat3(gbufferProjection) * worldLightVector;
+    vec3 player_to_sun_vector_clip_space = mat3(JITTER_OFFSET_MATRIX * gbufferProjection) * worldLightVector;
     vertex_to_center_clip_space = rotate_vector_axis_angle(vertex_to_center_clip_space, player_to_sun_vector_clip_space, SUN_MOON_AXIS_ROTATION);
 
     vec4 modified_vertex_clip_space = light_source_position_clip_space + 1.5 * vertex_to_center_clip_space;

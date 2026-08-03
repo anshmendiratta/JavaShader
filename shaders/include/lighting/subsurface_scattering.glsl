@@ -17,7 +17,7 @@
 
     // NOTE: anisotropy factors for henyey greenstein and the blend factor for mix taken from noble
     vec3 approximate_material_sss(Material material, vec3 frag_position_world, vec3 to_light_direction, vec3 to_view_direction) {
-        if (material.sss <= EPSILON) return vec3(0.0);
+        if (material.sss <= EPSILON) return vec3(0.);
 
         vec3 frag_position_feet = frag_position_world - cameraPosition;
         vec4 frag_position_shadow_clip = shadow_view_to_shadow_clip(feet_to_shadow_view(frag_position_feet));
@@ -26,7 +26,7 @@
         // apply beer lambert law: absorption = constant * absorbance * concentration * path_length.
         // we determine the absorbance using phase functions.
         // we also use the same idea that darker albedos have lower sss
-        vec3 optical_density = material.albedo * 0.5 - 1.0; // map [0.0, 1.0] to something negative /shrug
+        vec3 optical_density = material.albedo * 0.5 - 1.; // map [0.0, 1.0] to something negative /shrug
         vec3 beer = clamp01(exp(OPTICAL_DENSITY_MULTIPLIER * optical_density * sss_depth * rcp(max_eps(material.sss))));
 
         // TODO: determine if henyey greenstein is the best phase function for sss

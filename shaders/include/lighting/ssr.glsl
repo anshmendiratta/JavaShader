@@ -9,16 +9,23 @@
 
     #include "/include/pbr/material.glsl"
 
-    #include "/include/utility/space_conversions.glsl"
     #include "/include/utility/random.glsl"
     #include "/include/utility/dither.glsl"
+    #include "/include/utility/space_conversions.glsl"
+
+    // ------------------
+    //     Prototypes
+    // ------------------
 
     #define BINARY_SEARCH_STEPS 8
     #define BINARY_SEARCH_RAY_DOWNSIZE 0.5
 
-    // credit to Balint for helping me debug the binary search and the loop for rough intersection
-
     void _binary_search_intersection(inout vec3 raymarched_position_screen, in vec3 ray_step_screen);
+
+    // --------------------------------
+    //     Screen space reflections
+    // --------------------------------
+    // credit to Balint for helping me debug the binary search and the loop for rough intersection
 
     bool raymarch_ssr(in Material material, in const vec3 fresnel, in vec2 uv, out vec2 reflected_uv, in vec3 frag_position_view, in vec3 reflected_ray_view /* _space */ ) {
         float specular_energy = avg_vec(fresnel * (1.0 - pow2(material.roughness))); // claude came up with this shit
@@ -35,7 +42,7 @@
         vec3 reflected_ray_screen = view_to_screen(frag_position_view + reflected_ray_view) - raymarched_position_screen;
         vec3 ray_step_screen = min_of((sign(reflected_ray_screen) - raymarched_position_screen) / reflected_ray_screen) * reflected_ray_screen * rcp(SSR_STEPS); // from belmu's gist. not sure why this is a good length
 
-        raymarched_position_screen += (0.15 + 0.05 * dither) * ray_step_screen; // start position
+        raymarched_position_screen += (1. + 1.0 * dither) * ray_step_screen; // start position
 
         const float depth_tolerance = max(abs(ray_step_screen.z) * 3.0, 0.02 / pow2(frag_position_view.z)); // from DrDesten and SixthSurge
         bool hit_object = false;
@@ -72,6 +79,8 @@
         for (uint search_step = 0; search_step < BINARY_SEARCH_STEPS; search_step += 1) {
             ray_step_screen *= BINARY_SEARCH_RAY_DOWNSIZE;
             raymarched_position_screen += ray_direction * ray_step_screen;
+
+            if (uv_out_of_bounds(raymarched_position_screen.xy)) return;
 
             real_raymarched_depth = texture(depthtex0, raymarched_position_screen.xy).r;
             ray_direction = sign(real_raymarched_depth - raymarched_position_screen.z);

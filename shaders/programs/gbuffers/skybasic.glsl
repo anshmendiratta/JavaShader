@@ -1,10 +1,13 @@
 #ifdef STAGE_VERTEX
+    #include "/include/post/taa.glsl"
+
     out vec2 uv;
     out vec4 star_data; // rgb = star color, a = flag for weather or not this pixel is a star .
     out vec4 glcolor;
 
     void main() {
         gl_Position = ftransform();
+
         uv = (gl_TextureMatrix[0] * gl_MultiTexCoord0).xy;
         star_data = vec4(gl_Color.rgb, float(gl_Color.r == gl_Color.g && gl_Color.g == gl_Color.b && gl_Color.r > 0.0)); // Check if white .
         glcolor = gl_Color;

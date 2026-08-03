@@ -1,8 +1,12 @@
 #ifdef STAGE_VERTEX
     out vec2 uv;
 
+    #include "/include/post/taa.glsl"
+
     void main() {
         gl_Position = ftransform();
+
+
         uv = (gl_TextureMatrix[0] * gl_MultiTexCoord0).xy;
     }
 #endif

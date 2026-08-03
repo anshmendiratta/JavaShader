@@ -9,6 +9,7 @@
     #include "/include/utility/dither.glsl"
     #include "/include/utility/vogel_disk_blur.glsl"
     #include "/include/utility/depth_conversion.glsl"
+    #include "/include/utility/space_conversions.glsl"
 
     #include "/include/shadows/distort.glsl"
 

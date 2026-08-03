@@ -25,7 +25,7 @@
     float _interleaved_gradient_noise(in const vec2 xy) {
         float value = fract(52.982918 * (fract(0.06711056 * xy.x + 0.00583715 * xy.y)));
 
-        return value * 2.0 - 1.0;
+        return value;
     }
 
     // taken from rre36's nostalgia shader. clearly the same as above but with a temporal factor

@@ -8,6 +8,8 @@
 
     #include "/include/utility/space_conversions.glsl"
 
+    #include "/include/post/taa.glsl"
+
     #include "/include/pbr/textures.glsl"
     #include "/include/pbr/hcm.glsl"
     #include "/include/pbr/material.glsl"
@@ -16,14 +18,15 @@
     vec3 indirect_light_color = skyColor;
 
     vec3 load_world_position() {
-        vec3 screen_uv = vec3(gl_FragCoord.xy / windowDimensions, gl_FragCoord.z);
-        vec3 frag_pos_view = screen_to_view(screen_uv);
-
+        vec2 screen_uv = gl_FragCoord.xy / windowDimensions;
+        vec3 frag_pos_screen = vec3(screen_uv, texture(depthtex0, screen_uv).x);
+        vec3 frag_pos_view = screen_to_view(frag_pos_screen);
         return view_to_world(frag_pos_view);
     }
 
     void load_fragment_variables(out vec3 albedo, out vec3 world_pos, out vec3 geometry_normal, out vec3 texture_normal) {
         vec2 screen_uv = gl_FragCoord.xy / windowDimensions;
+        // vec3 frag_pos_screen = vec3(v.uv, texture(depthtex0, v.uv).x);
 
         geometry_normal = texture(colortex3, screen_uv).xyz * 2. - 1.; // vert normal
 
@@ -37,7 +40,11 @@
     }
 
     vec2 get_taa_jitter() {
-        return vec2(0.);
+        #if TAA == 1
+            return taa_jitter;
+        #else
+            return vec2(0.);
+        #endif
     }
 
     bool is_in_world() {

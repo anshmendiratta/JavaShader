@@ -19,7 +19,7 @@
 #ifdef STAGE_FRAGMENT
     in vec2 uv;
 
-    /* RENDERTARGETS: 30 */
+    /* RENDERTARGETS: 29 */
 
     out vec3 bloom_ds;
 

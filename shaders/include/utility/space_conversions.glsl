@@ -2,6 +2,7 @@
     #define INCLUDE_CONVERSIONS
 
     #include "/include/uniforms.glsl"
+    #include "/include/settings.glsl"
 
     #include "/include/utility/random.glsl"
 
@@ -15,9 +16,9 @@
 
     vec3 screen_to_ndc(vec3 screen_position) {
         if (frag_is_hand(screen_position.z)) {
-            return (screen_position * 2.0 - 1.0) / MC_HAND_DEPTH;
+            return (screen_position * 2. - 1.) / MC_HAND_DEPTH;
         } else {
-            return screen_position * 2.0 - 1.0;
+            return screen_position * 2. - 1.;
         }
     }
 
@@ -30,7 +31,7 @@
     }
 
     vec3 view_to_feet(vec3 view_position) {
-        return (gbufferModelViewInverse * vec4(view_position, 1.0)).xyz;
+        return (gbufferModelViewInverse * vec4(view_position, 1.)).xyz;
     }
 
     vec3 feet_to_world(vec3 feet_position) {
@@ -58,15 +59,17 @@
     }
 
     vec3 feet_to_view(vec3 feet_position) {
-        return (gbufferModelView * vec4(feet_position, 1.0)).xyz;
+        return (gbufferModelView * vec4(feet_position, 1.)).xyz;
     }
 
     vec4 view_to_clip(vec3 view_position) {
-        return gbufferProjection * vec4(view_position, 1.0);
+        return gbufferProjection * vec4(view_position, 1.);
     }
 
     vec3 view_to_ndc(vec3 view_position) {
-        return _project_and_divide(gbufferProjection, view_position);
+        return _project_and_divide(
+            gbufferProjection,
+            view_position);
     }
 
     vec3 ndc_to_screen(vec3 ndc_position) {
@@ -94,11 +97,11 @@
     // --------------------------------------------------------------
 
     vec3 feet_to_shadow_view(vec3 feet_position) {
-        return (shadowModelView * vec4(feet_position, 1.0)).xyz;
+        return (shadowModelView * vec4(feet_position, 1.)).xyz;
     }
 
     vec4 shadow_view_to_shadow_clip(vec3 shadow_view_position) {
-        return shadowProjection * vec4(shadow_view_position, 1.0);
+        return shadowProjection * vec4(shadow_view_position, 1.);
     }
 
     vec4 feet_to_shadow_clip(vec3 feet_position) {
@@ -122,7 +125,7 @@
     // --------------------------------------------------------------
 
     vec3 shadow_screen_to_shadow_view(vec3 shadow_screen_position) {
-        return _project_and_divide(shadowProjectionInverse, shadow_screen_position * 2.0 - 1.0);
+        return _project_and_divide(shadowProjectionInverse, shadow_screen_position * 2. - 1.);
     }
 
     vec3 shadow_clip_to_shadow_view(vec4 shadow_clip_position) {
@@ -130,7 +133,7 @@
     }
 
     vec3 shadow_view_to_feet(vec3 shadow_view_position) {
-        return (shadowModelViewInverse * vec4(shadow_view_position, 1.0)).xyz;
+        return (shadowModelViewInverse * vec4(shadow_view_position, 1.)).xyz;
     }
 
     vec4 shadow_screen_to_shadow_clip(vec3 shadow_screen_position) {

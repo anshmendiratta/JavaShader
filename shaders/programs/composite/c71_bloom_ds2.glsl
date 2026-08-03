@@ -19,7 +19,7 @@
 #ifdef STAGE_FRAGMENT
     in vec2 uv;
 
-    /* RENDERTARGETS: 30 */
+    /* RENDERTARGETS: 29 */
 
     out vec3 bloom_ds;
 
@@ -29,6 +29,6 @@
     #include "/include/post/bloom.glsl"
 
     void main() {
-        bloom_ds = bloom_downsample(colortex30, map_uv_to_tile(uv, 1u), 1u);
+        bloom_ds = bloom_downsample(colortex29, map_uv_to_tile(uv, 1u), 1u);
     }
 #endif

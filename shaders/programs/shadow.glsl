@@ -21,6 +21,7 @@ struct Interface {
     void main() {
         gl_Position = ftransform();
 
+
         v.uv = (gl_TextureMatrix[0] * gl_MultiTexCoord0).xy;
         v.glcolor = gl_Color;
         v.normal_world = mat3(shadowModelViewInverse) * normalize(gl_NormalMatrix * gl_Normal);
