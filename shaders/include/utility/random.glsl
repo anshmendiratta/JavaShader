@@ -26,7 +26,9 @@
         return clamp01(uv) != uv;
     }
 
-    const float hand_depth = MC_HAND_DEPTH * 0.5 + 0.5;
+    // const float hand_depth = MC_HAND_DEPTH * 0.5 + 0.5;
+    const float hand_depth = .56;
+    // const float hand_depth = MC_HAND_DEPTH *0.5+0.5;
 
     // --------------------
     //     Hand fuckery

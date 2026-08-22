@@ -26,8 +26,8 @@
 
     #include "/include/color/turbo_colormap_curve.glsl"
 
-    #include "/include/utility/depth_conversion.glsl"
-    #include "/include/utility/space_conversions.glsl"
+    #include "/include/utility/depth.glsl"
+    #include "/include/utility/coordinates.glsl"
 
     #include "/include/pbr/material.glsl"
     #include "/include/pbr/textures.glsl"

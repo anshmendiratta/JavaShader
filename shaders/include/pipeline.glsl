@@ -12,4 +12,6 @@
     const float ambientOcclusionLevel = VANILLA_AO;
 
     const float sunPathRotation = -30.0;
+
+    const float voxelDistance = 128.0;
 #endif

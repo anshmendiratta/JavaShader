@@ -32,10 +32,11 @@ value.DEBUG_BUFFER.29 = colortex29
 value.DEBUG_BUFFER.30 = colortex30
 value.DEBUG_BUFFER.31 = colortex31
 
-value.DEBUG_BUFFER.16 = depthtex0
-value.DEBUG_BUFFER.17 = shadowtex0
-value.DEBUG_BUFFER.18 = shadowtex1
-value.DEBUG_BUFFER.19 = shadowcolor0
+value.DEBUG_BUFFER.32 = depthtex0
+value.DEBUG_BUFFER.33 = shadowtex0
+value.DEBUG_BUFFER.34 = shadowtex1
+value.DEBUG_BUFFER.35 = shadowcolor0
+value.DEBUG_BUFFER.36 = shadowcolor1
 
 # Switches.
 value.SHADOWS.0 = Off

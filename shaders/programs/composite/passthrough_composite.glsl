@@ -14,10 +14,10 @@
     in vec2 uv;
 
     /* RENDERTARGETS: 0 */
+
     layout(location = 0) out vec4 color;
 
     #include "/include/buffers.glsl"
-
     #include "/include/uniforms.glsl"
 
     void main() {

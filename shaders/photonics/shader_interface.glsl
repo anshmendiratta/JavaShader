@@ -6,7 +6,7 @@
 
     #include "/include/water/waves.glsl"
 
-    #include "/include/utility/space_conversions.glsl"
+    #include "/include/utility/coordinates.glsl"
 
     #include "/include/post/taa.glsl"
 

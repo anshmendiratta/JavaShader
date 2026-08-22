@@ -11,24 +11,33 @@
 #endif
 
 #ifdef STAGE_FRAGMENT
+    #include "/include/settings.glsl"
+    #include "/include/uniforms.glsl"
+
+    #include "/include/utility/sampling_pattern.glsl"
+    #include "/include/utility/random.glsl"
+    #include "/include/utility/dither.glsl"
+    #include "/include/utility/depth.glsl"
+
+    #include "/include/post/taa.glsl"
+
+    #include "/include/math/convenience.glsl"
+
     in vec2 uv;
 
     /* RENDERTARGETS: 4 */
     layout(location = 0) out float ssao_factor;
 
-    #include "/include/settings.glsl"
-    #include "/include/uniforms.glsl"
-
-    #include "/include/utility/vogel_disk_blur.glsl"
-    #include "/include/math/convenience.glsl"
-    #include "/include/utility/random.glsl"
-    #include "/include/utility/dither.glsl"
-    #include "/include/utility/depth_conversion.glsl"
-
     #define SSAO_BLUR_SAMPLES 64
     #define DEPTH_SENSITIVITY 300.0 // Higher = sharper edges
 
     void main() {
+        vec2 uv = uv - dot(
+                    vec2(dFdx(uv).x, dFdy(uv).y),
+                    taa_jitter
+                ); // unjitter texture sampling
+        uv = clamp01(uv);
+
         vec2 texel_size = 1.0 / textureSize(colortex4, 0);
 
         // Get center depth for edge-aware filtering

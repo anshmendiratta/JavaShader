@@ -7,6 +7,8 @@ colortex2ClearColor = vec3(0.0, 0.0, 0.0); // stores gi from rsm
 const int colortex4Format = R32F; // ssao
 const int colortex29Format = RGB16F; // bloom blur
 
+const int colortex19Format = R32F; // AO
+const bool colortex19Clear = false;
 const int colortex20Format = RGBA16F; // TAA
 const bool colortex20Clear = false;
 const int colortex21Format = RGBA16F; // ssr
@@ -29,6 +31,7 @@ const int colortex31Format = R32UI; // mask for hand
 #define BUFFER_BLOOM colortex29
 
 // Relegated to the trenches.
+#define BUFFER_AO_ACC colortex19
 #define BUFFER_TAA colortex20
 #define BUFFER_SSR_ACC colortex21
 #define BUFFER_PREVIOUS_DEPTH colortex22

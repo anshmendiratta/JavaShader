@@ -5,7 +5,7 @@
 
     #include "/include/math/convenience.glsl"
 
-    #include "/include/utility/depth_conversion.glsl"
+    #include "/include/utility/depth.glsl"
 
     const vec3 turboCurve[] = vec3[](
     vec3(0.18995, 0.07176, 0.23217),

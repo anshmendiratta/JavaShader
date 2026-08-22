@@ -7,7 +7,7 @@
 
     #include "/include/shadows/distort.glsl"
 
-    #include "/include/utility/vogel_disk_blur.glsl"
+    #include "/include/utility/sampling_pattern.glsl"
     #include "/include/utility/phase_functions.glsl"
     #include "/include/utility/dither.glsl"
 
@@ -41,11 +41,13 @@
 
     // courtesy of @belmu from the shaderLABS discord
     float _approximate_sss_depth(in vec4 frag_position_shadow_clip) {
+        float dither = compute_dither(gl_FragCoord.xy);
+
         float sss_depth = 0.0;
         uint count = 0;
 
         for (int idx = 0; idx < SSS_SAMPLES; idx += 1) {
-            vec2 sample_position_offset = 2.0 * compute_vogel_disk_sample_uv(idx, SSS_SAMPLES) / shadowMapResolution; // in screen space
+            vec2 sample_position_offset = dither * compute_vogel_disk_sample_uv(idx, SSS_SAMPLES) / shadowMapResolution; // in screen space
             vec4 sample_pos_clip_uv = frag_position_shadow_clip + vec4(sample_position_offset, 0., 0.);
             distort_shadow_clip_position(sample_pos_clip_uv.xyz);
             vec3 sample_uv = shadow_clip_to_shadow_screen(sample_pos_clip_uv);
@@ -54,8 +56,7 @@
             float blocker_dist = max0(sample_uv.z - sample_position_depth);
 
             sss_depth += blocker_dist;
-            count += (blocker_dist > 0.) ?
-                1 : 0;
+            count += blocker_dist > 0. ? 1 : 0;
         }
 
         return -shadowProjectionInverse[2].z /* according to belmu helps convert depth to a "meters" scale. is equal to (shadow) `far - near` */

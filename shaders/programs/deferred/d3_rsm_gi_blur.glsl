@@ -18,7 +18,7 @@
     #include "/include/settings.glsl"
     #include "/include/uniforms.glsl"
 
-    #include "/include/utility/depth_conversion.glsl"
+    #include "/include/utility/depth.glsl"
 
     #define ATROUS_STEP_WIDTH 5.0
     #define DEPTH_PHI 300.0

@@ -11,7 +11,7 @@
 
     #include "/include/utility/random.glsl"
     #include "/include/utility/dither.glsl"
-    #include "/include/utility/space_conversions.glsl"
+    #include "/include/utility/coordinates.glsl"
 
     // ------------------
     //     Prototypes
@@ -42,10 +42,11 @@
         vec3 reflected_ray_screen = view_to_screen(frag_position_view + reflected_ray_view) - raymarched_position_screen;
         vec3 ray_step_screen = min_of((sign(reflected_ray_screen) - raymarched_position_screen) / reflected_ray_screen) * reflected_ray_screen * rcp(SSR_STEPS); // from belmu's gist. not sure why this is a good length
 
-        raymarched_position_screen += (1. + 1.0 * dither) * ray_step_screen; // start position
+        raymarched_position_screen += (1. + 1. * dither) * ray_step_screen; // start position
 
         const float depth_tolerance = max(abs(ray_step_screen.z) * 3.0, 0.02 / pow2(frag_position_view.z)); // from DrDesten and SixthSurge
         bool hit_object = false;
+
         for (uint march_step = 0; march_step < SSR_STEPS; raymarched_position_screen += ray_step_screen, march_step += 1) {
             if (uv_out_of_bounds(raymarched_position_screen.xy)) {
                 reflected_uv = raymarched_position_screen.xy;

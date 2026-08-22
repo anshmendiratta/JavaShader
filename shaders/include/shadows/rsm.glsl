@@ -13,8 +13,8 @@
 
     #include "/include/utility/random.glsl"
     #include "/include/utility/dither.glsl"
-    #include "/include/utility/space_conversions.glsl"
-    #include "/include/utility/vogel_disk_blur.glsl"
+    #include "/include/utility/coordinates.glsl"
+    #include "/include/utility/sampling_pattern.glsl"
 
     // -----------------------------
     //     Reflective Shadow Map

@@ -15,9 +15,11 @@
 
     #include "/include/post/taa.glsl"
 
+    #include "/include/color/conversions.glsl"
+
     #include "/include/utility/random.glsl"
     #include "/include/utility/noise.glsl"
-    #include "/include/utility/space_conversions.glsl"
+    #include "/include/utility/coordinates.glsl"
 
     void main() {
         gl_Position = ftransform();
@@ -42,7 +44,7 @@
         #if WAVING_FOLIAGE == 1
             // Waving foliage .
             // TODO: foliage "jitters" when the camera does.
-            vec3 vertex_view_position = ((JITTER_OFFSET_MATRIX_INV * gbufferProjectionInverse) * gl_Position).xyz;
+            vec3 vertex_view_position = (gbufferProjectionInverse * gl_Position).xyz;
             vec3 vertex_player_position = (gbufferModelViewInverse * vec4(vertex_view_position, 1.0)).xyz;
             vec3 vertex_world_position = vertex_player_position + cameraPosition;
             vec3 vertex_offset_world = vec3(0.0, 0.0, 0.0);
@@ -93,7 +95,7 @@
     #include "/include/uniforms.glsl"
 
     #include "/include/utility/random.glsl"
-    #include "/include/utility/space_conversions.glsl"
+    #include "/include/utility/coordinates.glsl"
 
     #include "/include/color/conversions.glsl"
 
@@ -152,6 +154,6 @@
         // color.rgb *= normal_map_read.b; // NOTE: additional math from bliss. no clue why
 
         // FIX: for some reason particles need further gamma correction? maybe try and find a way to avoid this line
-        if (renderStage == MC_RENDER_STAGE_PARTICLES) color.rgb = rgb_to_linear(color.rgb);
+        // if (renderStage == MC_RENDER_STAGE_PARTICLES) color.rgb = rgb_to_linear(color.rgb);
     }
 #endif

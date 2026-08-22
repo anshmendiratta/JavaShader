@@ -5,28 +5,32 @@
 
     #include "/include/pbr/hcm.glsl"
 
+    // ------------------
+    //     Prototypes
+    // ------------------
+
     float _ggx_g(in const Material material, in const vec3 view_vector_world, in const vec3 light_source_vector_world);
     float _ggx_d(in const Material material, in const vec3 view_vector_world, in const vec3 light_source_vector_world);
+    float _ggx_v(in const Material material, in const vec3 view_vector_world, in const vec3 light_source_vector_world);
+    float _kelemen_v(in const Material material, in const vec3 view_vector_world, in const vec3 light_source_vector_world);
     float _beckmann_d(in const Material material, in const vec3 view_vector_world, in const vec3 light_source_vector_world);
     float _beckmann_g(in const Material material, in const vec3 view_vector_world, in const vec3 light_source_vector_world);
 
-    // FIX: there is a weird shimmer that can appear across blocks at very specific angles. this is time-of-day sensitive and independent of D/G
-
+    // ----------------
+    //     Specular
+    // ----------------
     // uses cook-tarrance:
     // - https://en.wikipedia.org/wiki/Specular_highlight#Cook%E2%80%93Torrance_model
     // - https://graphicscompendium.com/theory/07-cook-torrance
+    // FIX: there is a weird shimmer that can appear across blocks at very specific angles. this is time-of-day sensitive and independent of D/G
+
     vec3 compute_specular(const in Material material, const in vec3 fresnel, const in vec3 light_source_vector_world, const in vec3 view_vector_world) {
-        vec3 halfway_vector_world = normalize(view_vector_world + light_source_vector_world);
+        float d = _ggx_d(material, view_vector_world, light_source_vector_world);
+        float v = _kelemen_v(material, view_vector_world, light_source_vector_world);
+        // float v = _ggx_v(material, view_vector_world, light_source_vector_world);
+        vec3 f = fresnel;
 
-        float first_attenuation_term = 2.0 * rcp(dot(view_vector_world, halfway_vector_world)) * dot(halfway_vector_world, material.normal) * dot(view_vector_world, material.normal); // 2(H.N)(V.N)/V.H
-        float second_attenuation_term = 2.0 * rcp(dot(view_vector_world, halfway_vector_world)) * dot(halfway_vector_world, material.normal) * dot(light_source_vector_world, material.normal); // 2(H.N)(L.N)/V.H
-        float geometric_attenuation = _ggx_g(material, view_vector_world, light_source_vector_world); // g
-        float intensity_distribution = _ggx_d(material, view_vector_world, light_source_vector_world); // d
-        // float geometric_attenuation = _beckmann_g(material, view_vector_world, light_source_vector_world); // g
-        // float intensity_distribution = _beckmann_d(material, view_vector_world, light_source_vector_world); // d
-
-        // NOTE: 4 is the physically correct divisor, not PI. error in the original paper
-        vec3 specular_highlight = rcp(4.0 * dot(material.normal, light_source_vector_world) * dot(material.normal, view_vector_world)) * fresnel * intensity_distribution * geometric_attenuation;
+        vec3 specular_highlight = f * d * v;
 
         if (material.is_metal) {
             specular_highlight *= material.albedo;
@@ -49,6 +53,24 @@
     // - g = geometric attenuation
     // - d = distribution
 
+    float _kelemen_v(in const Material material, in const vec3 view_vector_world, in const vec3 light_source_vector_world) {
+        vec3 halfway_vector_world = normalize(view_vector_world + light_source_vector_world);
+        float l_dot_h = clamp01(dot(light_source_vector_world, halfway_vector_world));
+
+        return 0.25 / pow2(l_dot_h);
+    }
+
+    float _ggx_v(in const Material material, in const vec3 view_vector_world, in const vec3 light_source_vector_world) {
+        float n_dot_l = clamp01(dot(material.normal, light_source_vector_world));
+        float n_dot_v = clamp01(dot(material.normal, view_vector_world)) + 1e-5;
+
+        float a = pow2(material.roughness);
+        float ggx_l = n_dot_v * sqrt(pow2(n_dot_l) * (1. - a) + a);
+        float ggx_v = n_dot_l * sqrt(pow2(n_dot_v) * (1. - a) + a);
+
+        return 0.5 / (ggx_l + ggx_v);
+    }
+
     float _ggx_d_x(in const Material material, in const vec3 view_vector_world, in const vec3 light_source_vector_world, in const vec3 x) {
         vec3 halfway_vector_world = normalize(view_vector_world + light_source_vector_world);
         float cos_view_angle = dot(material.normal, x);
@@ -67,9 +89,12 @@
     // from: https://graphicscompendium.com/theory/08-cook-torrance-ggx
     float _ggx_d(in const Material material, in const vec3 view_vector_world, in const vec3 light_source_vector_world) {
         vec3 halfway_vector_world = normalize(view_vector_world + light_source_vector_world);
-        float n_dot_h = dot(material.normal, halfway_vector_world);
+        float n_dot_h = clamp01(dot(material.normal, halfway_vector_world));
 
-        return char_positive(n_dot_h) * pow2(material.roughness) * rcp(PI * pow2(pow2(n_dot_h) * (pow2(material.roughness) - 1.0) + 1.0));
+        float a = pow2(material.roughness);
+        float f = (n_dot_h * a - n_dot_h) * n_dot_h + 1.;
+
+        return a / (PI * pow2(f));
     }
 
     // https://en.wikipedia.org/wiki/Specular_highlight#Beckmann_distribution

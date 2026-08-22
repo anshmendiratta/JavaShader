@@ -1,3 +1,6 @@
+layout(r32ui) uniform uimage3D voxel_map;
+uniform sampler3D floodfill_map;
+
 #ifdef STAGE_VERTEX
     flat out uint block_id;
 
@@ -19,7 +22,7 @@
 
     #include "/include/post/taa.glsl"
 
-    #include "/include/utility/space_conversions.glsl"
+    #include "/include/utility/coordinates.glsl"
 
     void main() {
         gl_Position = ftransform();
@@ -85,8 +88,10 @@
     #include "/include/shadows/distort.glsl"
     #include "/include/shadows/compute.glsl"
 
-    #include "/include/utility/space_conversions.glsl"
+    #include "/include/utility/random.glsl"
+    #include "/include/utility/coordinates.glsl"
     #include "/include/utility/bits.glsl"
+    #include "/include/utility/voxelization.glsl"
 
     #include "/include/lighting/specular.glsl"
     #include "/include/lighting/diffuse.glsl"
@@ -159,6 +164,7 @@
         // -----------------------
 
         Material material;
+        material.albedo = rgb_to_linear(color.rgb);
         material.lightmap_uv = lightmap_uv;
         material.block_id = block_id;
         material.normal = frag_normal_world;
@@ -174,42 +180,49 @@
             _fresnel_schlick(material, dot(material.normal, frag_view_vector_world)) :
             _fresnel_rescaled_schlick(material, dot(halfway_vector_world, light_source_vector_world));
 
-        vec3 n_dot_l = compute_diffuse(material, vertex_normal, light_source_vector_world);
+        vec3 n_dot_l = compute_diffuse(material, vertex_normal, light_source_vector_world, frag_view_vector_world);
 
         float sun_moon_intensity = compute_direct_light_scalar(dayProgress);
 
-        vec3 blocklight = material.lightmap_uv.x * BLOCKLIGHT_COLOR; // x is blocklight
         vec3 skylight = sun_moon_intensity * material.lightmap_uv.y * SKYLIGHT_COLOR;
         vec3 sunlight = sun_moon_intensity * SUNLIGHT_COLOR; // lightmap_uv.y fixes some light leaks
 
-        brighten_rgb(blocklight, BLOCKLIGHT_INTENSITY);
+        vec3 voxel_pos = feet_to_voxel_space(frag_pos_feet);
+        vec3 voxel_pos_sample = clamp01((voxel_pos - 0.5 * vertex_normal) / vec3(VOXEL_VOLUME_SIZE));
+        vec3 blocklight = is_inside_voxel_radius(voxel_pos) ?
+            vec3(0.) :
+        // sqrt(texture(floodfill_map, voxel_pos_sample).rgb) :
+            brighten_rgb(material.lightmap_uv.x * BLOCKLIGHT_COLOR, BLOCKLIGHT_INTENSITY); // x is blocklight
 
-        vec3 diffuse_light_factor = material.albedo * n_dot_l * sunlight;
-        vec3 specular_light_factor = compute_specular(material, fresnel, light_source_vector_world, frag_view_vector_world);
+        // --------------------
+        //     Applications
+        // --------------------
 
         vec3 shadow = vec3(step(0f, dot(vertex_normal, light_source_vector_world)));
-        if (shadow != vec3(0.)) {
-            vec4 shadow_clip_pos = shadow_view_to_shadow_clip(feet_to_shadow_view(frag_pos_feet));
-            shadow *= compute_shadow(shadow_clip_pos, vertex_normal, material.lightmap_uv.y);
-            #if CONTACT_SHADOWS == 1
-                shadow *= compute_contact_shadow(frag_pos_screen);
-            #endif
-        }
+        shadow *= (shadow != vec3(0.)) && (SHADOWS == 1) ?
+            compute_shadow(frag_pos_world, vertex_normal, material.lightmap_uv.y) :
+            vec3(1.);
+        shadow *= CONTACT_SHADOWS == 1 ?
+            compute_contact_shadow(frag_pos_screen) :
+            vec3(1.);
 
         vec3 gi = RSM == 1 ?
             texture(colortex2, uv).rgb :
             vec3(0.);
-        vec3 sss = SSS == 1 ?
+        vec3 sss = SSS == 1 && SHADOWS == 1 ?
             sun_moon_intensity * approximate_material_sss(material, frag_pos_world, light_source_vector_world, frag_view_vector_world) :
             vec3(0.);
 
-        vec3 direct_lighting = material.block_id == ID_WATER ?
-            specular_light_factor :
-            mix(diffuse_light_factor, specular_light_factor, fresnel);
-        vec3 indirect_lighting = material.albedo * (material.ao * (skylight + blocklight) + gi) + gi;
-        vec3 emission = EMISSION_STRENGTH * material.emissiveness * material.albedo;
+        vec3 diffuse = color.rgb * n_dot_l * sunlight;
+        vec3 specular = compute_specular(material, fresnel, light_source_vector_world, frag_view_vector_world);
 
-        color.rgb = shadow * direct_lighting + indirect_lighting + emission;
+        vec3 direct = material.block_id == ID_WATER ?
+            specular :
+            mix(diffuse, specular, fresnel);
+        vec3 indirect = material.albedo * material.ao * (skylight + blocklight + sss) + gi;
+        vec3 emission = brighten_rgb(material.emissiveness * material.albedo, EMISSION_STRENGTH);
+
+        color.rgb = shadow * direct + indirect + emission;
 
         vertex_normal = vertex_normal * 0.5 + 0.5;
     }

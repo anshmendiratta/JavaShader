@@ -1,13 +1,15 @@
-#include "/include/pbr/atmosphere.glsl"
-
-// layout(local_size_x = 8, local_size_y = 8) in;
-// const ivec3 workGroups = ivec3(8, 1, 1);
 layout(local_size_x = 8, local_size_y = 8) in;
 const ivec3 workGroups = ivec3(4, 4, 1);
 
 layout(rgba16f) uniform image2D multiscattering_lut;
 
-uniform sampler2D transmittance_lut;
+#include "/include/uniforms.glsl"
+#include "/include/pbr/atmosphere.glsl"
+
+/*
+    'Production Sky Rendering' by Andrew Helmer
+    https://www.shadertoy.com/view/slSXRW
+*/
 
 const float mulScattSteps = 20.0;
 const int sqrtSamples = 8;
@@ -46,10 +48,12 @@ void getMulScattValues(vec3 pos, vec3 sunDir, out vec3 lumTotal, out vec3 fms) {
             float miePhaseValue = getMiePhase(cosTheta);
             float rayleighPhaseValue = getRayleighPhase(-cosTheta);
 
-            vec3 lum = vec3(0.0), lumFactor = vec3(0.0), transmittance = vec3(1.0);
+            vec3 lum = vec3(0.0),
+            lumFactor = vec3(0.0),
+            transmittance = vec3(1.0);
             float t = 0.0;
             for (float stepI = 0.0; stepI < mulScattSteps; stepI += 1.0) {
-                float newT = ((stepI + 0.3) / mulScattSteps) * tMax;
+                float newT = (stepI + 0.3) / mulScattSteps * tMax;
                 float dt = newT - t;
                 t = newT;
 
@@ -57,25 +61,39 @@ void getMulScattValues(vec3 pos, vec3 sunDir, out vec3 lumTotal, out vec3 fms) {
 
                 vec3 rayleighScattering, extinction;
                 float mieScattering;
-                getScatteringValues(newPos, rayleighScattering, mieScattering, extinction);
+                getScatteringValues(
+                    newPos,
+                    rayleighScattering,
+                    mieScattering,
+                    extinction
+                );
 
                 vec3 sampleTransmittance = exp(-dt * extinction);
 
                 // Integrate within each segment.
                 vec3 scatteringNoPhase = rayleighScattering + mieScattering;
-                vec3 scatteringF = (scatteringNoPhase - scatteringNoPhase * sampleTransmittance) / extinction;
+                vec3 scatteringF =
+                    (scatteringNoPhase - scatteringNoPhase * sampleTransmittance) /
+                        extinction;
                 lumFactor += transmittance * scatteringF;
 
                 // This is slightly different from the paper, but I think the paper has a mistake?
                 // In equation (6), I think S(x,w_s) should be S(x-tv,w_s).
-                vec3 sunTransmittance = getValFromTLUT(transmittance_lut, tLUTRes, newPos, sunDir);
+                vec3 sunTransmittance = getValFromTLUT(
+                        transmittance_lut,
+                        tLUTRes,
+                        newPos,
+                        sunDir
+                    );
 
                 vec3 rayleighInScattering = rayleighScattering * rayleighPhaseValue;
                 float mieInScattering = mieScattering * miePhaseValue;
-                vec3 inScattering = (rayleighInScattering + mieInScattering) * sunTransmittance;
+                vec3 inScattering =
+                    (rayleighInScattering + mieInScattering) * sunTransmittance;
 
                 // Integrated scattering within path segment.
-                vec3 scatteringIntegral = (inScattering - inScattering * sampleTransmittance) / extinction;
+                vec3 scatteringIntegral =
+                    (inScattering - inScattering * sampleTransmittance) / extinction;
 
                 lum += scatteringIntegral * transmittance;
                 transmittance *= sampleTransmittance;
@@ -85,7 +103,10 @@ void getMulScattValues(vec3 pos, vec3 sunDir, out vec3 lumTotal, out vec3 fms) {
                 vec3 hitPos = pos + groundDist * rayDir;
                 if (dot(pos, sunDir) > 0.0) {
                     hitPos = normalize(hitPos) * groundRadiusMM;
-                    lum += transmittance * groundAlbedo * getValFromTLUT(transmittance_lut, tLUTRes, hitPos, sunDir);
+                    lum +=
+                        transmittance *
+                            groundAlbedo *
+                            getValFromTLUT(transmittance_lut, tLUTRes, hitPos, sunDir);
                 }
             }
 
@@ -96,10 +117,10 @@ void getMulScattValues(vec3 pos, vec3 sunDir, out vec3 lumTotal, out vec3 fms) {
 }
 
 void main() {
-    ivec2 uv = ivec2(gl_GlobalInvocationID.xy);
+    ivec2 texelCoord = ivec2(gl_GlobalInvocationID.xy);
 
-    float u = clamp(uv.x, 0.0, msLUTRes.x - 1.0) / msLUTRes.x;
-    float v = clamp(uv.y, 0.0, msLUTRes.y - 1.0) / msLUTRes.y;
+    float u = clamp(texelCoord.x, 0.0, msLUTRes.x - 1.0) / msLUTRes.x;
+    float v = clamp(texelCoord.y, 0.0, msLUTRes.y - 1.0) / msLUTRes.y;
 
     float sunCosTheta = 2.0 * u - 1.0;
     float sunTheta = safeacos(sunCosTheta);
@@ -114,9 +135,9 @@ void main() {
     // Equation 10 from the paper.
     vec3 psi = lum / (1.0 - f_ms);
 
-    imageStore(
-        multiscattering_lut,
-        uv,
-        vec4(psi, 1.0)
-    );
+    if (any(isnan(psi))) {
+        psi = vec3(0.0);
+    }
+
+    imageStore(multiscattering_lut, texelCoord, vec4(psi, 1.0));
 }

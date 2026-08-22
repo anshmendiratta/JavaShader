@@ -7,7 +7,7 @@
     #include "/include/water/waves.glsl"
 
     #include "/include/utility/bits.glsl"
-    #include "/include/utility/space_conversions.glsl"
+    #include "/include/utility/coordinates.glsl"
 
     #include "/include/pbr/hcm.glsl"
     #include "/include/pbr/textures.glsl"
@@ -48,9 +48,10 @@
     //     Texture reads
     // --------------------
 
+    // TODO: pack material from gbuffers into colortex
     // Material store_material(vec4 normal_map_read, vec4 specular_map_read, vec3 albedo, uint block_id) {
-    //     // normal: 2x 8 bits = 16 bits
-    //     // rest of normal map read: 2x 16 bits = 32 bits
+    // normal: 2x 8 bits = 16 bits
+    // rest of normal map read: 2x 16 bits = 32 bits
     // }
 
     // NOTE: lightmap_uv and block_id need to be filled in manually before using this function
@@ -149,7 +150,6 @@
     // ------------------------------
     //     Fresnel approximations
     // ------------------------------
-
     // all of the below are approximations of reflectance (the amount of reflected light) where `fresnel` is calculated _exactly_ using fresnel's equations
 
     vec3 _fresnel_phong(in const Material material, in const vec3 view_vector_world, in const vec3 light_source_vector_world) {
@@ -160,6 +160,10 @@
 
     vec3 _fresnel_schlick(in const Material material, in const float dot_prod) {
         return clamp01(material.f0 + (1. - material.f0) * pow5(1. - clamp01(dot_prod)));
+    }
+
+    float _fresnel_schlick_burley(in const float dot_prod, in const float f0, in const float f90) {
+        return clamp01(f0 + (f90 - f0) * pow5(1. - clamp01(dot_prod)));
     }
 
     // https://naos-be.zcu.cz/server/api/core/bitstreams/c2d8b0a7-9947-4458-98e3-d3f8df920153/content

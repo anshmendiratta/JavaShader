@@ -27,6 +27,7 @@
     #include "/include/color/conversions.glsl"
 
     #include "/include/post/taa.glsl"
+    #include "/include/post/accumulation.glsl"
 
     #include "/include/pbr/material.glsl"
     #include "/include/pbr/atmosphere.glsl"
@@ -34,11 +35,10 @@
     #include "/include/lighting/ssr.glsl"
     #include "/include/lighting/specular.glsl"
 
+    #include "/include/utility/intersect.glsl"
     #include "/include/utility/dither.glsl"
-    #include "/include/utility/depth_conversion.glsl"
-    #include "/include/utility/space_conversions.glsl"
-
-    // TODO: implement a PBR sky with clouds so i can reflect them properly
+    #include "/include/utility/depth.glsl"
+    #include "/include/utility/coordinates.glsl"
 
     void main() {
         vec2 uv = uv - dot(
@@ -47,6 +47,7 @@
                 ); // unjitter texture sampling
         uv = clamp01(uv);
 
+        depth_history = texture(depthtex0, uv).x;
         color = texture(colortex0, uv);
         float depth = texture(depthtex0, uv).x;
 
@@ -55,9 +56,9 @@
         Material material;
         init_material_unpacked_colortex_read(material, uv);
 
-        vec3 frag_position_screen = vec3(uv, texture(depthtex0, uv).r);
-        vec3 frag_position_view = screen_to_view(frag_position_screen);
-        vec3 frag_position_world = view_to_world(frag_position_view);
+        vec3 frag_pos_screen = vec3(uv, texture(depthtex0, uv).r);
+        vec3 frag_pos_view = screen_to_view(frag_pos_screen);
+        vec3 frag_pos_world = view_to_world(frag_pos_view);
 
         float dither = compute_dither(gl_FragCoord.xy);
         float phi = 2. * PI * dither;
@@ -73,10 +74,10 @@
         if (material.block_id != ID_WATER) {
             mat3 TBN = get_tbn_matrix(material.normal);
             vec3 frag_normal_normal = transpose(TBN) * material.normal; // TBN is orthogonal, so transpose = inverse
-            material.normal = TBN * (frag_normal_normal + ROUGH_REFLECTIONS * sqrt(material.roughness) * random_dir);
+            material.normal = TBN * (frag_normal_normal + ROUGH_REFLECTIONS * material.roughness * random_dir);
         }
 
-        vec3 frag_view_vector_view = -normalize(frag_position_view);
+        vec3 frag_view_vector_view = -normalize(frag_pos_view);
         vec3 frag_view_vector_world = mat3(gbufferModelViewInverse) * frag_view_vector_view;
         vec3 frag_normal_view = mat3(gbufferModelView) * material.normal;
         vec3 frag_reflected_ray_view = reflect(-frag_view_vector_view, frag_normal_view); // TODO : why tf does this need a negative . the view vector already points out from the fragment ?
@@ -90,19 +91,18 @@
             vec3 halfway_vector_world = normalize(light_source_vector_world + frag_view_vector_world);
 
             fresnel = material.is_metal ?
-                vec3(1.0) :
-                _fresnel_rescaled_schlick(material, dot(halfway_vector_world, light_source_vector_world));
+                vec3(1.) :
+                _fresnel_rescaled_schlick(material, dot(light_source_vector_world, halfway_vector_world));
         }
 
         float specular_energy = avg_vec(fresnel * (1.0 - pow2(material.roughness))); // claude came up with this shit
-        if (specular_energy < SSR_ENERGY_THRESHOLD || material.block_id == ID_WATER) {
+        if (specular_energy < SSR_ENERGY_THRESHOLD && material.block_id != ID_WATER) {
             ssr_history = color;
-            depth_history = texture(depthtex0, uv).x;
             return;
         }
 
         vec2 reflected_uv;
-        bool hit_ssr_object = raymarch_ssr(material, fresnel, uv, reflected_uv, frag_position_view, frag_reflected_ray_view);
+        bool hit_ssr_object = raymarch_ssr(material, fresnel, uv, reflected_uv, frag_pos_view, frag_reflected_ray_view);
         if (uv_out_of_bounds(reflected_uv.xy))
             reflected_uv = uv;
 
@@ -114,7 +114,21 @@
 
         // NOTE: reflect sky as fallback
         if (!hit_ssr_object) {
-            reflected_color = get_sky_color(skyColor, fogColor, reflected_uv_world.y);
+            vec3 frag_reflected_ray_world = mat3(gbufferModelViewInverse) * -frag_reflected_ray_view;
+            vec3 sky_dome_intersection = ray_internal_intersect_hemisphere(frag_pos_world, frag_reflected_ray_world, 100.);
+            vec3 cloud_plane_intersection = ray_intersect_plane(frag_pos_world, frag_reflected_ray_world, float(cloudHeight));
+
+            vec4 cloud = texture(cloud_map, ivec3(cloud_plane_intersection));
+            vec4 sky = texture(skycolor_map, ivec3(sky_dome_intersection));
+
+            if (all(equal(cloud_plane_intersection, vec3(1., 0., 0.)))) {
+                reflected_color = sky.rgb;
+            } else {
+                reflected_color = (sky * cloud).rgb;
+            }
+
+            // reflected_color = vec3(ivec3(cloud_plane_intersection));
+            // reflected_color = cloud.rgb;
         }
 
         if (material.is_metal) reflected_color *= material.albedo;
@@ -123,46 +137,25 @@
         //     Accumulation
         // --------------------
 
+        vec3 reproj_uv = reproject_uv(uv, true);
+        reproj_uv.z - distance(frag_pos_screen, reproj_uv); // reproj virtual motion (i.e., account for where the reflected fragment actually is)
+
+        vec3 previous_frame = texture(BUFFER_SSR_ACC, reproj_uv.xy).rgb;
         vec3 current_frame = oklab_mix(color.rgb, reflected_color, SSR_VISIBILITY * fresnel);
 
         #if SSR_ACCUMULATION == 0
             color.rgb = current_frame;
             ssr_history = color;
-            depth_history = texture(depthtex0, uv).x;
             return;
         #endif
 
-        // TODO: account for virtual motion...?
-        vec3 reproj_uv = reproject_uv(uv);
-        reproj_uv.z -= distance(frag_position_screen, reproj_uv); // reproj virtual motion (i.e., account for where the reflected fragment actually is)
-
-        vec3 previous_frame = texture(BUFFER_SSR_ACC, reproj_uv.xy).rgb;
-
-        // color clamping: create a bounding box to clamp the reproj color into
-
-        vec3 min_color = vec3(-1e3);
-        vec3 max_color = vec3(1e3);
-
-        const float COLOR_SEARCH_RADIUS = 2.;
-        for (float x = -COLOR_SEARCH_RADIUS; x < COLOR_SEARCH_RADIUS; x += 1) {
-            for (float y = -COLOR_SEARCH_RADIUS; y < COLOR_SEARCH_RADIUS; y += 1) {
-                vec2 sample_uv = uv + vec2(x, y) / windowDimensions;
-                vec3 sample_color = texture(colortex0, sample_uv).rgb;
-
-                min_color = min(min_color, current_frame);
-                max_color = max(max_color, current_frame);
-            }
-        }
-
-        previous_frame = clamp(min_color, max_color, previous_frame);
-
         float ssr_blend = 0.99;
 
-        if (abs(frag_position_screen.z - reproj_uv.z) > 1e-3) ssr_blend = 0.; // depth rejection
-        ssr_blend /= mix(1., 8., tanh(10. * distance(previousCameraPosition, cameraPosition))); // bad motion vector substitute
+        color_clamp(colortex21, uv, current_frame, previous_frame);
+        depth_reject(frag_pos_screen, reproj_uv, ssr_blend);
+        reduce_movement_blend(ssr_blend);
 
-        color.rgb = mix(current_frame, previous_frame, ssr_blend);
-
+        color.rgb = oklab_mix(current_frame, previous_frame, ssr_blend);
         ssr_history = color;
         depth_history = texture(depthtex0, uv).x;
     }

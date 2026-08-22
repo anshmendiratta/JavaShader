@@ -7,9 +7,9 @@
     #include "/include/math/convenience.glsl"
 
     #include "/include/utility/dither.glsl"
-    #include "/include/utility/vogel_disk_blur.glsl"
-    #include "/include/utility/depth_conversion.glsl"
-    #include "/include/utility/space_conversions.glsl"
+    #include "/include/utility/sampling_pattern.glsl"
+    #include "/include/utility/depth.glsl"
+    #include "/include/utility/coordinates.glsl"
 
     #include "/include/shadows/distort.glsl"
 
@@ -29,12 +29,11 @@
     //     Shadow computation
     // --------------------------
 
-    vec3 compute_shadow(in vec4 shadow_clip_position, vec3 normal_world, float lightmap_sky) {
-        // bias
-        vec3 frag_world_position = (shadowModelViewInverse * vec4((shadowProjectionInverse * shadow_clip_position).xyz, 1.0)).xyz + cameraPosition;
+    vec3 compute_shadow(in vec3 frag_pos_world, vec3 normal_world, float lightmap_sky) {
+        // biases
         float n_dot_l = dot(mat3(gbufferModelViewInverse) * worldLightVector, normal_world);
-        frag_world_position += _emin_comp_reimagined_bias(frag_world_position, normal_world, n_dot_l, lightmap_sky); // FIX: fix. apparently too much in some cases. leaves some normals lit
-        shadow_clip_position = feet_to_shadow_clip(frag_world_position - cameraPosition);
+        frag_pos_world += _emin_comp_reimagined_bias(frag_pos_world, normal_world, n_dot_l, lightmap_sky); // FIX: fix. apparently too much in some cases. leaves some normals lit
+        vec4 shadow_clip_position = feet_to_shadow_clip(frag_pos_world - cameraPosition);
 
         float distortFactor = _get_distortion_factor(shadow_clip_position.xy);
         const float bias_size = (shadowDistance / shadowMapResolution) * 4.0;
@@ -44,42 +43,61 @@
         float rotation_angle = dither * TAU;
         mat2 rotation_matrix = mat2(cos(rotation_angle), -sin(rotation_angle), sin(rotation_angle), cos(rotation_angle));
 
-        // NOTE: none of the pcss is physically accurate
-        // pcss search
-        float pcss_acumulator = 0.; // in depth
-        uint blockers_used = 0;
-        for (uint idx = 0; idx < PCSS_SAMPLES; idx += 1) { // just adjacent pixels
-            vec2 vogel_sample = rotation_matrix * PCSS_SEARCH_RADIUS * compute_vogel_disk_sample_uv(idx, SHADOW_BLUR_SAMPLES) / shadowMapResolution;
-            vec4 sample_uv_sclip = shadow_clip_position + vec4(vogel_sample, 0., 0.);
-            distort_shadow_clip_position(sample_uv_sclip.xyz);
-            vec3 sample_uv = shadow_clip_to_shadow_screen(sample_uv_sclip);
+        #if PIXELATED_SHADOWS == 1
+            frag_pos_world = floor(frag_pos_world * PIXELATED_SHADOWS_RESOLUTION) / PIXELATED_SHADOWS_RESOLUTION + normal_world / PIXELATED_SHADOWS_RESOLUTION;
+            shadow_clip_position = feet_to_shadow_clip(frag_pos_world - cameraPosition);
+            distort_shadow_clip_position(shadow_clip_position.xyz);
+            vec3 frag_pos_sscreen = shadow_clip_to_shadow_screen(shadow_clip_position);
 
-            float sample_depth = texture(shadowtex0, sample_uv.xy).r;
-            float blocker_dist = max0(sample_uv.z - sample_depth);
+            return _get_shadow(frag_pos_sscreen);
+        #else
+            // NOTE: none of the pcss is physically accurate
 
-            pcss_acumulator += blocker_dist;
-            blockers_used += blocker_dist > 0. ? 1 : 0;
-        }
+            vec4 shadow_clip_position_copy = shadow_clip_position;
+            distort_shadow_clip_position(shadow_clip_position_copy.xyz);
+            vec3 frag_pos_sscreen = shadow_clip_to_shadow_screen(shadow_clip_position_copy);
 
-        const float MIN_BLUR_RADIUS = 0.1;
-        const float MAX_BLUR_RADIUS = 128.;
-        float pcss_avg_dist = blockers_used > 0 ? pcss_acumulator / float(blockers_used) : 0.;
-        float blur_radius = mix(MIN_BLUR_RADIUS, MAX_BLUR_RADIUS, pcss_avg_dist); // sqrt so the effect is more apparent.
+            const float MIN_RADIUS = 0.2;
+            const float MAX_RADIUS = 128.;
 
-        vec3 pcf_accumulator = vec3(0.);
-        for (uint idx = 0; idx < SHADOW_BLUR_SAMPLES; idx += 1) {
-            vec2 vogel_sample = blur_radius * compute_vogel_disk_sample_uv(idx, SHADOW_BLUR_SAMPLES) / shadowMapResolution;
-            vec2 rotated_sample = rotation_matrix * vogel_sample;
-            vec2 sample_uv_offset = rotated_sample;
+            float blocker_depth = texture(shadowtex0, frag_pos_sscreen.xy).x;
+            float frag_blocker_dist = max0(frag_pos_sscreen.z - blocker_depth);
+            float pcss_search_radius = mix(MIN_RADIUS, MAX_RADIUS, frag_blocker_dist);
 
-            vec4 sample_uv_sclip = shadow_clip_position + vec4(sample_uv_offset, 0.0, 0.0);
-            distort_shadow_clip_position(sample_uv_sclip.xyz);
-            vec3 sample_uv_sscreen = shadow_clip_to_shadow_screen(sample_uv_sclip);
+            float pcss_acumulator = frag_blocker_dist; // in depth
+            uint blockers_used = 1;
 
-            pcf_accumulator += _get_shadow(sample_uv_sscreen);
-        }
+            for (uint idx = 1; idx < PCSS_SAMPLES; idx += 1) { // just adjacent pixels
+                vec2 vogel_sample = rotation_matrix * pcss_search_radius * compute_vogel_disk_sample_uv(idx, SHADOW_BLUR_SAMPLES) / shadowMapResolution;
+                vec4 sample_uv_sclip = shadow_clip_position;
+                sample_uv_sclip += vec4(vogel_sample, 0., 0.);
+                distort_shadow_clip_position(sample_uv_sclip.xyz);
+                vec3 sample_uv = shadow_clip_to_shadow_screen(sample_uv_sclip);
 
-        return pcf_accumulator / float(SHADOW_BLUR_SAMPLES);
+                float sample_depth = texture(shadowtex0, sample_uv.xy).x;
+                float blocker_dist = max0(sample_uv.z - sample_depth);
+
+                pcss_acumulator += blocker_dist;
+                blockers_used += 1;
+            }
+
+            float pcss_avg_dist = pcss_acumulator / float(blockers_used);
+            float blur_radius = mix(MIN_RADIUS, MAX_RADIUS, pcss_avg_dist);
+
+            vec3 pcf_accumulator = vec3(0.);
+
+            for (uint idx = 0; idx < SHADOW_BLUR_SAMPLES; idx += 1) {
+                vec2 sample_uv_offset = dither * rotation_matrix * blur_radius * compute_vogel_disk_sample_uv(idx, SHADOW_BLUR_SAMPLES) / shadowMapResolution;
+                vec4 sample_uv_sclip = shadow_clip_position;
+                sample_uv_sclip += vec4(sample_uv_offset, 0., 0.);
+                distort_shadow_clip_position(sample_uv_sclip.xyz);
+                vec3 sample_uv_sscreen = shadow_clip_to_shadow_screen(sample_uv_sclip);
+
+                pcf_accumulator += _get_shadow(sample_uv_sscreen);
+            }
+
+            return pcf_accumulator / float(SHADOW_BLUR_SAMPLES);
+        #endif
     }
 
     vec3 compute_contact_shadow(in vec3 frag_pos_screen) {

@@ -1,23 +1,29 @@
-// Courtesy of https://github.com/BelmuTM/Noble/blob/b9677c7a7ee9c43420bcbe639b4348968a27c570/shaders/include/uniforms.glsl.
-
 #if !defined INCLUDE_UNIFORMS
     #define INCLUDE_UNIFORMS
+
+    // from noble:
+    // https://github.com/BelmuTM/Noble/blob/b9677c7a7ee9c43420bcbe639b4348968a27c570/shaders/include/uniforms.glsl.
 
     uniform float alphaTestRef = 0.1;
 
     #ifdef STAGE_VERTEX
         in vec2 mc_midTexCoord;
         in vec2 mc_Entity;
+        in vec4 at_tangent;
+        in vec4 at_midBlock;
     #endif
 
-    in vec4 at_tangent;
-    in vec4 at_midBlock;
+    // ----------------
+    //     Uniforms
+    // ----------------
 
-    // Uniforms
     uniform vec3 skyColor;
     uniform vec3 fogColor;
 
+    uniform vec3 view_light_dir;
     uniform vec3 light_dir;
+    uniform vec3 sun_dir;
+    uniform vec3 moon_dir;
 
     uniform vec3 shadowLightPosition;
     uniform vec3 worldLightVector;
@@ -47,6 +53,7 @@
     uniform float rainStrength;
     uniform float wetness;
     uniform float sunAngle;
+    uniform float cloudHeight;
 
     uniform int renderStage;
 
@@ -76,10 +83,11 @@
     uniform mat4 shadowProjection;
     uniform mat4 shadowProjectionInverse;
 
-    // Samplers
+    // ----------------
+    //     Samplers
+    // ----------------
 
     uniform sampler2D gtexture;
-
     uniform sampler2D noisetex;
 
     uniform sampler2D colortex0;
@@ -128,9 +136,21 @@
     uniform sampler2D specular;
     uniform sampler2D lightmap;
 
-    // Images
+    // --------------
+    //     Images
+    // --------------
 
     uniform sampler2D transmittance_lut;
-    uniform sampler2D multiscattering_lut;
-    uniform sampler2D skyview_lut;
+
+    #if !defined STAGE_COMPUTE
+        uniform sampler2D skyview_lut;
+        uniform sampler2D aerialperspective_lut;
+    #endif
+
+    #if !defined PROGRAM_CLOUD
+        uniform sampler3D cloud_map;
+    #endif
+    #if !defined PROGRAM_SKYBASIC
+        uniform sampler3D skycolor_map;
+    #endif
 #endif

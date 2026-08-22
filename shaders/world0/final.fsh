@@ -21,10 +21,11 @@ layout(location = 0) out vec4 color;
 
 void main() {
     color = texture(colortex0, uv);
+    // color.rgb = rgb_to_linear(color.rgb);
 
     #if BLOOM == 1
-        vec3 bloom = texture(BUFFER_BLOOM, uv * 0.5).rgb; // sample from mip 1
-        color.rgb = mix(color.rgb, bloom, BLOOM_STRENGTH);
+        vec3 bloom = texture(BUFFER_BLOOM, uv).rgb; // sample from mip 1
+        color.rgb = oklab_mix(color.rgb, bloom, BLOOM_STRENGTH);
     #endif
 
     // ----------------
@@ -52,6 +53,11 @@ void main() {
     //     Tonemapping
     // -------------------
 
-    color.rgb = tonemap_agx(color.rgb);
+    #if TONEMAP == 0
+        color.rgb = tonemap_agx(color.rgb);
+    #elif TONEMAP == 1
+        color.rgb = tonemap_lottes(color.rgb);
+    #endif
+
     color.rgb = linear_to_rgb(color.rgb);
 }

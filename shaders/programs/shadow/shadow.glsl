@@ -4,6 +4,8 @@ struct Interface {
     vec3 normal_world;
 };
 
+layout(r32ui) uniform uimage3D voxel_map;
+
 #ifdef STAGE_VERTEX
     out Interface v;
 
@@ -14,41 +16,40 @@ struct Interface {
     #include "/include/shadows/distort.glsl"
 
     #include "/include/utility/noise.glsl"
-    #include "/include/utility/space_conversions.glsl"
-
-    layout(r32ui) uniform uimage3D voxel_map;
+    #include "/include/utility/coordinates.glsl"
+    #include "/include/utility/voxelization.glsl"
 
     void main() {
         gl_Position = ftransform();
-
 
         v.uv = (gl_TextureMatrix[0] * gl_MultiTexCoord0).xy;
         v.glcolor = gl_Color;
         v.normal_world = mat3(shadowModelViewInverse) * normalize(gl_NormalMatrix * gl_Normal);
 
-        vec3 vert_pos_shadow_view = (gl_ModelViewMatrix * gl_Vertex).xyz;
-        vec3 vert_pos_feet = shadow_view_to_feet(vert_pos_shadow_view);
-
         // --------------------
         //     Voxelization
         // --------------------
 
-        vec3 pos_block_relative = vert_pos_feet + at_midBlock.xyz / 64. + fract(cameraPosition); // NOTE: understand what this does.
-        ivec3 voxel_pos = ivec3(pos_block_relative + VOXEL_RADIUS);
+        // if (mod(gl_VertexID, 4) == 0) {
+        vec3 shadow_view_pos = shadow_clip_to_shadow_view(gl_Position);
+        vec3 feet_pos = shadow_view_to_feet(shadow_view_pos) + at_midBlock.xyz / 64.;
+        vec3 voxel_pos = feet_to_voxel_space(feet_pos);
 
-        if (mod(gl_VertexID, 4) == 0 && clamp(voxel_pos, 0, VOXEL_AREA) == voxel_pos) {
-            vec3 albedo = texture(gtexture, v.uv).rgb;
-            uint voxel_data = packUnorm4x8(vec4(albedo, at_midBlock.w));
+        bool is_water = uint(mc_Entity.x) == ID_WATER;
+        bool is_terrain = any(equal(ivec4(renderStage), ivec4(MC_RENDER_STAGE_TERRAIN_SOLID, MC_RENDER_STAGE_TERRAIN_TRANSLUCENT, MC_RENDER_STAGE_TERRAIN_CUTOUT, MC_RENDER_STAGE_TERRAIN_CUTOUT_MIPPED)));
 
-            imageAtomicMax(voxel_map, voxel_pos, voxel_data);
+        if (is_terrain && !is_water && is_inside_voxel_radius(voxel_pos)) {
+            uint voxel_data = compute_voxel_data(uint(mc_Entity.x));
+            imageAtomicMax(voxel_map, ivec3(voxel_pos), voxel_data);
         }
+        // }
 
         // ------------
         //    Waving
         // ------------
 
         #if WAVING_FOLIAGE == 1
-            vec3 vert_world_pos = feet_to_world(vert_pos_feet);
+            vec3 vert_world_pos = feet_to_world(feet_pos);
             vec3 vert_offset_world = vec3(0.);
 
             vec2 noise_sample_uv = vec2(frameTimeCounter * FOLIAGE_WAVE_SPEED);
@@ -61,7 +62,7 @@ struct Interface {
             }
 
             vec3 vert_offset_shadow_view = mat3(shadowModelView) * vert_offset_world;
-            vert_offset_shadow_view += vert_offset_shadow_view;
+            vec3 vert_pos_shadow_view = feet_to_shadow_view(feet_pos) + vert_offset_shadow_view;
             gl_Position = shadowProjection * vec4(vert_pos_shadow_view, 1.);
         #endif
 
@@ -74,7 +75,7 @@ struct Interface {
     #include "/include/uniforms.glsl"
 
     #include "/include/shadows/distort.glsl"
-    #include "/include/utility/space_conversions.glsl"
+    #include "/include/utility/coordinates.glsl"
 
     in Interface v;
 

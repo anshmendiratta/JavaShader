@@ -3,13 +3,13 @@
 
     #include "/include/post/bloom.glsl"
 
-    #include "/include/utility/space_conversions.glsl"
+    #include "/include/utility/coordinates.glsl"
 
     void main() {
         uv = (gl_TextureMatrix[0] * gl_MultiTexCoord0).xy;
         gl_Position = ftransform();
 
-        // [60, 33] -> [120, 67]
+        // [240, 33] -> [480, 67]
         gl_Position.xy = gl_Position.xy * 0.5 + 0.5;
         gl_Position.xy = map_uv_to_tile(gl_Position.xy, 2u);
         gl_Position.xy = gl_Position.xy * 2. - 1.;

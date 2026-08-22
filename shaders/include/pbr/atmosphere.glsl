@@ -1,9 +1,9 @@
 #if !defined INCLUDE_SKY_COLOR
     #define INCLUDE_SKY_COLOR
 
-    #if !defined STAGE_COMPUTE
+    // #if !defined STAGE_COMPUTE
         #include "/include/uniforms.glsl"
-    #endif
+    // #endif
     #include "/include/settings.glsl"
 
     #include "/include/color/conversions.glsl"
@@ -125,16 +125,16 @@
         return texture(tex, uv).rgb;
     }
 
+    const float sunRadius = 6.9634e8;
+    const float sunDistance = 1.496e11;
+    const float sunAngularRadius = sunRadius / sunDistance;
+    const float sunSolidAngle = TAU * (1.0 - cos(sunAngularRadius));
+    const vec3 sunLuminance = vec3(1.6e9);
+    const vec3 sunIlluminance = sunLuminance * sunSolidAngle;
+
+    vec3 atmospherePos = vec3(0.0, groundRadiusMM + (cameraPosition.y + 5000) * 1e-6, 0.0);
+
     #if !defined STAGE_COMPUTE
-        const float sunRadius = 6.9634e8;
-        const float sunDistance = 1.496e11;
-        const float sunAngularRadius = sunRadius / sunDistance;
-        const float sunSolidAngle = TAU * (1.0 - cos(sunAngularRadius));
-        const vec3 sunLuminance = vec3(1.6e9);
-        const vec3 sunIlluminance = sunLuminance * sunSolidAngle;
-
-        vec3 atmospherePos = vec3(0.0, groundRadiusMM + (cameraPosition.y + 5000) * 1e-6, 0.0);
-
         vec3 getValFromSkyLUT(vec3 rayDir) {
             float height = atmospherePos.y;
             vec3 up = vec3(0.0, 1.0, 0.0);
@@ -158,8 +158,7 @@
             }
 
             // Non-linear mapping of altitude angle. See Section 5.3 of the paper.
-            float v =
-                0.5 + 0.5 * sign(altitudeAngle) * sqrt(abs(altitudeAngle) * 2.0 / PI);
+            float v = 0.5 + 0.5 * sign(altitudeAngle) * sqrt(abs(altitudeAngle) * 2.0 / PI);
             vec2 uv = vec2(azimuthAngle / (2.0 * PI), v);
 
             return textureLod(skyview_lut, uv, 0).rgb;
@@ -178,7 +177,6 @@
                 if (dot(dir, light_dir) > cos(sunAngularRadius)) {
                     sky += sunLuminance * transmittance;
                 }
-                // sky += getMoon(dir) * transmittance;
             }
 
             return sky;
@@ -193,16 +191,6 @@
     const float ATM_RAYLEIGH_SCALE = 8e3; // meters
     const float ATM_MIE_SCALE = 1.2e3; // meters
 
-    // vec3 compute_pbr_sky() {}
-
-    // vec3 _scattering_coeff_rayleigh(float altitude) {
-    //     return vec3(5.8e-3, 13.5e-3, 33.1e-3) * exp(-altitude / ATM_RAYLEIGH_SCALE);
-    // }
-
-    // vec3 _scattering_coeff_mie(float altitude) {
-    //     return vec3(4e-3) * exp(-altitude / ATM_MIE_SCALE);
-    // }
-
     // -------------------
     //     Vanilla sky
     // -------------------
@@ -212,14 +200,8 @@
     }
 
     // returns in linear space
-    vec3 get_sky_color(vec3 sky_color, vec3 fog_color, float up_factor) {
-        vec3 fogcolor_oklab = rgb_to_oklab(fog_color);
-        vec3 skycolor_oklab = rgb_to_oklab(sky_color);
-
+    vec3 get_sky_color(in vec3 sky_color, in vec3 fog_color, in float up_factor) {
         float fogified_factor = _fogify(up_factor, MAGIC_FOG_VALUE);
-        vec3 oklab_mixed = mix(skycolor_oklab, fogcolor_oklab, fogified_factor);
-        vec3 rgb_mixed = oklab_to_rgb(oklab_mixed);
-
-        return rgb_mixed;
+        return oklab_mix(sky_color, fog_color, fogified_factor);
     }
 #endif

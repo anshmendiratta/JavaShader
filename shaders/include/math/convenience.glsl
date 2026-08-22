@@ -64,6 +64,10 @@
         return max(0.0, value);
     }
 
+    uint max0(uint value) {
+        return max(0u, value);
+    }
+
     #define _define_max0_vec(dim) vec##dim max0(vec##dim value) { return max(vec##dim(0.0), value); }
     _define_max0_vec(2);
     _define_max0_vec(3);
@@ -72,6 +76,10 @@
 
     float max1(float value) {
         return max(1.0, value);
+    }
+
+    uint max1(uint value) {
+        return max(1u, value);
     }
 
     #define _define_max1_vec(dim) vec##dim max1(vec##dim value) { return max(vec##dim(1.0), value); }

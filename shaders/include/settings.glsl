@@ -18,21 +18,23 @@
 
     #define SHADOW_MAP_RESOLUTION 1024 // Shadow map resolution in pixels. [512 1024 2048 4096 8192]
 
-    #define PCSS_SAMPLES 8
-    #define PCSS_SEARCH_RADIUS 8.
+    #define PCSS_SAMPLES 16
 
-    #define SHADOW_BLUR_SAMPLES 8
+    #define SHADOW_BLUR_SAMPLES 16
     #define SHADOW_DISTANCE_MULTIPLIER 2 // This multiplies the possible shadow distance (256 blocks). [1 2 3 4]
-    #define SHADOW_DISTORTION 0.8
+    #define SHADOW_DISTORTION 0.9
 
     #define CONTACT_SHADOW_STEPS 8
     #define CONTACT_SHADOW_STEP_SIZE 1
+
+    #define PIXELATED_SHADOWS 0 // [0 1]
+    #define PIXELATED_SHADOWS_RESOLUTION 16.0 // [2.0 4.0 8.0 16.0]
 
     // --------------------
     //     Voxelization
     // --------------------
 
-    #define VOXEL_AREA 64
+    #define VOXEL_AREA 128
     #define VOXEL_RADIUS (VOXEL_AREA / 2)
 
     // ----------
@@ -91,7 +93,7 @@
     #define BLOCKLIGHT_G 0.2 // Blocklight color green content. [0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0 1.1 1.2 1.3 1.4 1.5]
     #define BLOCKLIGHT_B 0.1 // Blocklight color blue content. [0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0 1.1 1.2 1.3 1.4 1.5]
 
-    #define SUNLIGHT_INTENSITY 1.40 // Sun brightness. []
+    #define SUNLIGHT_INTENSITY 1.50 // Sun brightness. []
     #define MOONLIGHT_INTENSITY 2e-2 // Moon brightness. []
 
     // TODO: organize this more nicely
@@ -119,8 +121,8 @@
     #define POM_DEPTH_WRITE 1 // Enables whether or not the parallax mapping can allow shadowing. [0 1]
 
     #define SSS_SAMPLES 8 // The number of samples used for SSS. Higher is better with diminshing returns. [1 2 4 6 8 10 12 14 16 18 20 22 24 26 28 30 32]
-    #define SSS_STRENGTH 20.0 // How bright subsurface scattering appears. [0.5 0.75 1.0 1.25 1.5 1.75 2.0 2.25 2.5 2.75 3.0 3.25 3.5 3.75 4.0 4.25 4.5 4.75 5.0 5.25 5.5 5.75 6.0 6.25 6.5 6.75 7.0 7.25 7.5 7.75 8.0 8.25 8.5 8.75 9.0 9.25 9.5 9.75 10.0 10.25 10.5 10.75 11.0 11.25 11.5 11.75 12.0 12.25 12.5 12.75 13.0 13.25 13.5  13.75 14.0 14.25 14.5 14.75 15.0]
-    #define OPTICAL_DENSITY_MULTIPLIER 1.0 // Scalar for how optically dense SSS materials are. Higher values localize the effect.
+    #define SSS_STRENGTH 30.0 // How bright subsurface scattering appears. [0.5 0.75 1.0 1.25 1.5 1.75 2.0 2.25 2.5 2.75 3.0 3.25 3.5 3.75 4.0 4.25 4.5 4.75 5.0 5.25 5.5 5.75 6.0 6.25 6.5 6.75 7.0 7.25 7.5 7.75 8.0 8.25 8.5 8.75 9.0 9.25 9.5 9.75 10.0 10.25 10.5 10.75 11.0 11.25 11.5 11.75 12.0 12.25 12.5 12.75 13.0 13.25 13.5  13.75 14.0 14.25 14.5 14.75 15.0]
+    #define OPTICAL_DENSITY_MULTIPLIER 5.0 // Scalar for how optically dense SSS materials are. Higher values localize the effect.
 
     // ---------------------------
     //     Screen Space Passes
@@ -151,6 +153,8 @@
     // ---------------------
 
     #define PURKINJE_SHIFT 1 // Makes night more desaturated. [0 1]
+
+    #define TONEMAP 0 // [0 1]
 
     // -----------
     //     Dev

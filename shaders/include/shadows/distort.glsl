@@ -24,11 +24,11 @@
 
     void undistort_shadow_clip_position(inout vec3 distorted_position) {
         distorted_position.xy *= (1. - SHADOW_DISTORTION) / (1. - _quartic_length(distorted_position.xy));
-        distorted_position.z *= 1. / SHADOW_DISTANCE_MULTIPLIER;
+        distorted_position.z *= SHADOW_DISTANCE_MULTIPLIER;
     }
 
     void _multiply_shadow_distance(inout vec3 shadow_clip_position) {
-        shadow_clip_position.z /= SHADOW_DISTANCE_MULTIPLIER;
+        shadow_clip_position.z *= 1. / SHADOW_DISTANCE_MULTIPLIER;
     }
 
     float _quartic_length(vec2 v) {

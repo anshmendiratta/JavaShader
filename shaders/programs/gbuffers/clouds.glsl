@@ -11,35 +11,37 @@
 #endif
 
 #ifdef STAGE_FRAGMENT
-    in vec2 uv;
-    in vec4 glcolor;
-
-    /* RENDERTARGETS: 0,30 */
-    layout(location = 0) out vec4 color;
-    layout(location = 1) out uint frag_is_cloud;
-
     #include "/include/uniforms.glsl"
 
     #include "/include/math/convenience.glsl"
 
-    #include "/include/utility/space_conversions.glsl"
-
     #include "/include/sky/intensity.glsl"
+
+    #include "/include/utility/intersect.glsl"
+    #include "/include/utility/coordinates.glsl"
+
+    in vec2 uv;
+    in vec4 glcolor;
+
+    /* RENDERTARGETS: 0,30 */
+
+    layout(location = 0) out vec4 color;
+    layout(location = 1) out uint frag_is_cloud;
+
+    writeonly uniform image3D cloud_map;
 
     void main() {
         color = texture(gtexture, uv) * glcolor;
 
-        vec2 screen_uv = gl_FragCoord.xy / windowDimensions;
-        vec3 fragment_position_view_space = ndc_to_view(vec3(screen_uv, /* depth */ 1.0) * 2.0 - 1.0);
-        vec3 fragment_position_player_space = mat3(gbufferModelViewInverse) * normalize(fragment_position_view_space);
+        vec3 screen_uv = vec3(gl_FragCoord.xy / windowDimensions, gl_FragCoord.z);
+        vec3 frag_pos_feet = view_to_feet(screen_to_view(screen_uv));
+        vec3 frag_pos_world = feet_to_world(frag_pos_feet);
 
-        float cosine_to_horizon = abs(fragment_position_player_space.y);
-        color.a = mix(0.0, color.a, pow2(clamp01(cosine_to_horizon)));
-        vec3 sun_dir_vector_world_space = mat3(gbufferModelViewInverse) * worldLightVector;
-        // FIX: this "volumetric" falloff near the sun/moon does not work
-        // float cosine_to_sun = dot(sun_dir_vector_world_space, fragment_position_player_space);
-        // color.rgb *= clamp01(1.0 - cosine_to_sun); // simulate some volumetric lighting by lightening the clouds closer to the sun
+        float cosine_to_horizon = abs(frag_pos_feet.y); // dot(vec3(0., 1., 0.), frag_pos_feet)
 
+        color.a = mix(0., color.a, pow2(clamp01(cosine_to_horizon)));
         frag_is_cloud = 1;
+
+        imageStore(cloud_map, ivec3(frag_pos_world.xy, cloudHeight), color);
     }
 #endif

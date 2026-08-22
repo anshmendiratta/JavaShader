@@ -3,8 +3,8 @@
     // TOOD: fix everything.
 
     #include "/include/math/convenience.glsl"
-    #include "/include/utility/space_conversions.glsl"
-    #include "/include/utility/depth_conversion.glsl"
+    #include "/include/utility/coordinates.glsl"
+    #include "/include/utility/depth.glsl"
 
     vec2 local_uv_to_atlas(vec2 local_uv, vec2 bottom_left_coord, vec2 texture_size) {
         return fract(local_uv) * texture_size + bottom_left_coord;
