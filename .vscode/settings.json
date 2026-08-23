@@ -1,0 +1,13 @@
+{
+    "slang.additionalSearchPaths": [
+        "/home/mintdesktop/.cache/aperturels/0.0.1-beta.8-snapshot+mc26.3-snapshot-7-local",
+        "/home/mintdesktop/.cache/aperturels/0.0.1-beta.8-snapshot+mc26.3-snapshot-7-local",
+        "/home/mintdesktop/.cache/aperturels/0.0.1-beta.8-snapshot+mc26.3-snapshot-7-local",
+        "/home/mintdesktop/.cache/aperturels/0.0.1-beta.8-snapshot+mc26.3-snapshot-7-local",
+        "/home/mintdesktop/.cache/aperturels/0.0.1-beta.8-snapshot+mc26.3-snapshot-7-local",
+        "/home/mintdesktop/.cache/aperturels/0.0.1-beta.8-snapshot+mc26.3-snapshot-7-local",
+        "/home/mintdesktop/.cache/aperturels/0.0.1-beta.8-snapshot+mc26.3-snapshot-7-local"
+    ],
+    "slang.format.clangFormatStyle": ".clang-format",
+    "slang.format.clangFormatLocation": "/home/linuxbrew/.linuxbrew/bin/clang-format"
+}
