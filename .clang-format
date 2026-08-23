@@ -1,0 +1,49 @@
+AlignAfterOpenBracket: true
+AlignConsecutiveAssignments:
+  Enabled: true
+  AcrossEmptyLines: false 
+  AcrossComments: true 
+  AlignCompound: true
+  AlignConsecutiveBitFields: true
+  EnumAssignments: true
+  PadOperators: true
+  AlignFunctionPointers: true
+  AlignFunctionDeclarations: true
+AlignArrayOfStructures: AIAS_Left
+AlignConsecutiveDeclarations:
+  Enabled: true
+  AcrossEmptyLines: false 
+  AcrossComments: true 
+  AlignCompound: true
+  AlignConsecutiveBitFields: true
+  EnumAssignments: true
+  PadOperators: true
+  AlignFunctionPointers: true
+  AlignFunctionDeclarations: true
+AlignConsecutiveMacros: Consecutive 
+AlignConsecutiveShortCaseStatements: 
+  Enabled: true
+  AcrossComments: true
+  AlignCaseArrows: true
+  AlignCaseColons: true
+AlignEscapedNewlines: true
+AlignOperands:
+  BreakBeforeBinaryOperators: true
+  AlignAfterOperator: true 
+AlignTrailingComments: 
+  Kind: Always
+  OverEmptyLines: 2
+AllowAllParametersOfDeclarationOnNextLine: true
+AllowShortBlocksOnASingleLine:
+  Always: true
+AllowShortCaseExpressionOnASingleLine: true
+AllowShortCaseLabelsOnASingleLine: true
+AllowShortEnumsOnASingleLine: true
+AllowShortFunctionsOnASingleLine: All 
+AllowShortIfStatementsOnASingleLine: 
+  AllIfsAndElse: true
+AllowShortLoopsOnASingleLine: true
+AllowShortNamespacesOnASingleLine: true
+AllowShortRecordOnASingleLine:
+  Always: true
+  
